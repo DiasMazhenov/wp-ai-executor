@@ -1,0 +1,149 @@
+{
+  "format": "wpae-live-native-compare-v1",
+  "post_id": 5214,
+  "case": "C",
+  "generated_root": "a2fb9c8",
+  "native_root": "a2fb9c8",
+  "nodes_compared": 41,
+  "authored_field_difference_count": 0,
+  "generated_authored_fields_equal_native_after_reload": true,
+  "differences": [],
+  "native_media": [
+    {
+      "id": "8b5a4da",
+      "url": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "alt": "Архитектор изучает чертежи у современного здания; демонстрационное изображение павильона.",
+      "native_url": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "native_alt": "Архитектор изучает чертежи у современного здания; демонстрационное изображение павильона."
+    },
+    {
+      "id": "004c75e",
+      "url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "alt": "Современный архитектурный интерьер; демонстрационное изображение маршрута света.",
+      "native_url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "native_alt": "Современный архитектурный интерьер; демонстрационное изображение маршрута света."
+    },
+    {
+      "id": "f5128c8",
+      "url": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "alt": "Два специалиста обсуждают чертежи на строительной площадке; демонстрационное изображение мастерской.",
+      "native_url": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "native_alt": "Два специалиста обсуждают чертежи на строительной площадке; демонстрационное изображение мастерской."
+    }
+  ],
+  "native_actions": [
+    {
+      "id": "1df103b",
+      "label": "Открыть концепцию",
+      "url": "#concept-pavilion",
+      "native_label": "Открыть концепцию",
+      "native_url": "#concept-pavilion"
+    },
+    {
+      "id": "26952fd",
+      "label": "Открыть концепцию",
+      "url": "#concept-light",
+      "native_label": "Открыть концепцию",
+      "native_url": "#concept-light"
+    },
+    {
+      "id": "658a58e",
+      "label": "Открыть концепцию",
+      "url": "#concept-workshop",
+      "native_label": "Открыть концепцию",
+      "native_url": "#concept-workshop"
+    }
+  ],
+  "native_text": [
+    {
+      "id": "6684712",
+      "type": "heading",
+      "field": "title",
+      "text": "ДЕМО-ПРОЕКТЫ"
+    },
+    {
+      "id": "badda5c",
+      "type": "heading",
+      "field": "title",
+      "text": "Три идеи для общих пространств"
+    },
+    {
+      "id": "e487a2a",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Тексты и изображения показывают разные проектные задачи; все описания и результаты вымышлены."
+    },
+    {
+      "id": "0f4aad6",
+      "type": "heading",
+      "field": "title",
+      "text": "Павильон у воды"
+    },
+    {
+      "id": "534b428",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Концепция семейного отдыха"
+    },
+    {
+      "id": "f966824",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Демонстрационная идея павильона связывает тихую прогулочную дорожку, защищённую площадку для встреч и обзор на воду."
+    },
+    {
+      "id": "1df103b",
+      "type": "button",
+      "field": "text",
+      "text": "Открыть концепцию"
+    },
+    {
+      "id": "027aa06",
+      "type": "heading",
+      "field": "title",
+      "text": "Маршрут света"
+    },
+    {
+      "id": "48cd0fa",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Интерьер общественного пространства"
+    },
+    {
+      "id": "3a268cf",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Вымышленная концепция галереи организует ясный путь через помещения и сохраняет места, где посетитель может остановиться."
+    },
+    {
+      "id": "26952fd",
+      "type": "button",
+      "field": "text",
+      "text": "Открыть концепцию"
+    },
+    {
+      "id": "5fdf383",
+      "type": "heading",
+      "field": "title",
+      "text": "Мастерская для совместной работы"
+    },
+    {
+      "id": "e5c4ab6",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Учебная производственная зона"
+    },
+    {
+      "id": "2b3d108",
+      "type": "text-editor",
+      "field": "editor",
+      "text": "Синтетический пример мастерской с гибкими рабочими местами и общей точкой для обсуждения макетов; это не описание реализованного объекта."
+    },
+    {
+      "id": "658a58e",
+      "type": "button",
+      "field": "text",
+      "text": "Открыть концепцию"
+    }
+  ]
+}

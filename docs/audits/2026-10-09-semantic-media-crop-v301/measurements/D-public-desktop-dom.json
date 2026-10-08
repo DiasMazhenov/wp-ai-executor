@@ -1,0 +1,146 @@
+{
+  "actions": [
+    {
+      "bg": "rgb(0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "href": "#contact",
+      "rect": {
+        "bottom": 458.2890625,
+        "height": 39,
+        "right": 237.484375,
+        "width": 167.484375,
+        "x": 70,
+        "y": 419.2890625
+      },
+      "text": "Обсудить задачу"
+    },
+    {
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "href": "#projects",
+      "rect": {
+        "bottom": 523.2890625,
+        "height": 41,
+        "right": 271.2265625,
+        "width": 201.2265625,
+        "x": 70,
+        "y": 482.2890625
+      },
+      "text": "Посмотреть проекты"
+    }
+  ],
+  "copy": [
+    {
+      "align": "start",
+      "color": "rgb(51, 51, 51)",
+      "fontSize": "17px",
+      "lineHeight": "28.05px",
+      "overflow": "visible",
+      "rect": {
+        "bottom": 395.2890625,
+        "height": 72.09375,
+        "right": 678,
+        "width": 608,
+        "x": 70,
+        "y": 323.1953125
+      },
+      "text": "Собираем контекст места и переводим его в понятный проект — от первой схемы до согласованных деталей."
+    }
+  ],
+  "headings": [
+    {
+      "align": "start",
+      "color": "rgb(51, 51, 51)",
+      "fontSize": "52px",
+      "fontWeight": "700",
+      "lineHeight": "57.2px",
+      "rect": {
+        "bottom": 323.1953125,
+        "height": 171.609375,
+        "right": 678,
+        "width": 608,
+        "x": 70,
+        "y": 151.5859375
+      },
+      "tag": "H1",
+      "text": "Пространство начинается с точного решения"
+    }
+  ],
+  "images": [
+    {
+      "alt": "Архитектор изучает чертежи у современного здания.",
+      "complete": true,
+      "currentSrc": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "0% 50%",
+      "rect": {
+        "bottom": 523.2890625,
+        "height": 411.2890625,
+        "right": 1210,
+        "width": 448,
+        "x": 762,
+        "y": 112
+      },
+      "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    }
+  ],
+  "overlays": [
+    {
+      "class": "wpdsac-chat__intro-bubble",
+      "rect": {
+        "bottom": 0,
+        "height": 0,
+        "right": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "text": "Доброй ночи!Расскажите подробнее про технический аудит.!",
+      "visible": false
+    },
+    {
+      "class": "wpdsac-chat__toggle",
+      "rect": {
+        "bottom": 876,
+        "height": 60,
+        "right": 1256,
+        "width": 60,
+        "x": 1196,
+        "y": 816
+      },
+      "text": "AI-Dana",
+      "visible": true
+    }
+  ],
+  "post_id": 5214,
+  "root": {
+    "background": "rgba(97, 206, 112, 0.2)",
+    "color": "rgb(51, 51, 51)",
+    "direction": "column",
+    "display": "flex",
+    "gap": "normal",
+    "overflow": "visible",
+    "padding": "0px 32px",
+    "rect": {
+      "bottom": 603.2890625,
+      "height": 571.2890625,
+      "right": 1280,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    }
+  },
+  "rootChildCount": 1,
+  "root_id": "620e60e",
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientHeight": 900,
+    "clientWidth": 1280,
+    "innerHeight": 900,
+    "innerWidth": 1280,
+    "scrollHeight": 900,
+    "scrollWidth": 1280
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "format": "wpae-live-acceptance-matrix-v1",
+  "date": "2026-10-09",
+  "post_id": 5214,
+  "runtime_version": "v02.11.301",
+  "source_commit": "8662a40564fe6cb5556e9e36e5ef2d6711d3e622",
+  "source_push": "git push reported success; independent ls-remote retry failed with DNS resolution for github.com",
+  "install": {
+    "method": "WP Pusher UI, existing tab",
+    "status": "Plugin updated; independent version checks were completed before live scenarios",
+    "plugins_php_version": "v02.11.301",
+    "editor_inline_version": "v02.11.301"
+  },
+  "baseline_before_tests": {
+    "editor_structure_empty": true,
+    "publish_disabled": true,
+    "public_elementor_roots": [],
+    "confirmed_before_first_live_write": true
+  },
+  "historical_correction": {
+    "v299_testimonials_D": "Earlier report called it accepted; its own DOM evidence says 56x56 desktop avatar with centered cover crop. Preserve history but correct visual status to PARTIAL pending v301 retest.",
+    "v299_about_B": "PARTIAL_SITE_OVERLAP; remains historical and is not being repeated.",
+    "v299_team_C": "Asset URL/alt/entity ownership technically matched; stock imagery quality was separately noted."
+  },
+  "cases": [
+    {
+      "id": "A",
+      "fixture": "fixtures/A-testimonials-grid-exact.txt",
+      "family": "testimonials",
+      "record": "testimonials.grid",
+      "profile": "soft_cards_light",
+      "status": "PASS_WITH_NOTES",
+      "counted_as_fully_accepted": true,
+      "source_fix_replay": true,
+      "operation": {
+        "root_id": "3cf7a71",
+        "operation_id": "wpae-5819cfe552194230",
+        "identity": "94ed1a85-54f8-4fb0-996a-c019662bd2b7",
+        "generation_revision": 4,
+        "post_publish_descriptor_revision": 6,
+        "brief_sha256": "98259a0966dbf06ad7687f793414011db1cab689ca881f27ced78a83d483155c",
+        "plan_sha256": "699ff3b50f07dff135bac3d2a1c6f610b0aa1fe70ce395022c1d5743aa82ce83",
+        "provider_calls": 0,
+        "transaction_write_count": 1
+      },
+      "statuses": {
+        "generation_and_render": "PASS",
+        "content_and_asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "public_desktop": "PASS",
+        "public_mobile": "PASS",
+        "visual_review": "PASS_WITH_EQUAL_GRID_WHITESPACE_AND_SITE_LAUNCHER_MARGIN_NOTES",
+        "guarded_undo": "PASS",
+        "baseline_restoration": "PASS_EMPTY_ROOT_SET"
+      },
+      "public_viewports": {
+        "desktop_css": "1232x923 (baseline DOM immediately before generation)",
+        "desktop_png": "1232x923",
+        "mobile_css": "390x844",
+        "mobile_png": "375x812",
+        "mobile_full_png": "375x1175"
+      },
+      "evidence": [
+        "exports/A-first-generation-diagnostics-v301.json",
+        "exports/A-native-selected-root-after-reload.json",
+        "exports/A-readonly-descriptor-after-reload-v301.txt",
+        "exports/A-owned-check-after-refresh-v301.txt",
+        "exports/current-state-and-undo-controls-v301.json",
+        "measurements/A-public-mobile-chat-collapsed.json",
+        "screenshots/A-public-desktop-after-reload.png",
+        "screenshots/A-public-mobile-390x844-site-chat-collapsed-after-open.png",
+        "screenshots/A-public-mobile-full-390-site-chat-collapsed-after-open.png"
+      ]
+    },
+    {
+      "id": "B",
+      "fixture": "fixtures/B-team-editorial-rows.txt",
+      "family": "team",
+      "record": "team.editorial_rows",
+      "profile": "editorial_light",
+      "status": "PASS_WITH_SITE_OVERLAP_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation": {
+        "root_id": "d8a5d4d",
+        "operation_id": "wpae-eddeb29004a7fd74",
+        "identity": "1a2ab500-48bd-4a89-a650-65e296e7457b",
+        "generation_revision": 4,
+        "post_publish_descriptor_revision": 6,
+        "brief_sha256": "5da8da04dab65b9341b0459710b8d787d95537c4d0f469012e1c1b1c7d5b146f",
+        "plan_sha256": "13f17f8fbc64f922b05b206763ca5f431a0c46d83bdf5582c016ec56e80f0fa2",
+        "provider_calls": 0,
+        "transaction_write_count": 1
+      },
+      "statuses": {
+        "generation_and_render": "PASS",
+        "content_and_asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "public_desktop": "PASS",
+        "public_mobile": "PASS",
+        "visual_review": "PASS_WITH_EXTERNAL_FIXED_LAUNCHER_OVERLAP_NOTE",
+        "guarded_undo": "PASS_ALREADY_UNDONE",
+        "baseline_restoration": "PASS_EMPTY_ROOT_SET"
+      },
+      "public_viewports": {
+        "desktop_css": "1280x900",
+        "desktop_png": "1265x889",
+        "desktop_full_png": "1265x1699",
+        "mobile_css": "390x844",
+        "mobile_png": "375x812",
+        "mobile_full_png": "375x1760"
+      },
+      "evidence": [
+        "exports/B-first-generation-diagnostics-v301.json",
+        "exports/B-native-compare-after-reload.json",
+        "exports/B-native-selected-root-after-reload.json",
+        "exports/B-readonly-descriptor-after-reload.txt",
+        "exports/B-owned-check-after-refresh.txt",
+        "exports/B-undo-baseline.json",
+        "exports/current-state-and-undo-controls-v301.json",
+        "measurements/B-public-desktop-dom.json",
+        "measurements/B-public-mobile-dom.json",
+        "screenshots/B-public-desktop-1280x900.png",
+        "screenshots/B-public-mobile-390x844.png",
+        "screenshots/B-public-mobile-full-390.png"
+      ]
+    },
+    {
+      "id": "C",
+      "fixture": "fixtures/C-portfolio-editorial-rows.txt",
+      "family": "portfolio",
+      "record": "portfolio.editorial_rows",
+      "profile": "editorial_light",
+      "status": "PASS_WITH_SITE_OVERLAP_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation": {
+        "root_id": "a2fb9c8",
+        "operation_id": "wpae-4ee6a541a3ddc675",
+        "identity": "76b1e701-3393-4968-bf49-4c8bcd7d6a43",
+        "generation_revision": 4,
+        "post_publish_descriptor_revision": 6,
+        "brief_sha256": "108250e43582773266735c00b3910b611b12857ae923a0cbbb702085da361943",
+        "plan_sha256": "ada62333beaadea57e1246ed369397ae6c5d6ced1c549a614487369c2c9f8886",
+        "provider_calls": 0,
+        "transaction_write_count": 1
+      },
+      "statuses": {
+        "generation_and_render": "PASS",
+        "content_and_asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "public_desktop": "PASS",
+        "public_mobile": "PASS",
+        "visual_review": "PASS_WITH_EXTERNAL_FIXED_LAUNCHER_OVERLAP_NOTE",
+        "guarded_undo": "PASS_ALREADY_UNDONE",
+        "baseline_restoration": "PASS_EMPTY_ROOT_SET"
+      },
+      "public_viewports": {
+        "desktop_css": "1280x900",
+        "desktop_png": "1265x889",
+        "desktop_full_png": "1265x1235",
+        "mobile_css": "390x844",
+        "mobile_png": "375x812",
+        "mobile_full_png": "375x1755"
+      },
+      "evidence": [
+        "exports/C-first-generation-diagnostics-v301.json",
+        "exports/C-native-compare-after-reload.json",
+        "exports/C-native-selected-root-after-reload.json",
+        "exports/C-readonly-descriptor-after-reload.txt",
+        "exports/C-owned-check-after-refresh.txt",
+        "exports/C-undo-baseline.json",
+        "exports/current-state-and-undo-controls-v301.json",
+        "measurements/C-public-desktop-dom.json",
+        "measurements/C-public-mobile-dom.json",
+        "screenshots/C-public-desktop-1280x900.png",
+        "screenshots/C-public-mobile-390x844.png",
+        "screenshots/C-public-mobile-full-390.png"
+      ]
+    },
+    {
+      "id": "D",
+      "fixture": "fixtures/D-hero-split-focal-right.txt",
+      "family": "hero",
+      "record": "hero.split_60_40.right",
+      "profile": "editorial_light",
+      "status": "PARTIAL_BLOCKED_GUARDED_UNDO",
+      "counted_as_fully_accepted": false,
+      "operation": {
+        "root_id": "620e60e",
+        "operation_id": "wpae-2c4cd41e1ae6c757",
+        "identity": "2557eca5-59ba-4302-b22e-29935a61df96",
+        "generation_revision": 4,
+        "post_publish_descriptor_revision": 5,
+        "accepted_contract_id": "contract-470b59aec0e66e4a0d1feb5e",
+        "brief_sha256": "95d94c4ce19e87d71561cd1d9f23cb947458759f00f802c246559b2d65778a31",
+        "plan_sha256": "9fdf55ccdf01e2380fa1166722468e98db3e4b0ed8588b3dc9f06f4b7bdbdd66",
+        "provider_calls": 0,
+        "transaction_write_count": 1,
+        "undo_attempt_write_count": 0
+      },
+      "statuses": {
+        "generation_and_render": "PASS",
+        "content_and_asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "public_desktop": "PASS",
+        "public_mobile": "PASS",
+        "visual_review": "PASS_WITH_MINOR_SITE_OVERLAP_NOTE",
+        "guarded_undo": "BLOCKED_DIRTY_EDITOR",
+        "baseline_restoration": "NOT_CONFIRMED"
+      },
+      "public_viewports": {
+        "desktop_css": "1280x900",
+        "desktop_png": "1280x900",
+        "desktop_full_png": "1280x900",
+        "mobile_css": "390x844",
+        "mobile_png": "390x844",
+        "mobile_full_png": "390x844"
+      },
+      "guarded_undo_refusal": "Undo остановлен: несохранённые изменения редактора сохранены локально.",
+      "editor_extra_root": "f8deb7e (empty e-empty container; not present in current public DOM; appeared after an agent UI action and survives editor reload)",
+      "evidence": [
+        "exports/D-first-generation-diagnostics-v301.json",
+        "exports/D-native-compare-after-reload.json",
+        "exports/D-native-selected-root-after-reload.json",
+        "exports/D-readonly-descriptor-after-reload-v301.txt",
+        "exports/D-owned-check-after-refresh-v301.txt",
+        "exports/D-readonly-descriptor-before-undo-v301.txt",
+        "exports/D-owned-check-before-undo-v301.txt",
+        "exports/D-undo-blocker-after-reload-v301.json",
+        "exports/current-state-and-undo-controls-v301.json",
+        "measurements/D-public-desktop-dom.json",
+        "measurements/D-public-mobile-dom.json",
+        "screenshots/D-public-desktop-1280x900.png",
+        "screenshots/D-public-mobile-390x844.png",
+        "screenshots/D-public-mobile-full-390.png"
+      ]
+    },
+    {
+      "id": "E",
+      "fixture": "fixtures/E-about-split-right.txt",
+      "family": "about",
+      "record": "about.split_60_40.right",
+      "profile": "editorial_light",
+      "status": "NOT RUN_BLOCKED_UNRESTORED_BASELINE",
+      "counted_as_fully_accepted": false,
+      "blocker": "D operation remains published on post 5214 and the editor has a dirty extra empty root; the required [] baseline was not restored.",
+      "transaction_write_count": 0,
+      "evidence": ["fixtures/E-about-split-right.txt"]
+    }
+  ],
+  "counts": {
+    "live_generations_attempted": 4,
+    "full_acceptances": 3,
+    "remaining_full_acceptances": 2,
+    "source_fix_replays": 1,
+    "extra_evidence_only_replays": 0,
+    "failed_undo_writes": 0
+  },
+  "current_page_state": {
+    "post_id": 5214,
+    "public_root_ids": ["620e60e"],
+    "editor_canvas_root_ids": ["620e60e", "f8deb7e"],
+    "editor_publish_button_enabled": true,
+    "baseline_restored": false,
+    "new_generation_after_D": false
+  },
+  "local_checks": {
+    "design_pipeline_contract": "982 checks OK",
+    "flex_generation_runtime": "1497 checks OK; includes m3-entities-contract.php through normal harness",
+    "node_suites": "20/20 PASS",
+    "patch_guard": "PASS",
+    "imported_catalog": "158 manifest / 156 retrievable / 156 previews",
+    "php_lint": "PASS for includes/llm/brief-ir.php and the two changed PHP contract fixtures",
+    "package_probe": "253 files; zero hash mismatches; four validator scenarios PASS",
+    "package_probe_diagnostic": "whole archive result contains opaque bytes and cannot be JSON-encoded as UTF-8; compact metadata round-trips",
+    "git_diff_check": "PASS"
+  },
+  "completion_gate": "INCOMPLETE: 3/5 full acceptances. D passed generation, readback, public DOM and screenshot review but guarded Undo safely refused due dirty editor state; E was not started because baseline [] was not restored."
+}

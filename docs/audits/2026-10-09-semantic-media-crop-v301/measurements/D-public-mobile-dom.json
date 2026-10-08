@@ -1,0 +1,118 @@
+{
+  "actions": [
+    {
+      "href": "#contact",
+      "rect": {
+        "bottom": 394.7890625,
+        "height": 39,
+        "right": 183.484375,
+        "width": 167.484375,
+        "x": 16,
+        "y": 355.7890625
+      },
+      "text": "Обсудить задачу"
+    },
+    {
+      "href": "#projects",
+      "rect": {
+        "bottom": 459.7890625,
+        "height": 41,
+        "right": 217.2265625,
+        "width": 201.2265625,
+        "x": 16,
+        "y": 418.7890625
+      },
+      "text": "Посмотреть проекты"
+    }
+  ],
+  "copy": [],
+  "headings": [
+    {
+      "align": "start",
+      "fontSize": "32px",
+      "lineHeight": "35.2px",
+      "rect": {
+        "bottom": 236.59375,
+        "height": 105.609375,
+        "right": 374,
+        "width": 358,
+        "x": 16,
+        "y": 130.984375
+      },
+      "tag": "H1",
+      "text": "Пространство начинается с точного решения"
+    }
+  ],
+  "images": [
+    {
+      "alt": "Архитектор изучает чертежи у современного здания.",
+      "complete": true,
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "0% 50%",
+      "rect": {
+        "bottom": 761.7890625,
+        "height": 288,
+        "right": 374,
+        "width": 358,
+        "x": 16,
+        "y": 473.7890625
+      },
+      "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    }
+  ],
+  "overlay": [
+    {
+      "class": "wpdsac-chat__intro-bubble",
+      "rect": {
+        "bottom": 0,
+        "height": 0,
+        "right": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "text": "Доброй ночи!Расскажите подробнее про технический аудит.!"
+    },
+    {
+      "class": "wpdsac-chat__toggle",
+      "rect": {
+        "bottom": 820,
+        "height": 60,
+        "right": 366,
+        "width": 60,
+        "x": 306,
+        "y": 760
+      },
+      "text": "AI-Dana"
+    }
+  ],
+  "post_id": 5214,
+  "root": {
+    "background": "rgba(97, 206, 112, 0.2)",
+    "direction": "column",
+    "display": "flex",
+    "gap": "normal",
+    "overflow": "visible",
+    "padding": "0px 16px",
+    "rect": {
+      "bottom": 801.7890625,
+      "height": 755.7890625,
+      "right": 390,
+      "width": 390,
+      "x": 0,
+      "y": 46
+    }
+  },
+  "root_id": "620e60e",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 390,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scrollHeight": 844,
+    "scrollWidth": 390,
+    "scrollY": 0
+  }
+}

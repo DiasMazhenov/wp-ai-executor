@@ -1,0 +1,581 @@
+{
+  "viewport": {
+    "bodyScroll": 375,
+    "docClient": 375,
+    "dpr": 1,
+    "height": 844,
+    "scrollHeight": 1175,
+    "width": 390
+  },
+  "dom": {
+    "containers": [
+      {
+        "id": "9f4888f",
+        "rect": {
+          "h": 170.8,
+          "w": 343,
+          "x": 16,
+          "y": 78
+        },
+        "styles": {
+          "alignItems": "flex-start",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "0px",
+          "height": "170.797px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "cf96845",
+        "rect": {
+          "h": 170.8,
+          "w": 343,
+          "x": 16,
+          "y": 78
+        },
+        "styles": {
+          "alignItems": "flex-start",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "0px",
+          "height": "170.797px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "0b7ecca",
+        "rect": {
+          "h": 32.4,
+          "w": 128.9,
+          "x": 16,
+          "y": 78
+        },
+        "styles": {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "24px",
+          "height": "32.3906px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "5.6px 12px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "f59a948",
+        "rect": {
+          "h": 862.9,
+          "w": 343,
+          "x": 16,
+          "y": 280.8
+        },
+        "styles": {
+          "alignItems": "stretch",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "16px",
+          "height": "862.859px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "573103f",
+        "rect": {
+          "h": 213,
+          "w": 343,
+          "x": 16,
+          "y": 280.8
+        },
+        "styles": {
+          "alignItems": "stretch",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "28px",
+          "height": "212.953px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "16px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "8623cac",
+        "rect": {
+          "h": 179,
+          "w": 309,
+          "x": 33,
+          "y": 297.8
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "178.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "a066610",
+        "rect": {
+          "h": 261,
+          "w": 343,
+          "x": 16,
+          "y": 509.8
+        },
+        "styles": {
+          "alignItems": "stretch",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "28px",
+          "height": "260.953px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "16px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "69a7955",
+        "rect": {
+          "h": 227,
+          "w": 309,
+          "x": 33,
+          "y": 526.8
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "226.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "c474cef",
+        "rect": {
+          "h": 357,
+          "w": 343,
+          "x": 16,
+          "y": 786.7
+        },
+        "styles": {
+          "alignItems": "stretch",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "28px",
+          "height": "356.953px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "16px",
+          "textAlign": "start"
+        }
+      },
+      {
+        "id": "dc3e117",
+        "rect": {
+          "h": 323,
+          "w": 309,
+          "x": 33,
+          "y": 803.7
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "322.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      }
+    ],
+    "headings": [
+      {
+        "rect": {
+          "h": 62.4,
+          "w": 343,
+          "x": 16,
+          "y": 122.4
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "26px",
+          "fontWeight": "700",
+          "gap": "normal",
+          "height": "62.4062px",
+          "justifyContent": "normal",
+          "lineHeight": "31.2px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "tag": "H2",
+        "text": "Примеры коротких отзывов"
+      },
+      {
+        "rect": {
+          "h": 23,
+          "w": 309,
+          "x": 33,
+          "y": 417.8
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "17px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "22.9531px",
+          "justifyContent": "normal",
+          "lineHeight": "22.95px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "Ирина Лескова"
+      },
+      {
+        "rect": {
+          "h": 23,
+          "w": 309,
+          "x": 33,
+          "y": 694.8
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "17px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "22.9531px",
+          "justifyContent": "normal",
+          "lineHeight": "22.95px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "Марат Кенжебаев"
+      },
+      {
+        "rect": {
+          "h": 23,
+          "w": 309,
+          "x": 33,
+          "y": 1067.7
+        },
+        "styles": {
+          "alignItems": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "17px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "22.9531px",
+          "justifyContent": "normal",
+          "lineHeight": "22.95px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "София Мухина"
+      }
+    ],
+    "horizontalOverflow": false,
+    "images": [
+      {
+        "alt": "Иллюстративный стоковый портрет мужчины в кепке и наушниках; изображение не подтверждает достоверность цитаты.",
+        "loaded": true,
+        "natural": [
+          1100,
+          1046
+        ],
+        "rect": {
+          "h": 48,
+          "w": 48,
+          "x": 163.5,
+          "y": 297.8
+        },
+        "src": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+        "styles": {
+          "alignItems": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "48px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "objectPosition": "50% 0%",
+          "overflow": "clip",
+          "overflowX": "clip",
+          "padding": "0px",
+          "textAlign": "center"
+        }
+      },
+      {
+        "alt": "Иллюстративный стоковый образ женщины в наушниках; изображение не подтверждает достоверность цитаты.",
+        "loaded": true,
+        "natural": [
+          1500,
+          1000
+        ],
+        "rect": {
+          "h": 48,
+          "w": 48,
+          "x": 163.5,
+          "y": 526.8
+        },
+        "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+        "styles": {
+          "alignItems": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "48px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "objectPosition": "50% 0%",
+          "overflow": "clip",
+          "overflowX": "clip",
+          "padding": "0px",
+          "textAlign": "center"
+        }
+      },
+      {
+        "alt": "Иллюстративный стоковый портрет женщины в жёлтом свитере; изображение не подтверждает достоверность цитаты.",
+        "loaded": true,
+        "natural": [
+          238,
+          400
+        ],
+        "rect": {
+          "h": 48,
+          "w": 48,
+          "x": 163.5,
+          "y": 803.7
+        },
+        "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+        "styles": {
+          "alignItems": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "48px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "objectPosition": "50% 0%",
+          "overflow": "clip",
+          "overflowX": "clip",
+          "padding": "0px",
+          "textAlign": "center"
+        }
+      }
+    ],
+    "root": {
+      "id": "3cf7a71",
+      "rect": {
+        "h": 1129.7,
+        "w": 375,
+        "x": 0,
+        "y": 46
+      },
+      "styles": {
+        "alignItems": "normal",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "height": "1129.66px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start"
+      }
+    }
+  }
+}

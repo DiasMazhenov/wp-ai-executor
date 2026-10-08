@@ -1,0 +1,16 @@
+{
+  "scenario": "C",
+  "post_id": 5214,
+  "editor": {
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "root_ids": [],
+    "publish_disabled": true,
+    "inline_version": null
+  },
+  "public": {
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "root_ids": [],
+    "heading_count": 0
+  },
+  "baseline_restored": true
+}

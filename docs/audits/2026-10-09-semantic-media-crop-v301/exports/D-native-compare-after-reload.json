@@ -1,0 +1,37 @@
+{
+  "format": "wpae-native-readback-compare-v1",
+  "post_id": 5214,
+  "operation_id": "wpae-2c4cd41e1ae6c757",
+  "root_id": "620e60e",
+  "source": "Elementor UI selected-root JSON after editor reload",
+  "generated_node_count": 11,
+  "native_node_count": 11,
+  "topology_equal": true,
+  "generated_root_ids": [
+    "620e60e"
+  ],
+  "native_root_ids": [
+    "620e60e"
+  ],
+  "generated_authored_fields_match_native": true,
+  "difference_count": 0,
+  "differences": [],
+  "authored": {
+    "eyebrow": "АРХИТЕКТУРА ДЛЯ ЖИЗНИ",
+    "title": "Пространство начинается с точного решения",
+    "body": "Собираем контекст места и переводим его в понятный проект — от первой схемы до согласованных деталей.",
+    "ctas": [
+      {
+        "label": "Обсудить задачу",
+        "href": "#contact"
+      },
+      {
+        "label": "Посмотреть проекты",
+        "href": "#projects"
+      }
+    ],
+    "image_url": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+    "alt": "Архитектор изучает чертежи у современного здания."
+  },
+  "normalization_note": "Native serialization materializes additional empty link and css-class defaults; the generated design authored subtree matches."
+}

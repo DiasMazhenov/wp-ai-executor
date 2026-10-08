@@ -1,0 +1,29 @@
+{
+  "scenario": "D",
+  "post_id": 5214,
+  "operation_id": "wpae-2c4cd41e1ae6c757",
+  "operation_identity": "2557eca5-59ba-4302-b22e-29935a61df96",
+  "accepted_contract_id": "contract-470b59aec0e66e4a0d1feb5e",
+  "accepted_root_ids": ["620e60e"],
+  "captured_descriptor_revision": 5,
+  "descriptor_status": "available",
+  "descriptor_write_count": 0,
+  "attempted_action": "operation-scoped guarded Undo in the ordinary plugin chat",
+  "guard_refusal": "Undo остановлен: несохранённые изменения редактора сохранены локально.",
+  "undo_write_count": 0,
+  "editor_after_reload": {
+    "publish_button_enabled": true,
+    "root_ids": ["620e60e", "f8deb7e"],
+    "extra_root_id": "f8deb7e",
+    "extra_root_type": "empty Elementor Flex container (e-empty)",
+    "extra_root_provenance": "appeared after an agent UI action while inspecting/selecting native JSON; absent from public DOM"
+  },
+  "public_after_reload": {
+    "root_ids": ["620e60e"],
+    "hero_operation_root_present": true
+  },
+  "baseline_root_ids": [],
+  "baseline_restored": false,
+  "next_scenario_started": false,
+  "note": "The empty editor root survives a full editor reload. No publish, manual root removal, alternate write transport, or guarded-Undo bypass was used."
+}

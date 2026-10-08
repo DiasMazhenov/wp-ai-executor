@@ -1,0 +1,95 @@
+{
+  "format": "wpae-live-native-compare-v1",
+  "post_id": 5214,
+  "case": "B",
+  "generated_root": "d8a5d4d",
+  "native_root": "d8a5d4d",
+  "topology": {
+    "nodes_compared": 35,
+    "native_containers": 20,
+    "images": 3,
+    "authored_text_fields": 12
+  },
+  "generated_authored_fields_equal_native_after_reload": true,
+  "authored_field_difference_count": 0,
+  "differences": [],
+  "native_text": [
+    {
+      "id": "625e462",
+      "field": "title",
+      "text": "ДЕМО-КОМАНДА"
+    },
+    {
+      "id": "6309f7a",
+      "field": "title",
+      "text": "Роли в проекте"
+    },
+    {
+      "id": "be7b00c",
+      "field": "editor",
+      "text": "Нейтральные синтетические сведения помогают проверить связь между фотографиями, текстом и строками команды."
+    },
+    {
+      "id": "e841f88",
+      "field": "title",
+      "text": "Участник 1"
+    },
+    {
+      "id": "6fae7bb",
+      "field": "editor",
+      "text": "Исследователь пользовательских сценариев"
+    },
+    {
+      "id": "d3b5e74",
+      "field": "editor",
+      "text": "Собирает вопросы и помогает уточнить задачу."
+    },
+    {
+      "id": "9e690be",
+      "field": "title",
+      "text": "Участник 2"
+    },
+    {
+      "id": "4b7f71e",
+      "field": "editor",
+      "text": "Координатор взаимодействия с проектной командой"
+    },
+    {
+      "id": "aaf64f9",
+      "field": "editor",
+      "text": "Сопоставляет решения с контекстом проекта, фиксирует договорённости и помогает команде последовательно передавать работу между этапами. Сведения вымышлены и используются только для проверки длинной строки в редакционном списке."
+    },
+    {
+      "id": "33c1968",
+      "field": "title",
+      "text": "Участник 3"
+    },
+    {
+      "id": "822c82f",
+      "field": "editor",
+      "text": "Специалист по подготовке макетов"
+    },
+    {
+      "id": "09fe3bd",
+      "field": "editor",
+      "text": "Проверяет, что детали интерфейса остаются согласованными."
+    }
+  ],
+  "native_images": [
+    {
+      "id": "1f94a7d",
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "alt": "Постановочный портрет в кепке и наушниках; иллюстрация, не фотография участника."
+    },
+    {
+      "id": "baadd92",
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "alt": "Постановочный образ у музыкального оборудования; иллюстрация, не фотография участника."
+    },
+    {
+      "id": "12f247b",
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "alt": "Постановочный портрет в жёлтом свитере; иллюстрация, не фотография участника."
+    }
+  ]
+}

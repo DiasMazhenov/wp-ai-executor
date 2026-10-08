@@ -1,0 +1,136 @@
+{
+  "format": "wpae-verified-media-plan-v1",
+  "post_id": 5214,
+  "runtime_version": "v02.11.301",
+  "verification_policy": "The plugin re-resolves same-site WordPress images against attachment type, image MIME, dimensions, current_user_can(edit_post), and URL at Brief freeze. Approved Unsplash assets require the exact prompted URL, alt, and Unsplash License; runtime re-resolves image bytes before freeze.",
+  "assets": [
+    {
+      "fixture": "A",
+      "asset_id": "testimonial-avatar-1",
+      "source": "existing WordPress media",
+      "attachment_id": 2648,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "role": "avatar",
+      "owner": "testimonial_1 / exact historical synthetic author from fixture",
+      "alt": "Иллюстративный стоковый портрет мужчины в кепке и наушниках; изображение не подтверждает достоверность цитаты.",
+      "historical_dimensions": "300x300; must be rechecked on generation",
+      "focal_decision": "role default from DesignPlan; verify actual crop visually"
+    },
+    {
+      "fixture": "A",
+      "asset_id": "testimonial-avatar-2",
+      "source": "existing WordPress media",
+      "attachment_id": 2649,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "role": "avatar",
+      "owner": "testimonial_2 / exact historical synthetic author from fixture",
+      "alt": "Иллюстративный стоковый образ женщины в наушниках; изображение не подтверждает достоверность цитаты.",
+      "historical_dimensions": "320x400; must be rechecked on generation",
+      "focal_decision": "role default from DesignPlan; verify actual crop visually"
+    },
+    {
+      "fixture": "A",
+      "asset_id": "testimonial-avatar-3",
+      "source": "existing WordPress media",
+      "attachment_id": 3593,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "role": "avatar",
+      "owner": "testimonial_3 / exact historical synthetic author from fixture",
+      "alt": "Иллюстративный стоковый портрет женщины в жёлтом свитере; изображение не подтверждает достоверность цитаты.",
+      "historical_dimensions": "238x400; must be rechecked on generation",
+      "focal_decision": "role default from DesignPlan; verify actual crop visually"
+    },
+    {
+      "fixture": "B",
+      "asset_id": "team-illustration-1",
+      "source": "existing WordPress media",
+      "attachment_id": 2648,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "role": "portrait",
+      "owner": "team_1 / Участник 1 (synthetic neutral label)",
+      "alt": "Постановочный портрет в кепке и наушниках; иллюстрация, не фотография участника.",
+      "historical_dimensions": "300x300; must be rechecked on generation",
+      "display_intent": "illustrative portrait; not asserted as a photo of the synthetic participant"
+    },
+    {
+      "fixture": "B",
+      "asset_id": "team-illustration-2",
+      "source": "existing WordPress media",
+      "attachment_id": 2649,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "role": "portrait",
+      "owner": "team_2 / Участник 2 (synthetic neutral label)",
+      "alt": "Постановочный образ у музыкального оборудования; иллюстрация, не фотография участника.",
+      "historical_dimensions": "320x400; must be rechecked on generation",
+      "display_intent": "illustrative portrait; not asserted as a photo of the synthetic participant"
+    },
+    {
+      "fixture": "B",
+      "asset_id": "team-illustration-3",
+      "source": "existing WordPress media",
+      "attachment_id": 3593,
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "role": "portrait",
+      "owner": "team_3 / Участник 3 (synthetic neutral label)",
+      "alt": "Постановочный портрет в жёлтом свитере; иллюстрация, не фотография участника.",
+      "historical_dimensions": "238x400; must be rechecked on generation",
+      "display_intent": "illustrative portrait; not asserted as a photo of the synthetic participant"
+    },
+    {
+      "fixture": "C",
+      "asset_id": "portfolio-project-1",
+      "source": "approved Unsplash catalog; prior runtime byte-verified",
+      "url": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "role": "project_image",
+      "owner": "portfolio_1 / Павильон у воды (fictional concept)",
+      "alt": "Архитектор изучает чертежи у современного здания; демонстрационное изображение павильона.",
+      "license": "Unsplash License",
+      "historical_dimensions": "1200x675; re-resolve before freeze"
+    },
+    {
+      "fixture": "C",
+      "asset_id": "portfolio-project-2",
+      "source": "approved Unsplash catalog; prior runtime byte-verified",
+      "url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "role": "project_image",
+      "owner": "portfolio_2 / Маршрут света (fictional concept)",
+      "alt": "Современный архитектурный интерьер; демонстрационное изображение маршрута света.",
+      "license": "Unsplash License",
+      "historical_dimensions": "1200x675; re-resolve before freeze"
+    },
+    {
+      "fixture": "C",
+      "asset_id": "portfolio-project-3",
+      "source": "approved Unsplash catalog; prior runtime byte-verified",
+      "url": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "role": "project_image",
+      "owner": "portfolio_3 / Мастерская для совместной работы (fictional concept)",
+      "alt": "Два специалиста обсуждают чертежи на строительной площадке; демонстрационное изображение мастерской.",
+      "license": "Unsplash License",
+      "historical_dimensions": "1200x675; re-resolve before freeze"
+    },
+    {
+      "fixture": "D",
+      "asset_id": "hero-focal-person",
+      "source": "approved Unsplash catalog; prior runtime byte-verified",
+      "url": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "role": "hero",
+      "owner": "section Hero / person holding architectural plans",
+      "alt": "Архитектор изучает чертежи у современного здания.",
+      "license": "Unsplash License",
+      "historical_dimensions": "1200x675; re-resolve before freeze",
+      "requested_focal": "центр слева; intent resolves to a supported native 3x3 position, not arbitrary coordinates"
+    },
+    {
+      "fixture": "E",
+      "asset_id": "about-interior",
+      "source": "approved Unsplash catalog; prior runtime byte-verified",
+      "url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "role": "about",
+      "owner": "section About / architectural interior",
+      "alt": "Современный архитектурный интерьер с панорамным светом.",
+      "license": "Unsplash License",
+      "historical_dimensions": "1200x675; re-resolve before freeze"
+    }
+  ]
+}

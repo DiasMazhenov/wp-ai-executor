@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-10-08T20:53:23.613Z",
+  "post_id": 5214,
+  "editor": {
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "title": "Редактировать \"Pricing Contract Live v123\" с помощью Elementor",
+    "empty_structure": true,
+    "publish_disabled": true,
+    "version": "Версия: v02.11.301"
+  },
+  "public": {
+    "elementor_documents": [],
+    "page_roots": [],
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "css_height": 923,
+      "css_width": 1232,
+      "dpr": 2
+    }
+  }
+}

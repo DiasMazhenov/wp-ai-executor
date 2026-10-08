@@ -1,0 +1,44 @@
+{
+  "captured_at": "2026-10-08T21:50:34.852Z",
+  "post_id": 5214,
+  "editor": {
+    "url": {},
+    "publish_controls": [
+      {
+        "disabled": false,
+        "text": "Опубликовать"
+      },
+      {
+        "disabled": false,
+        "text": "Обновить"
+      }
+    ],
+    "root_ids": [
+      "620e60e",
+      "f8deb7e"
+    ],
+    "undo_controls": [
+      {
+        "disabled": false,
+        "title": "available: wpae-2c4cd41e1ae6c757"
+      },
+      {
+        "disabled": true,
+        "title": "already_undone: wpae-4ee6a541a3ddc675"
+      },
+      {
+        "disabled": true,
+        "title": "already_undone: wpae-eddeb29004a7fd74"
+      },
+      {
+        "disabled": true,
+        "title": "already_undone: wpae-5819cfe552194230"
+      }
+    ]
+  },
+  "public": {
+    "root_ids": [
+      "620e60e"
+    ]
+  }
+}
