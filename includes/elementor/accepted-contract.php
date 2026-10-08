@@ -211,7 +211,7 @@ function wpae_accepted_contract_composition_evidence( array $operation ): array 
 
 /** Select known IR fields, never HTTP context/history, credentials or foreign roots. */
 function wpae_accepted_contract_prepare( array $brief, array $plan, array $compiled, array $before_owned = [], string $parent_id = '', array $native_roundtrip = [], array $generation = [] ): array {
-    $brief = array_intersect_key( $brief, array_flip( [ 'source_text', 'locale', 'parser_version', 'pricing_items', 'style_references', 'explicit_constraints', 'ambiguities', 'warnings', 'schema', 'version', 'canonical_create', 'archetype', 'intent', 'scope', 'content', 'content_items', 'groups', 'media_references', 'layout_constraints', 'style_constraints', 'policy', 'behavior', 'exact_text', 'constraints', 'required_widgets', 'copy_policy', 'provenance', 'hash' ] ) );
+    $brief = array_intersect_key( $brief, array_flip( [ 'source_text', 'locale', 'parser_version', 'pricing_items', 'style_references', 'explicit_constraints', 'ambiguities', 'warnings', 'schema', 'version', 'canonical_create', 'archetype', 'intent', 'scope', 'content', 'content_items', 'groups', 'media_references', 'layout_constraints', 'style_constraints', 'policy', 'behavior', 'exact_text', 'constraints', 'required_widgets', 'copy_policy', 'approved_facts', 'intake', 'provenance', 'hash' ] ) );
     // Brief and Plan are already server-built typed data, not raw request context.
 	$roundtrip = array_intersect_key( $native_roundtrip, array_flip( [ 'version', 'control_aware', 'repeater_order_and_count', 'repeater_ids', 'allowed_legacy_serialization', 'decisions' ] ) );
 	$generation_evidence = array_intersect_key( $generation, array_flip( [ 'route', 'provider_calls', 'provider_call_count_source' ] ) );

@@ -36,6 +36,7 @@ function sanitize_textarea_field( $value ) { return trim( preg_replace( '/\r\n?/
 function wp_strip_all_tags( $value ) { return strip_tags( (string) $value ); }
 function esc_url_raw( $value ) { return (string) $value; }
 function wp_json_encode( $value, $flags = 0 ) { return json_encode( $value, $flags ); }
+function wp_salt( $scheme = 'auth' ) { return 'wpae-runtime-harness-fixed-signing-key'; }
 function wp_get_nav_menu_items( $menu, $args = [] ) { return $GLOBALS['test_nav_menus'][sanitize_key( (string) $menu )] ?? []; }
 function wp_get_nav_menu_object( $menu ) {
 	$key = sanitize_key( (string) $menu );
@@ -157,6 +158,7 @@ function wpae_elementor_patch( $request ) {
     return new WP_REST_Response( [ 'ok' => true, 'rollback_snapshot_id' => $snapshot['id'], 'rollback_expires_at' => $snapshot['expires_at'], 'patch_report' => $patched['report'] ], 200 );
 }
 function wp_safe_remote_post( $url, $args ) {
+    if ( ! empty( $GLOBALS['provider_sleep_usec'] ) ) { usleep( (int) $GLOBALS['provider_sleep_usec'] ); }
     $GLOBALS['http_calls'][] = [ 'url' => $url, 'timeout' => $args['timeout'], 'body' => json_decode( $args['body'], true ) ];
     if ( empty( $GLOBALS['responses'] ) ) {
         throw new RuntimeException( 'Unexpected provider call' );
@@ -3276,6 +3278,7 @@ if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
 
 require __DIR__ . '/m1-generation-contract.php';
 require __DIR__ . '/m2-generation-contract.php';
+require __DIR__ . '/intake-production-contract.php';
 require __DIR__ . '/m3-entities-contract.php';
 require __DIR__ . '/typed-lifecycle-contract.php';
 

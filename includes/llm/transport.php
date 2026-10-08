@@ -543,8 +543,9 @@ function wpae_llm_prepare_provider_request_body( array $request_body, bool $acti
     return $request_body;
 }
 
-function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0 ) {
+function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0, ?array &$attempt_meta = null ) {
     try {
+        $attempt_meta = [ 'provider_calls' => 0, 'retry_count' => 0, 'retry_reason' => '' ];
         $deadline = $deadline > 0 ? $deadline : microtime( true ) + (float) ( $remote_args['timeout'] ?? 45 );
         $remaining = $deadline - microtime( true );
         if ( $remaining < 1 ) {
@@ -553,6 +554,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
         $remote_args['timeout'] = min( (float) ( $remote_args['timeout'] ?? 45 ), $remaining );
         $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
         $remote_args['body'] = wp_json_encode( $request_body );
+        ++$attempt_meta['provider_calls'];
         $response = wp_safe_remote_post( $url, $remote_args );
         if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
             $initial_status = wp_remote_retrieve_response_code( $response );
@@ -566,6 +568,9 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
                 if ( $remaining < 1 ) {
                     return new WP_Error( 'wpae_llm_provider_budget_exhausted', 'Общее время ожидания LLM исчерпано.' );
                 }
+                ++$attempt_meta['provider_calls'];
+                ++$attempt_meta['retry_count'];
+                $attempt_meta['retry_reason'] = $structured_route_rejected ? 'structured_response_format_rejected' : 'structured_response_finish_reason_' . sanitize_key( (string) ( $initial_diagnostics['finish_reason'] ?? 'failed' ) );
                 $remote_args['timeout'] = min( (float) $remote_args['timeout'], $remaining );
                 unset( $request_body['response_format'], $request_body['provider'] );
                 $remote_args['body'] = wp_json_encode( $request_body );

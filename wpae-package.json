@@ -25,7 +25,7 @@
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
     "includes/design/token-resolution.php": "4c94ce0153dd4d79193ff20f55da0cbe180c9b55144d06c6fb9ade8d2bd17e6d",
-    "includes/elementor/accepted-contract.php": "53f3228990fcb930bfd43aee220f439361ae7b5681051109adaaffbcce34fb33",
+    "includes/elementor/accepted-contract.php": "d7ea6cc52e89c94783d594ef2f65c0aa5bad381ed93cc531a27891e6b6f7214e",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
     "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
@@ -236,14 +236,14 @@
     "includes/guide/guide.php": "d4ea713d153a7434f82fbb28b13dc9b9b2d22b4b4f973208d51b8b7dc3bfd56d",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
-    "includes/llm/brief-ir.php": "9c3880237ad7b6ee3cd388214f8f666398cd7989e4f24576fd6155b80c033376",
+    "includes/llm/brief-ir-structured.php": "483b5804295bcafbdcc8eee9dddafd1987090ab91feee25021ee40b464a11f51",
+    "includes/llm/brief-ir.php": "5ef5b20a6a152138a850b6d9c30a9a48dc7a324ddf0c651d654a24c0197dc7c4",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
     "includes/llm/design-plan.php": "bcb4310075bd09dcd9edb61a991efab2fd64124c6ce2e21666fd7c20003389eb",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "e64676943928e1c8d6142645d51ebac3c935b3502e6d609e102099ae0bc06436",
+    "includes/llm/llm.php": "ee56ecd60eea4f1660b06ca977e5e2b36127eacc46b88bca1030bb41f1507442",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
-    "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
+    "includes/llm/transport.php": "bbafee6ec5b1c590906795cb860007ecc8c8b79bd029f6cd1af29b848fa1eb5d",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "671ce421743365f43b7c733bf7d8beefe91ca2b9b78ff8cd06f63ddc0a56f7fd",
     "includes/rollback/rollback.php": "f67eb2d6029364e54ffeebd20cb73c8f42ffd10b6b1b87cd423b3d01cd73e816",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "f417967058904d07cd358c04cce5f2bed013156b5dabaceb8bc5cf1c1fbe7a88"
+    "wp-ai-executor.php": "4da5ee0ae86b9fe4f8f53ef9435aa40e595c95bde8ff6cc7021bd81a3f5e363a"
   }
 }

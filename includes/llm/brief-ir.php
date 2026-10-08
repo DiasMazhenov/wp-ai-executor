@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v17';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v18';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -475,6 +475,12 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$source_text = wpae_brief_ir_source_text( $source_text );
 	$locale = wpae_brief_ir_locale( $source_text );
 	$archetype = wpae_brief_ir_archetype( $source_text );
+	// Only the server-side typed intake may resolve an otherwise unknown family.
+	// The ordinary REST editor context is never forwarded here as an override.
+	$intake_family = sanitize_key( (string) ( $context['wpae_intake_family'] ?? '' ) );
+	if ( $archetype === 'unknown' && in_array( $intake_family, [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'cta' ], true ) ) {
+		$archetype = $intake_family;
+	}
 	$content = [];
 	$warnings = [];
 	$ambiguities = [];
@@ -1572,7 +1578,10 @@ function wpae_brief_ir_validate( array $brief ): array {
 		$errors[] = 'source_or_locale';
 	}
 	foreach ( (array) ( $brief['content'] ?? [] ) as $index => $item ) {
-		if ( ! is_array( $item ) || trim( (string) ( $item['exact_text'] ?? '' ) ) === '' || ! is_array( $item['source_span'] ?? null ) || ! is_array( $item['provenance'] ?? null ) ) {
+		$copy_status = is_array( $item ) ? (string) ( $item['copy_status'] ?? '' ) : '';
+		$span_is_valid_shape = isset( $item['source_span'] ) && is_array( $item['source_span'] );
+		$generated_has_null_span = is_array( $item ) && $copy_status === 'generated' && array_key_exists( 'source_span', $item ) && $item['source_span'] === null;
+		if ( ! is_array( $item ) || trim( (string) ( $item['exact_text'] ?? '' ) ) === '' || ( ! $span_is_valid_shape && ! $generated_has_null_span ) || ! is_array( $item['provenance'] ?? null ) ) {
 			$errors[] = 'content_' . (int) $index;
 		}
 		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
@@ -1580,15 +1589,48 @@ function wpae_brief_ir_validate( array $brief ): array {
 		}
 	}
 	if ( ! empty( $brief['canonical_create'] ) ) {
+		foreach ( (array) ( $brief['ambiguities'] ?? [] ) as $ambiguity ) {
+			if ( ! is_array( $ambiguity ) ) { continue; }
+			$kind = sanitize_key( (string) ( $ambiguity['kind'] ?? '' ) );
+			if ( in_array( $kind, [ 'conflicting_eyebrow_presentation', 'conflicting_media_intent', 'conflicting_compositions' ], true ) ) { $errors[] = 'canonical_ambiguity:' . $kind; }
+		}
 		$ids = [];
+		$copy_statuses = [];
 		foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
 			$id = (string) ( $item['id'] ?? '' );
 			$span = (array) ( $item['source_span'] ?? [] );
 			if ( $id === '' || isset( $ids[ $id ] ) ) { $errors[] = 'duplicate_or_missing_content_id'; }
 			$ids[ $id ] = true;
-			if ( ! is_array( $item ) || ! is_string( $brief['source_text'] ?? null ) || ( $item['copy_status'] ?? '' ) !== 'explicit' || count( $span ) !== 2 || ! is_int( $span[0] ) || ! is_int( $span[1] ) || $span[0] < 0 || $span[1] < $span[0] || $span[1] > strlen( $brief['source_text'] ) || substr( $brief['source_text'], $span[0], $span[1] - $span[0] ) !== ( $item['exact_text'] ?? '' ) ) { $errors[] = 'explicit_content_provenance:' . $id; }
+			$copy_statuses[] = (string) ( $item['copy_status'] ?? '' );
+			if ( ! is_array( $item ) || ! is_string( $brief['source_text'] ?? null ) ) { $errors[] = 'content_provenance:' . $id; continue; }
+			if ( ( $item['copy_status'] ?? '' ) === 'explicit' ) {
+				if ( count( $span ) !== 2 || ! is_int( $span[0] ) || ! is_int( $span[1] ) || $span[0] < 0 || $span[1] < $span[0] || $span[1] > strlen( $brief['source_text'] ) || substr( $brief['source_text'], $span[0], $span[1] - $span[0] ) !== ( $item['exact_text'] ?? '' ) || ( $item['provenance']['source'] ?? '' ) !== 'prompt' || ( $item['provenance']['source_span'] ?? null ) !== $item['source_span'] ) { $errors[] = 'explicit_content_provenance:' . $id; }
+			} elseif ( ( $item['copy_status'] ?? '' ) === 'generated' ) {
+				if ( ! function_exists( 'wpae_brief_ir_generated_content_valid' ) || ! wpae_brief_ir_generated_content_valid( $item, $brief ) ) { $errors[] = 'generated_content_provenance:' . $id; }
+			} else {
+				$errors[] = 'unsupported_copy_status:' . $id;
+			}
+		}
+		$has_generated = in_array( 'generated', $copy_statuses, true );
+		$has_exact = in_array( 'explicit', $copy_statuses, true );
+		$expected_copy_policy = $has_generated ? ( $has_exact ? 'hybrid' : 'generated' ) : 'exact';
+		if ( isset( $brief['copy_policy'] ) && $brief['copy_policy'] !== $expected_copy_policy ) { $errors[] = 'copy_policy_content_mismatch'; }
+		$intake_calls = (int) ( $brief['intake']['provider_call_count'] ?? 0 );
+		$intake_retries = (int) ( $brief['intake']['retry_count'] ?? 0 );
+		if ( $has_generated && ( ( $brief['intake']['schema'] ?? '' ) !== 'wpae-brief-intake-v1' || $intake_calls < 1 || $intake_calls > 2 || $intake_retries < 0 || $intake_retries > 1 || $intake_calls !== $intake_retries + 1 ) ) { $errors[] = 'generated_copy_requires_server_intake'; }
+		$approved_fact_ids = [];
+		foreach ( (array) ( $brief['approved_facts'] ?? [] ) as $fact ) {
+			if ( ! is_array( $fact ) ) { $errors[] = 'approved_fact_invalid'; continue; }
+			$fact_id = sanitize_key( (string) ( $fact['id'] ?? '' ) );
+			$fact_span = (array) ( $fact['source_span'] ?? [] );
+			$fact_text = (string) ( $fact['exact_text'] ?? '' );
+			if ( $fact_id === '' || isset( $approved_fact_ids[ $fact_id ] ) || count( $fact_span ) !== 2 || ! is_int( $fact_span[0] ) || ! is_int( $fact_span[1] ) || $fact_span[0] < 0 || $fact_span[1] < $fact_span[0] || $fact_span[1] > strlen( (string) $brief['source_text'] ) || substr( (string) $brief['source_text'], $fact_span[0], $fact_span[1] - $fact_span[0] ) !== $fact_text || ( $fact['provenance']['source'] ?? '' ) !== 'prompt' ) {
+				$errors[] = 'approved_fact_not_source_exact';
+			}
+			$approved_fact_ids[ $fact_id ] = true;
 		}
 	}
+	if ( ! empty( $brief['canonical_create'] ) && ! empty( $brief['intake']['schema'] ) && ( $brief['intake']['schema'] ?? '' ) !== 'wpae-brief-intake-v1' ) { $errors[] = 'intake_schema'; }
 	if ( ! empty( $brief['canonical_create'] ) && in_array( $brief['intent']['archetype'] ?? '', [ 'team', 'testimonials', 'portfolio' ], true ) && ( $brief['groups'] ?? [] ) !== wpae_brief_ir_entity_groups( $brief['intent']['archetype'], (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) ) ) { $errors[] = 'entity_groups_source_bindings_mismatch'; }
 	if ( ! empty( $brief['canonical_create'] ) && ( $brief['intent']['archetype'] ?? '' ) === 'portfolio' ) {
 		$count = count( (array) ( $brief['groups'] ?? [] ) );

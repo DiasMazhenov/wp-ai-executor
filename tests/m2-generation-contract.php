@@ -76,8 +76,8 @@ foreach ( $m2_cases as $name => [ $prompt, $context, $record, $profile ] ) {
   foreach ( $context['media_references'] as &$media ) { $media['group_id'] = $brief['intent']['archetype']; } unset( $media );
   $brief['groups'][0]['media_refs'] = array_column( $brief['media_references'], 'asset_id' );
  }
- $ctx = [ 'composition_record' => $record, 'composition_version' => 1, 'visual_profile' => $profile ];
- $result = $run_services_route( $prompt, [], $incompatible_pricing_fixture, 'm2-' . $name, false, 'active', 'active', array_merge( $context, $ctx, [ 'canonical_brief' => $brief ] ) );
+ $ctx = array_merge( $context, [ 'composition_record' => $record, 'composition_version' => 1, 'visual_profile' => $profile ] );
+ $result = $run_services_route( $prompt, [], $incompatible_pricing_fixture, 'm2-' . $name, false, 'active', 'active', array_merge( $context, $ctx ) );
  check( ! empty( $result['response']['ok'] ), 'M2 chat ' . $name . ': ' . wp_json_encode( $result['error'] ) );
  $trace = $result['response']['diagnostics']['design_pipeline'];
  $decision = $trace['plan']['composition_decision'];
@@ -120,22 +120,30 @@ $m2_negatives = [
  'bad_surface_contrast' => [ 'visual_profile' => 'editorial_light', 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.surface' => '#111827' ] ],
  'bad_contrast' => [ 'visual_profile' => 'soft_cards_light', 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.text' => '#ffffff' ] ],
 ];
-foreach ( $m2_negatives as $name => $override ) {
- if ( isset( $override['page_tokens'] ) ) { $override['canonical_brief'] = $base['brief']; foreach ( $override['page_tokens'] as $token => $value ) { $override['canonical_brief']['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => $token, 'value' => $value ]; } }
+$m2_chat_negatives = $m2_negatives;
+foreach ( [ 'bad_type_fields', 'invalid_visual', 'bad_surface_contrast', 'bad_contrast' ] as $context_token_case ) { unset( $m2_chat_negatives[ $context_token_case ] ); }
+foreach ( $m2_chat_negatives as $name => $override ) {
  $ctx = array_merge( $base['context'], $override );
- $result = $run_services_route( $m2_prompt, [], [], 'm2-refuse-' . $name, false, 'active', 'active', array_merge( $ctx, [ 'canonical_brief' => $ctx['canonical_brief'] ?? $base['brief'] ] ) );
+ $result = $run_services_route( $m2_prompt, [], [], 'm2-refuse-' . $name, false, 'active', 'active', $ctx );
  check( ! empty( $result['error'] ) && $result['writes'] === 0 && $result['write_attempts'] === 0 && $result['calls'] === 0 && $result['page_data'] === $legacy_page, 'M2 chat refuses ' . $name . ' before write/provider/fallback' );
- $preview = $m2_preview( $base['brief'], $ctx, 'negative' );
+ $preview_brief = $base['brief'];
+ if ( isset( $override['page_tokens'] ) ) { foreach ( $override['page_tokens'] as $token => $value ) { $preview_brief['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => $token, 'value' => $value ]; } }
+ $preview = $m2_preview( $preview_brief, $ctx, 'negative' );
  check( empty( $preview['ok'] ) && $preview['write_count'] === 0, 'M2 composer refuses ' . $name . ' with zero writes' );
 }
-$bad = $base['brief']; $bad['layout_constraints'][] = [ 'kind' => 'media_side', 'value' => 'left' ];
-$conflict = $run_services_route( $m2_prompt, [], [], 'm2-explicit-conflict', false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $bad ] ) );
+foreach ( array_diff_key( $m2_negatives, $m2_chat_negatives ) as $name => $override ) {
+ $preview_brief = $base['brief'];
+ foreach ( (array) ( $override['page_tokens'] ?? [] ) as $token => $value ) { $preview_brief['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => $token, 'value' => $value ]; }
+ $preview = $m2_preview( $preview_brief, array_merge( $base['context'], $override ), 'negative-' . $name );
+ check( empty( $preview['ok'] ) && $preview['write_count'] === 0, 'M2 composer rejects frozen-Brief visual contract ' . $name );
+}
+$conflict = $run_services_route( $m2_prompt . "\nИзображение слева.", [], [], 'm2-explicit-conflict', false, 'active', 'active', $base['context'] );
 check( ! empty( $conflict['error'] ) && $conflict['writes'] === 0 && $conflict['calls'] === 0, 'M2 explicit Brief side conflict refuses instead of overriding copy/media policy' );
-$bad = $base['brief']; $bad['media_references'] = []; $bad['groups'][0]['media_refs'] = [];
-$unresolved = $run_services_route( $m2_prompt, [], [], 'm2-unresolved', false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $bad ] ) );
+$unresolved_context = array_merge( $base['context'], [ 'media_references' => [] ] );
+$unresolved = $run_services_route( $m2_prompt, [], [], 'm2-unresolved', false, 'active', 'active', $unresolved_context );
 check( ! empty( $unresolved['error'] ) && $unresolved['writes'] === 0 && $unresolved['calls'] === 0, 'M2 required media cannot become text-only' );
 $types = \Elementor\Plugin::$types; \Elementor\Plugin::$types = array_values( array_diff( $types, [ 'image' ] ) );
-$missing = $run_services_route( $m2_prompt, [], [], 'm2-missing-image', false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $base['brief'] ] ) );
+$missing = $run_services_route( $m2_prompt, [], [], 'm2-missing-image', false, 'active', 'active', $base['context'] );
 $missing_preview = $m2_preview( $base['brief'], $base['context'], 'missing' );
 \Elementor\Plugin::$types = $types;
 check( ! empty( $missing['error'] ) && $missing['writes'] === 0 && empty( $missing_preview['ok'] ), 'M2 missing native image capability refuses chat and composer' );
@@ -143,11 +151,11 @@ $accepted = wpae_design_plan_from_brief( $base['brief'], array_merge( $base['con
 $accepted['composition_decision']['policy']['media_side'] = 'left';
 check( in_array( 'composition_policy_mutated', wpae_design_plan_validate( $accepted, $base['brief'] )['errors'], true ), 'M2 accepted record policy cannot be substituted before compile' );
 foreach ( [ true, false ] as $preview_failure ) {
- $result = $run_services_route( $m2_prompt, [], [], 'm2-failure-' . (int) $preview_failure, $preview_failure, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $base['brief'] ] ), $preview_failure ? null : [ 'code' => 'wpae_test_storage_failure', 'status' => 500, 'message' => 'storage failure' ] );
- check( ! empty( $result['error'] ) && $result['writes'] === 0 && $result['calls'] === 0 && $result['page_data'] === $legacy_page && $result['write_attempts'] === ( $preview_failure ? 0 : 1 ), 'M2 preview/final-write failure no retry or fallback' );
+ $result = $run_services_route( $m2_prompt, [], [], 'm2-failure-' . (int) $preview_failure, $preview_failure, 'active', 'active', $base['context'], $preview_failure ? null : [ 'code' => 'wpae_test_storage_failure', 'status' => 500, 'message' => 'storage failure' ] );
+ check( ! empty( $result['error'] ) && $result['writes'] === 0 && $result['calls'] === 0 && $result['page_data'] === $legacy_page && $result['write_attempts'] === ( $preview_failure ? 0 : 1 ), 'M2 preview/final-write failure no retry or fallback: ' . wp_json_encode( [ 'failure' => $preview_failure, 'error' => $result['error'], 'writes' => $result['writes'], 'calls' => $result['calls'], 'attempts' => $result['write_attempts'] ], JSON_UNESCAPED_UNICODE ) );
 }
 $GLOBALS['m1_raw_saved'] = 'invalid JSON';
-$unreadable = $run_services_route( $m2_prompt, [], [], 'm2-unreadable', false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $base['brief'] ] ) );
+$unreadable = $run_services_route( $m2_prompt, [], [], 'm2-unreadable', false, 'active', 'active', $base['context'] );
 unset( $GLOBALS['m1_raw_saved'] );
 check( ! empty( $unreadable['error'] ) && $unreadable['write_attempts'] === 0 && $unreadable['calls'] === 0, 'M2 saved read failure cannot initialize an empty page' );
 // Explicit tokens override profile, reference overrides confirmed page, unconfirmed context ignored.
@@ -267,9 +275,9 @@ foreach ( [ 'ratio_conflict', 'multiple_assets', 'group_cardinality' ] as $reaso
  if ( $reason === 'group_cardinality' ) { $bad['groups'] = []; }
  $resolution = wpae_composition_resolve( $bad, $base['context'], 'split_60_40', 'right' );
  check( ! empty( $resolution['errors'] ), 'M2 resolver explains ' . $reason . ' before Plan freeze' );
- $result = $run_services_route( $m2_prompt, [], [], 'm2-' . $reason, false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $bad ] ) );
- check( ! empty( $result['error'] ) && $result['writes'] === 0 && $result['calls'] === 0 && $result['write_attempts'] === 0, 'M2 actual chat refuses ' . $reason . ' without losing fields/assets' );
 }
+$client_brief_spoof = $run_services_route( $m2_prompt, [], [], 'm2-client-brief-spoof', false, 'active', 'active', array_merge( $base['context'], [ 'canonical_brief' => $base['brief'] ] ) );
+check( ( $client_brief_spoof['error']['code'] ?? '' ) === 'wpae_client_brief_not_trusted' && $client_brief_spoof['writes'] === 0 && $client_brief_spoof['calls'] === 0 && $client_brief_spoof['page_data'] === $legacy_page, 'M2 public chat cannot replace its source-derived Brief with a client-passed canonical object' );
 $extra_visual = $base['brief']; $extra_visual['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => 'space.section_mobile', 'value' => '3rem' ];
 $extra_plan = wpae_design_plan_from_brief( $extra_visual, array_merge( $base['context'], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light', 'page_tokens' => [ 'space.section_mobile' => '9rem' ] ] ) );
 check( $extra_plan['resolved_visual']['values']['space.section_mobile'] === '3rem' && $extra_plan['resolved_visual']['sources']['space.section_mobile'] === 'explicit_brief', 'M2 explicit Brief also overrides new profile tokens; unconfirmed page ignored' );
@@ -499,7 +507,7 @@ foreach ( [ 'pill-бейдж' => 'pill', 'надзаголовок обычны�
  check( substr($prompt,$constraint['source_span'][0],$constraint['source_span'][1]-$constraint['source_span'][0]) !== '' && $constraint['provenance']['source_span'] === $constraint['source_span'], 'Badge source span and provenance retained ' . $instruction );
 }
 $conflict = $run_services_route("Создай Hero без фото\nНадзаголовок: «ТЕКСТ»\nЗаголовок: «Точно»\nНадзаголовок обычным текстом. Сделай pill-бейдж.", [], [], 'visual-badge-conflict', false, 'active', 'active', [ 'composition_record'=>'hero.text_only' ]);
-check(!empty($conflict['error']) && $conflict['writes']===0 && $conflict['calls']===0, 'Contradictory plain/pill instruction refuses before write');
+check(!empty($conflict['error']) && $conflict['writes']===0 && $conflict['calls']===0, 'Contradictory plain/pill instruction refuses before provider or write');
 foreach ( [2,3,4,6] as $count ) {
  $prompt = "Создай Benefits без фото\nНадзаголовок: «ПРЕИМУЩЕСТВА»\nЗаголовок: «Чёткий ритм»\n";
  for($i=1;$i<=$count;$i++){ $prompt .= "Преимущество $i: «Заголовок {$i}»\nОписание преимущества $i: «" . ($i===1?'Кратко.':rtrim(str_repeat('Длинная точная строка. ',8))) . "»\n"; }

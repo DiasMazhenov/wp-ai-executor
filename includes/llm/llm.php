@@ -10976,17 +10976,41 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         : [];
     $vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
     $vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
-    $targeted_edit = $action_request && $selected_element_count > 0 && ! $targeted_design_repair && ! $vision_regenerate && ! $retry_current_operation && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
+	$targeted_edit = $action_request && $selected_element_count > 0 && ! $targeted_design_repair && ! $vision_regenerate && ! $retry_current_operation && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
+	$selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
 	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
 	$canonical_brief = [];
-	if ( $action_request && $design_pipeline_mode === 'active' && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && ! $targeted_design_repair ) {
-		$canonical_brief = is_array( $editor_context_input['canonical_brief'] ?? null ) ? $editor_context_input['canonical_brief'] : wpae_brief_ir_parse( $message, [ 'audience' => (string) ( $editor_context_input['audience'] ?? '' ) ] );
-		if ( ( $canonical_brief['source_text'] ?? '' ) !== wpae_brief_ir_source_text( $message ) ) {
-			return new WP_Error( 'wpae_canonical_brief_source_mismatch', 'Brief не относится к текущему запросу; запись не выполнялась.', [ 'status' => 422, 'write_count' => 0 ] );
+	$canonical_intake_telemetry = [ 'source' => 'not_applicable', 'provider_calls' => 0, 'model' => '' ];
+	if ( $action_request && $design_pipeline_mode === 'active' && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && ! $targeted_design_repair && $selected_post_id > 0 ) {
+		if ( is_array( $editor_context_input ) && array_key_exists( 'canonical_brief', $editor_context_input ) ) {
+			return new WP_Error( 'wpae_client_brief_not_trusted', 'Canonical Brief создаётся и проверяется на сервере; переданный клиентом Brief не принят. Запись не выполнялась.', [ 'status' => 422, 'write_count' => 0 ] );
+		}
+		$canonical_brief = wpae_brief_ir_parse( $message, [ 'audience' => (string) ( $editor_context_input['audience'] ?? '' ) ] );
+		$initial_family = sanitize_key( (string) ( $canonical_brief['intent']['archetype'] ?? 'unknown' ) );
+		$pre_intake_blockers = array_values( array_filter( (array) ( $canonical_brief['ambiguities'] ?? [] ), static fn( $ambiguity ): bool => is_array( $ambiguity ) && in_array( (string) ( $ambiguity['kind'] ?? '' ), [ 'conflicting_eyebrow_presentation', 'conflicting_media_intent', 'conflicting_compositions' ], true ) ) );
+		if ( $pre_intake_blockers ) { return new WP_Error( 'wpae_brief_intake_ambiguous', 'В запросе есть противоречивые требования к представлению или медиа; уточните их до генерации. Запись не выполнялась.', [ 'status' => 422, 'ambiguities' => $pre_intake_blockers, 'provider_calls' => 0, 'write_count' => 0 ] ); }
+		$initial_media_intent = 'unspecified';
+		foreach ( (array) ( $canonical_brief['layout_constraints'] ?? [] ) as $constraint ) {
+			if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'media_intent' ) { $initial_media_intent = sanitize_key( (string) ( $constraint['value'] ?? 'unspecified' ) ); break; }
+		}
+		$has_approved_media_input = ! empty( $canonical_brief['media_references'] ) || ! empty( $editor_context_input['media_references'] );
+		if ( in_array( $initial_family, wpae_brief_ir_generated_copy_families(), true ) && $initial_media_intent === 'required' && ! $has_approved_media_input ) {
+			return new WP_Error( 'wpae_design_plan_rejected', 'Для обязательного изображения нет разрешённого asset reference; запрос остановлен до provider intake и записи.', [ 'status' => 422, 'plan_errors' => [ 'photo_asset_required' ], 'provider_calls' => 0, 'write_count' => 0 ] );
+		}
+		if ( in_array( $initial_family, wpae_brief_ir_generated_copy_families(), true ) || $initial_family === 'unknown' ) {
+			$intake = wpae_brief_ir_intake_extract( $message, $canonical_brief, $runtime, [ 'audience' => (string) ( $editor_context_input['audience'] ?? '' ) ] );
+			$canonical_intake_telemetry = (array) ( $intake['telemetry'] ?? [] );
+			if ( empty( $intake['ok'] ) ) {
+				return new WP_Error( sanitize_key( (string) ( $intake['error'] ?? 'wpae_brief_intake_failed' ) ), 'Typed content intake не прошёл schema/provenance проверки; запись не выполнялась.', [ 'status' => 422, 'write_count' => 0, 'intake' => $canonical_intake_telemetry, 'validation' => $intake['validation'] ?? [] ] );
+			}
+			$canonical_brief = (array) $intake['brief'];
 		}
 	}
 	$action_archetype = $canonical_brief ? sanitize_key( (string) ( $canonical_brief['intent']['archetype'] ?? 'unknown' ) ) : ( $action_request ? wpae_llm_detect_block_archetype( $message ) : '' );
-	if ( isset( $editor_context_input['canonical_brief'] ) && ! in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true ) ) { return new WP_Error( 'wpae_canonical_brief_family_unsupported', 'Переданное семейство Brief не поддерживается canonical create.', [ 'status' => 422, 'write_count' => 0 ] ); }
+	$registered_library_only_family = $action_archetype !== '' && array_key_exists( $action_archetype, wpae_llm_content_archetype_catalog() );
+	if ( $action_request && $design_pipeline_mode === 'active' && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && ! $targeted_design_repair && ! in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true ) && ! $registered_library_only_family ) {
+		return new WP_Error( 'wpae_design_family_unsupported', 'Семейство запроса не поддерживается typed production intake; legacy tree generation не запускалась, запись не выполнялась.', [ 'status' => 422, 'write_count' => 0, 'family' => $action_archetype, 'intake' => $canonical_intake_telemetry ] );
+	}
     if ( $design_pipeline_mode === 'active' && ( $vision_repair || $vision_regenerate || $targeted_design_repair ) && in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true ) && ( ! empty( $editor_context_input['replaces_operation'] ) || $selected_element_count > 0 ) ) {
         return new WP_Error( 'wpae_typed_repair_contract_required', 'Migrated repair требует точный server accepted contract и отдельное lifecycle действие; legacy regeneration запрещена.', [ 'status' => 409, 'write_count' => 0 ] );
     }
@@ -11027,7 +11051,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $selected_element_ids = is_array( $editor_context_input )
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
         : [];
-    $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
 	if ( $targeted_design_repair && ! wpae_llm_targeted_design_replacement_shape_valid( $message, $action_request, is_array( $editor_context_input ) ? $editor_context_input : [], $selected_element_ids ) ) {
 		return new WP_Error( 'wpae_design_replacement_scope_invalid', 'Безопасная замена требует один выбранный root, принадлежащую ему текущую операцию и запрос точечного изменения. Запись не выполнялась.', [ 'status' => 409, 'details' => [ 'selected_element_ids' => array_slice( $selected_element_ids, 0, 8 ), 'write_count' => 0 ] ] );
 	}
@@ -11158,7 +11181,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( $action_request && function_exists( 'wpae_brief_ir_parse' ) && function_exists( 'wpae_design_plan_from_brief' ) ) {
 		$brief_ir = ! empty( $services_brief )
 			? $services_brief
-			: wpae_brief_ir_parse( $message, [ 'audience' => is_array( $editor_context_input ) ? (string) ( $editor_context_input['audience'] ?? '' ) : '' ] );
+			: ( $migrated_active_create && ! empty( $canonical_brief ) ? $canonical_brief : wpae_brief_ir_parse( $message, [ 'audience' => is_array( $editor_context_input ) ? (string) ( $editor_context_input['audience'] ?? '' ) : '' ] ) );
 		$design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, $services_route_request ? array_merge( $services_planning_context, [ 'canonical_create' => true ] ) : array_merge( [ 'post_id' => $selected_post_id, 'canonical_create' => $migrated_active_create || $action_archetype === 'team' ], array_intersect_key( (array) $editor_context_input, array_flip( [ 'page_tokens', 'page_tokens_confirmed', 'page_tokens_source', 'page_tokens_viewport', 'reference_tokens', 'reference_tokens_confirmed', 'composition_record', 'composition_version', 'visual_profile' ] ) ) ) );
         $brief_validation = function_exists( 'wpae_brief_ir_validate' ) ? wpae_brief_ir_validate( $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
 		$plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1, $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
@@ -11174,10 +11197,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief_ir ) : '',
                 'locale' => $brief_ir['locale'] ?? 'und',
                 'archetype' => $brief_ir['intent']['archetype'] ?? 'unknown',
-                'intake_source' => $migrated_active_create ? ( isset( $editor_context_input['canonical_brief'] ) ? 'validated_local_brief' : 'deterministic_parser' ) : 'compatibility',
+	                'intake_source' => $migrated_active_create ? (string) ( $canonical_intake_telemetry['source'] ?? 'deterministic_parser' ) : 'compatibility',
                 'content_count' => count( (array) ( $brief_ir['content'] ?? [] ) ),
                 'ambiguity_count' => count( (array) ( $brief_ir['ambiguities'] ?? [] ) ),
-                'warnings' => array_values( (array) ( $brief_ir['warnings'] ?? [] ) ),
+				'warnings' => array_values( (array) ( $brief_ir['warnings'] ?? [] ) ),
+				'intake' => $migrated_active_create ? $canonical_intake_telemetry : [],
 				'validation' => $brief_validation,
 			],
 			'library_retrieval' => [ 'status' => $library_retrieval['status'] ?? 'completed', 'reason' => $library_retrieval['reason'] ?? 'retrieval_completed', 'called' => $library_retrieval_enabled ],
@@ -11430,12 +11454,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'model' => (string) ( $runtime['model'] ?? '' ),
 				'estimated_cost' => null,
 				'estimated_latency_ms' => null,
-				'route' => 'local_deterministic',
-				'provider_calls' => 0,
+				'route' => (int) ( $canonical_intake_telemetry['provider_calls'] ?? 0 ) > 0 ? 'provider_typed_intake_then_local_deterministic' : 'local_deterministic',
+				'provider_calls' => (int) ( $canonical_intake_telemetry['provider_calls'] ?? 0 ),
 			];
             $accepted_prepared = null;
             if ( $migrated_active_create ) {
-				$accepted_prepared = wpae_accepted_contract_prepare( $brief_ir, $design_plan_v1, $ir_compiled['elementor_data'], [], '', (array) ( $ir_compiled['report']['native_roundtrip'] ?? [] ), [ 'route' => (string) ( $design_pipeline_trace['preflight']['route'] ?? 'local_deterministic' ), 'provider_calls' => (int) ( $design_pipeline_trace['preflight']['provider_calls'] ?? 0 ), 'provider_call_count_source' => 'design_pipeline_preflight' ] );
+				$accepted_prepared = wpae_accepted_contract_prepare( $brief_ir, $design_plan_v1, $ir_compiled['elementor_data'], [], '', (array) ( $ir_compiled['report']['native_roundtrip'] ?? [] ), [ 'route' => (string) ( $design_pipeline_trace['preflight']['route'] ?? 'local_deterministic' ), 'provider_calls' => (int) ( $design_pipeline_trace['preflight']['provider_calls'] ?? 0 ), 'provider_call_count_source' => 'canonical_intake_and_design_pipeline' ] );
                 if ( empty( $accepted_prepared['ok'] ) ) { return new WP_Error( 'wpae_contract_refused', $accepted_prepared['reason'], [ 'status' => 422, 'write_count' => 0 ] ); }
             }
 			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'expected_before_document' => $editor_document_before, 'expected_before_html_hash' => $editor_html_hash, 'frozen_decisions' => $migrated_active_create, 'accepted_signature' => wpae_llm_decision_signature( $ir_compiled['elementor_data'] ), 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity, 'replace_root_ids' => $replacement_requested ? $replacement_guard['root_ids'] : [], 'replacement_guard' => $replacement_requested ? [ 'operation_id' => $replacement_parent['operation_id'], 'operation_identity' => $replacement_parent['operation_identity'], 'revision' => $replacement_parent['revision'], 'root_ids' => $replacement_guard['root_ids'] ] : [] ] );
@@ -11478,7 +11502,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				wpae_design_operation_update( (string) $replacement_parent['operation_id'], [ 'current_state' => 'revised' ] );
 			}
             $active_steps = [
-                [ 'id' => 'brief_ir', 'status' => 'ok', 'message' => 'Запрос разобран в BriefIR v1 без потери exact_text и URL.', 'details' => $design_pipeline_trace['brief'] ],
+	                [ 'id' => 'brief_ir', 'status' => 'ok', 'message' => 'Frozen BriefIR собран до composition/Plan; exact copy и server-validated provider copy имеют раздельное происхождение.', 'details' => $design_pipeline_trace['brief'] ],
                 [ 'id' => 'design_plan', 'status' => 'ok', 'message' => 'Собран typed DesignPlan v1; модель не формировала Elementor tree.', 'details' => $design_pipeline_trace['plan'] ],
                 [ 'id' => 'capabilities', 'status' => 'ok', 'message' => 'WidgetCapabilityRegistry проверил native widgets и downgrade policy.', 'details' => $design_pipeline_trace['elementor_ir']['validation']['capabilities'] ?? [] ],
                 [ 'id' => 'layout_report', 'status' => 'ok', 'message' => 'LayoutReport проверил desktop/tablet/mobile width invariants.', 'details' => $design_pipeline_trace['layout'] ],
@@ -11498,8 +11522,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'steps' => $active_steps,
 				'diagnostics' => [
 					'action_path' => 'pipeline',
-					'provider_calls' => 0,
-					'route' => 'local_deterministic',
+					'provider_calls' => (int) ( $canonical_intake_telemetry['provider_calls'] ?? 0 ),
+					'route' => (int) ( $canonical_intake_telemetry['provider_calls'] ?? 0 ) > 0 ? 'provider_typed_intake_then_local_deterministic' : 'local_deterministic',
+					'intake' => $canonical_intake_telemetry,
 					'design_pipeline' => $design_pipeline_trace,
 					'operation_ledger' => $operation_ledger,
 					'write_count' => 1,

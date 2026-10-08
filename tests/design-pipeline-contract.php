@@ -602,7 +602,7 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v17', 'BriefIR provenance version tracks the current prompt parser contract' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v18', 'BriefIR provenance version tracks the current prompt parser contract' );
 $focus_test_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
 $focus_test_prompt = "Hero\nЗаголовок: «Изображение с явной точкой фокуса»\nКонтекст: «" . str_repeat( 'Ж', 120 ) . "»\nИзображение: {$focus_test_url}\nФокус кадра: центр слева\nAlt: «Архитектурное пространство для теста кадрирования»\nLicense: «Unsplash License»";
 $focus_test_brief = wpae_brief_ir_parse( $focus_test_prompt );

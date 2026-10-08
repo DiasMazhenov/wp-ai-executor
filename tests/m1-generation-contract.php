@@ -64,13 +64,13 @@ foreach ( $m1_refusals as $name => [ $prompt, $ctx ] ) {
 }
 $m1_local = wpae_brief_ir_parse( $m1_cases['hero_stack'][0] );
 $m1_local_success = $run_services_route( $m1_cases['hero_stack'][0], [], [], 'm1-local-success', false, 'active', 'active', [ 'canonical_brief' => $m1_local ] );
-check( ! empty( $m1_local_success['response']['ok'] ) && $m1_local_success['calls'] === 0, 'M1 locally supplied validated canonical Brief uses deterministic pipeline with structured adapter disabled' );
+check( ( $m1_local_success['error']['code'] ?? '' ) === 'wpae_client_brief_not_trusted' && $m1_local_success['calls'] === 0 && $m1_local_success['writes'] === 0 && $m1_local_success['page_data'] === $legacy_page, 'M1 rejects client-supplied canonical Brief before provider or transaction; intake owns canonicalization' );
 $m1_unknown = $m1_local;
 $m1_unknown['layout_constraints'][] = [ 'kind' => 'composition', 'value' => 'unknown_composition', 'source_span' => [ 0, 0 ], 'provenance' => [ 'source' => 'local_fixture' ] ];
 // Replace the existing explicit selection instead of creating an ambiguous duplicate.
 $m1_unknown['layout_constraints'] = array_values( array_filter( $m1_unknown['layout_constraints'], static fn( array $c ): bool => $c['kind'] !== 'composition' || $c['value'] === 'unknown_composition' ) );
 $m1_unknown_result = $run_services_route( $m1_cases['hero_stack'][0], [], [], 'm1-unknown', false, 'active', 'active', [ 'canonical_brief' => $m1_unknown ] );
-check( ! empty( $m1_unknown_result['error'] ) && $m1_unknown_result['writes'] === 0 && $m1_unknown_result['calls'] === 0, 'M1 unknown composition terminates typed route without fallback' );
+check( ( $m1_unknown_result['error']['code'] ?? '' ) === 'wpae_client_brief_not_trusted' && $m1_unknown_result['writes'] === 0 && $m1_unknown_result['calls'] === 0 && $m1_unknown_result['page_data'] === $legacy_page, 'M1 client cannot substitute an unknown composition through a submitted Brief' );
 $m1_pair_brief = wpae_brief_ir_parse( $m1_cases['benefits_grid'][0] );
 $m1_pair_brief['canonical_create'] = true;
 $m1_pair_plan = wpae_design_plan_from_brief( $m1_pair_brief, [ 'canonical_create' => true ] );
@@ -105,7 +105,7 @@ foreach ( [ 'unknown_ref', 'cross_group' ] as $reason ) {
  $bad = $m1_pricing_brief;
  $bad['pricing_items'][0]['description_ref'] = $reason === 'unknown_ref' ? 'unknown' : $bad['pricing_items'][1]['description_ref'];
  $result = $run_services_route( $m1_pricing, [], [], 'm1-local-' . $reason, false, 'active', 'active', [ 'canonical_brief' => $bad ] );
- check( ! empty( $result['error'] ) && $result['calls'] === 0 && $result['writes'] === 0 && $result['page_data'] === $legacy_page, 'M1 real chat refuses ' . $reason . ' typed binding without fallback' );
+ check( ( $result['error']['code'] ?? '' ) === 'wpae_client_brief_not_trusted' && $result['calls'] === 0 && $result['writes'] === 0 && $result['page_data'] === $legacy_page, 'M1 real chat refuses client-supplied ' . $reason . ' typed Brief before write' );
 }
 $bad_faq = "Создай FAQ\nВопрос 1: «Как начать?»\nОтвет 2: «Обсудим задачу.»\nВопрос 2: «Как согласовать?»\nОтвет 1: «Покажем план.»";
 $cross_faq = $run_services_route( $bad_faq, [], [], 'm1-cross-faq' );
