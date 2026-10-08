@@ -40,5 +40,15 @@
     "root_ids": [
       "620e60e"
     ]
+  },
+  "fresh_duplicate_editor_check": {
+    "browser_client_version": "26.1002.52244",
+    "new_tab_id": "6",
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "preview": "same Hero plus empty add-container region as prior dirty tab",
+    "publish_button_enabled": true,
+    "old_tab_id_closed_after_check": "5",
+    "guarded_undo_retried": false,
+    "page_write_count": 0
   }
 }

@@ -59,6 +59,8 @@ The required first read-only operation descriptor was refreshed for the exact D 
 
 Inspection showed the editor had an extra empty `e-empty` root `f8deb7e`. It first appeared after an agent UI action while trying to select/export native JSON and survives an editor reload. The current public DOM still contains only generated Hero root `620e60e`; the editor canvas contains `620e60e` plus `f8deb7e`, and Publish is enabled. This extra root is not part of the accepted D operation. No one has manually removed it, the page has not been published again, and the ownership guard was not bypassed. Since the editor model remains dirty and the public/page baseline is not `[]`, E was not submitted.
 
+As requested earlier for recovering a dirty editor, the existing Elementor URL was opened in a fresh Browser Use tab (`6`). It loaded the same Hero preview and empty “add container” area; Publish remained enabled. The prior dirty editor tab (`5`) was then closed. This reproduced the blocker on a fresh tab, so the guarded Undo was not retried and no page mutation was made.
+
 At this checkpoint, public root IDs are `[620e60e]`; editor canvas root IDs are `[620e60e, f8deb7e]`; the operation-owned root for D is `[620e60e]`. Full document restoration is **not confirmed**.
 
 The next state transition required by the acceptance contract is unresolved; until the dirty editor state is safely cleared through an authorized editor workflow and the D operation can be guarded-Undone, the five-acceptance gate remains open. A–C are three full acceptances; D is not counted; E has no write. Two full acceptances remain.

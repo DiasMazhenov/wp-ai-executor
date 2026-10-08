@@ -259,8 +259,12 @@
     "post_id": 5214,
     "public_root_ids": ["620e60e"],
     "editor_canvas_root_ids": ["620e60e", "f8deb7e"],
-    "editor_publish_button_enabled": true,
-    "baseline_restored": false,
+  "editor_publish_button_enabled": true,
+  "fresh_duplicate_editor_tab_id": "6",
+  "fresh_duplicate_editor_same_dirty_preview": true,
+  "original_dirty_editor_tab_closed": "5",
+  "undo_retried_after_duplicate": false,
+  "baseline_restored": false,
     "new_generation_after_D": false
   },
   "local_checks": {

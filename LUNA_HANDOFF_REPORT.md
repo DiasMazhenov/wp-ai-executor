@@ -2271,4 +2271,6 @@ The current gate is **3/5 full acceptances**. D's generation/render/readback/scr
 
 Publication follow-up: `d3f55168c9cbd41cbf874202cbeb85b5fd6cdcc8` pushed successfully. `git ls-remote` failed DNS resolution, but GitHub API compare independently confirmed remote `main` identical to that SHA (`ahead_by=0`, `behind_by=0`). No live status changed; gate remains 3/5.
 
+Dirty-editor recovery follow-up: a fresh Browser Use copy of the existing Elementor post 5214 was loaded in tab 6 and showed the same Hero plus empty add-container region with Publish enabled. In line with the user's prior instruction, tab 5 was closed after this check. No write or second Undo attempt was made; the same dirty-state guard remains active in the fresh tab.
+
 The report, exact refusal, root state, fixtures, assets, measurements, native comparisons, and screenshot gallery are in [audit](docs/audits/2026-10-09-semantic-media-crop-v301/REPORT.md) and [matrix](docs/audits/2026-10-09-semantic-media-crop-v301/acceptance-matrix.json). This is a factual incomplete checkpoint, not completion of the five-case task.
