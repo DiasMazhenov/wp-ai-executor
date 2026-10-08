@@ -2203,3 +2203,8 @@ Rerun local checks on unchanged v290 source: Design Pipeline 940; Flex Runtime 1
 ### Scope update — Services and Process — 2026-10-08
 
 The user has excluded Services and Process from any further tests. Preserve the existing D/E evidence and statuses in the M2.2 audit, but do not generate either family again under the current scope. Corrected Services remains a historical accepted result with its v289 first-render pill defect documented; Process remains `SITE_OVERLAP` / mobile visual PARTIAL. No live generation was performed for this scope update.
+
+
+## Screenshot housekeeping — 2026-10-08
+
+User-authorized cleanup removed 624 obsolete/unreferenced screenshot files (83.44 MiB), including 410 JPEG originals with PNG counterparts. Referenced screenshots, all current M2.2 PNGs and unique first-defect evidence are retained. Inventory: `docs/audits/2026-10-08-screenshot-cleanup/manifest.json`. No runtime or live-page change; acceptance statuses and Services/Process exclusions remain unchanged.

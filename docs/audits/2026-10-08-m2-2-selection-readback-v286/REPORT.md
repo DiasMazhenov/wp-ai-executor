@@ -167,3 +167,8 @@ Post 5214, root b553009, operation wpae-a73cf12d77b424d5, identity 1cab2083-cd88
 ![E Process public mobile, launcher overlap retained](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-08-m2-2-selection-readback-v286/screenshots/E-v290-public-mobile-390-greeting-collapsed.png)
 
 [Download E mobile viewport PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-08-m2-2-selection-readback-v286/screenshots/E-v290-public-mobile-390-greeting-collapsed.png) · [Download E mobile full-page PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-08-m2-2-selection-readback-v286/screenshots/E-v290-public-mobile-390-full-greeting-collapsed.png)
+
+
+## Screenshot housekeeping — 2026-10-08
+
+User-authorized cleanup removed 624 obsolete/unreferenced screenshot files (83.44 MiB), including 410 JPEG originals with PNG counterparts. Referenced screenshots, all current M2.2 PNGs and unique first-defect evidence are retained. Inventory: `docs/audits/2026-10-08-screenshot-cleanup/manifest.json`. No runtime or live-page change; acceptance statuses and Services/Process exclusions remain unchanged.

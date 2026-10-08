@@ -1261,3 +1261,10 @@ A–D are fully accepted. E passes content/native, desktop and mobile geometry, 
 ### User scope update — Services and Process — 2026-10-08
 
 The user explicitly excluded Services and Process from further testing. Retain the M2.2 D/E results as historical evidence, but do not run either family again under the current scope. Corrected Services remains historically accepted after the same-fixture v290 source fix, with the v289 first-render pill omission preserved as failure evidence. Process remains mobile visual/accessibility PARTIAL because the site-owned launcher overlaps step 3. This scope update made no live generation and does not change the existing five-generation gate (4/5 full acceptances).
+
+
+## Screenshot cleanup — 2026-10-08
+
+Удалены 624 устаревших screenshot-файла (83.44 MiB): 410 исходных JPEG с проверенными PNG-копиями и 214 неиспользуемых старых снимка. Актуальные PNG M2.2 A–E и доказательства первых дефектов сохранены; новые сломанные ссылки не создавались. Полный inventory/SHA: docs/audits/2026-10-08-screenshot-cleanup/manifest.json. Runtime и WordPress не менялись, gate остаётся 4/5; Services/Process не тестировались.
+
+По просьбе пользователя удалять устаревшие промежуточные снимки после проверки актуальной PNG-галереи и ссылок. Сохранять актуальные evidence и уникальные изображения, подтверждающие дефекты; runtime/assets и посторонние файлы не удалять.
