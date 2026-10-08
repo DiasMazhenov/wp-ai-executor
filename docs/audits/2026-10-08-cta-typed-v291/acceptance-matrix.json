@@ -1,0 +1,89 @@
+{
+  "schema": "wpae-live-acceptance-matrix-v1",
+  "stage": "canonical typed CTA",
+  "post_id": 5214,
+  "source_version": "v02.11.291",
+  "source_commit": "261b74e519151257472fb95cba7fd74516ace331",
+  "scope": {
+    "new_live_generation_count": 1,
+    "repeat_count": 0,
+    "manual_repair_count": 0,
+    "excluded_families": [
+      "Services",
+      "Process"
+    ],
+    "historical_A_D_reused": true,
+    "historical_E_status_preserved": "PARTIAL_SITE_OVERLAP"
+  },
+  "cumulative_gate": {
+    "historical_full_acceptances_A_D": 4,
+    "historical_partial_E": 1,
+    "new_full_acceptance_F": 1,
+    "full_acceptance_generations_A_D_plus_F": 5,
+    "claim": "A-D plus new F are five full acceptance generations; historical A-E are not described as 5/5 because E remains partial."
+  },
+  "initial_baseline": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "publish_disabled": true,
+    "interpretation": "saved empty page baseline per user clarification"
+  },
+  "scenario_F": {
+    "family": "CTA",
+    "fixture": "fixtures/F-cta-exact-request.txt",
+    "route": "ordinary_plugin_chat",
+    "requested_record": "cta.split_actions@1",
+    "selected_profile": "editorial_light",
+    "provider_calls": 0,
+    "transaction_write_count": 1,
+    "operation_id": "wpae-f64ba26b8ce79dfd",
+    "identity": "64a44801-5140-4753-96be-d77cf318755f",
+    "root_id": "d6020a0",
+    "post_publish_reload_revision": 5,
+    "brief_sha256": "4f7306df32fae5a020e48c98e2645e8f00d5c3d47a2169889624277e92bb3881",
+    "plan_sha256": "6354c21fc7a7ec02ebb9b3d42185f250fc578e572183d66ad043206a5c21a195",
+    "statuses": {
+      "content_fidelity": "PASS",
+      "native_topology_and_readback": "PASS",
+      "lifecycle_publish_reload": "PASS",
+      "public_desktop_geometry": "PASS",
+      "public_mobile_geometry": "PASS",
+      "visual_composition": "PASS_WITH_STATED_LIMITS",
+      "operation_scoped_undo": "PASS"
+    },
+    "measurements": {
+      "public_desktop_css_viewport": "1280x900",
+      "public_desktop_client_width": 1280,
+      "public_desktop_png": "1280x900",
+      "public_mobile_css_viewport": "390x844",
+      "public_mobile_client_width": 390,
+      "public_mobile_png": "390x844",
+      "desktop_horizontal_overflow": false,
+      "mobile_horizontal_overflow": false
+    },
+    "native_json": "native-root-after-reload.json",
+    "screenshots": [
+      "screenshots/cta-public-desktop-1280x900.png",
+      "screenshots/cta-public-mobile-390x844.png"
+    ],
+    "final_roots_after_guarded_undo": [],
+    "final_baseline_restored": true,
+    "fixture_sha256": "1851910e5875a3c3d54b676317f97e79d88a5f99d8280f4bcc22f9002dd15e16"
+  },
+  "historical_scenarios": {
+    "A_D": {
+      "status": "four previously accepted scenarios retained without rerun",
+      "source_matrix": "../2026-10-08-m2-2-selection-readback-v286/acceptance-matrix.json"
+    },
+    "E": {
+      "family": "Process",
+      "status": "PARTIAL_SITE_OVERLAP",
+      "source_matrix": "../2026-10-08-m2-2-selection-readback-v286/acceptance-matrix.json"
+    }
+  },
+  "remaining_limits": [
+    "Only cta.split_actions received live generation; cta.centered is covered by local production-path regressions only.",
+    "Elementor system Accent is a decorative stock default, not confirmed as the site's semantic brand accent.",
+    "No distinct site PHP runtime version was captured during installation."
+  ]
+}

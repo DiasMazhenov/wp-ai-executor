@@ -1,0 +1,64 @@
+{
+  "schema": "wpae-live-generation-evidence-v1",
+  "post_id": 5214,
+  "initial_root_ids": [],
+  "source": {
+    "version": "v02.11.291",
+    "commit": "261b74e519151257472fb95cba7fd74516ace331",
+    "push_command": "reported_success",
+    "independent_remote_head": "not_confirmed_dns_failure"
+  },
+  "installation": {
+    "mechanism": "WP Pusher",
+    "scope": "WP AI Executor only",
+    "result": "Plugin was successfully updated",
+    "plugins_php_version": "v02.11.291",
+    "reloaded_editor_inline_version": "v02.11.291",
+    "site_php_runtime": "not separately collected"
+  },
+  "request": {
+    "fixture": "fixtures/F-cta-exact-request.txt",
+    "fixture_sha256": "1851910e5875a3c3d54b676317f97e79d88a5f99d8280f4bcc22f9002dd15e16",
+    "route": "ordinary_plugin_chat",
+    "selected_composition": "cta.split_actions@1",
+    "selected_profile": "editorial_light",
+    "selection_source": "UI selectors before submit",
+    "plan_decision_source": "explicit_record"
+  },
+  "accepted": {
+    "record_id": "cta.split_actions",
+    "record_version": 1,
+    "record_hash": "e71681d425d30140c3576cc420bd9b9d04108aeb21b2c113d0f278c3c7c74c74",
+    "profile": "editorial_light",
+    "profile_source": "ui_selector",
+    "brief_sha256": "4f7306df32fae5a020e48c98e2645e8f00d5c3d47a2169889624277e92bb3881",
+    "plan_sha256": "6354c21fc7a7ec02ebb9b3d42185f250fc578e572183d66ad043206a5c21a195"
+  },
+  "generation": {
+    "provider_calls": 0,
+    "transaction_write_count": 1,
+    "repeat_or_repair": false,
+    "publish": "completed",
+    "editor_reload_readback": "pass"
+  },
+  "operation": {
+    "operation_id": "wpae-f64ba26b8ce79dfd",
+    "identity": "64a44801-5140-4753-96be-d77cf318755f",
+    "root_ids": [
+      "d6020a0"
+    ],
+    "post_publish_reload_revision": 5,
+    "accepted_contract_id": "contract-85ddb2c86ddb27ec0484e098",
+    "accepted_contract_sha256": "85ddb2c86ddb27ec0484e098931f091358a002f9e9c0af2000ed701c3b7b7ea2",
+    "saved_document_sha256": "45fff04d66f1f423fa795c167a61f8503335c86c97714a7807eafe6f2f33607f",
+    "native_fingerprint": "f106f6882e21e904033496b3b8308939030e0f6478788aa4ffb27d8655c55178"
+  },
+  "undo": {
+    "scope": "operation wpae-f64ba26b8ce79dfd only",
+    "button_after_undo": "already_undone",
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "public_cta_text_present": false,
+    "restored_baseline": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "canvasEmpty": true,
+  "captured_at": "2026-10-08T09:26:15.418Z",
+  "operation": {
+    "disabled": true,
+    "text": "Отменить создание блока",
+    "title": "already_undone: wpae-f64ba26b8ce79dfd"
+  },
+  "publishButtons": [
+    {
+      "ariaDisabled": null,
+      "disabled": true
+    }
+  ],
+  "rootIds": [],
+  "title": "Редактировать \"Pricing Contract Live v123\" с помощью Elementor",
+  "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+  "viewport": {
+    "clientWidth": 1232,
+    "innerHeight": 923,
+    "innerWidth": 1232,
+    "scrollWidth": 1232
+  }
+}

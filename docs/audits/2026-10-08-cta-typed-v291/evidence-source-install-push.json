@@ -1,0 +1,30 @@
+{
+  "source_commit": "261b74e519151257472fb95cba7fd74516ace331",
+  "source_version": "v02.11.291",
+  "runtime_push": {
+    "command_reported_success": true,
+    "independent_remote_head_check": {
+      "command": "git ls-remote origin refs/heads/main",
+      "confirmed": false,
+      "error": "Could not resolve host: github.com"
+    }
+  },
+  "install": {
+    "mechanism": "WP Pusher",
+    "target": "WP AI Executor only",
+    "result": "Plugin was successfully updated",
+    "plugins_php_version": "v02.11.291",
+    "editor_inline_version_after_reload": "v02.11.291",
+    "site_php_runtime": "not separately collected"
+  },
+  "local_checks_at_runtime_commit": {
+    "design_pipeline_contract": "943 PASS",
+    "flex_generation_runtime": "1473 PASS",
+    "node": "20/20 PASS",
+    "elementor_patch_guard": "PASS",
+    "changed_php_lint": "PASS",
+    "template_catalog": "158 manifest / 156 retrievable / 156 previews PASS",
+    "package_probe": "253 manifest hashes / 0 mismatches; 4 scenarios PASS",
+    "git_diff_check": "PASS"
+  }
+}

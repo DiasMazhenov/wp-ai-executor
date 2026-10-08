@@ -1,0 +1,321 @@
+{
+  "capturedAt": "2026-10-08T09:17:34.992Z",
+  "images": [],
+  "nodes": [
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(97, 206, 112, 0.2)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "d6020a0",
+      "rect": {
+        "height": 378.1875,
+        "width": 390,
+        "x": 0,
+        "y": 46
+      },
+      "tag": "DIV",
+      "text": "ОБСУДИМ ПРОЕКТ\nПревратим идею в понятный план\nРасскажите о задаче — обсудим цели, ограничения и следующий шаг\nОбсудить проект\nПосмотреть работы",
+      "type": "container"
+    },
+    {
+      "computed": {
+        "alignItems": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "06a67aa",
+      "rect": {
+        "height": 174.1875,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "tag": "DIV",
+      "text": "ОБСУДИМ ПРОЕКТ\nПревратим идею в понятный план\nРасскажите о задаче — обсудим цели, ограничения и следующий шаг",
+      "type": "container"
+    },
+    {
+      "computed": {
+        "alignItems": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "8b3b9a4",
+      "rect": {
+        "height": 174.1875,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "tag": "DIV",
+      "text": "ОБСУДИМ ПРОЕКТ\nПревратим идею в понятный план\nРасскажите о задаче — обсудим цели, ограничения и следующий шаг",
+      "type": "container"
+    },
+    {
+      "computed": {
+        "alignItems": "center",
+        "background": "rgb(0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "081f181",
+      "rect": {
+        "height": 32.984375,
+        "width": 154.90625,
+        "x": 16,
+        "y": 86
+      },
+      "tag": "DIV",
+      "text": "ОБСУДИМ ПРОЕКТ",
+      "type": "container"
+    },
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "gap": "24px",
+        "justifyContent": "normal",
+        "lineHeight": "19.8px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "98b25a1",
+      "rect": {
+        "height": 19.796875,
+        "width": 128.90625,
+        "x": 29,
+        "y": 92.59375
+      },
+      "tag": "DIV",
+      "text": "ОБСУДИМ ПРОЕКТ",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "28px",
+        "fontWeight": "700",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "32.2px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "d9f8434",
+      "rect": {
+        "height": 76.40625,
+        "width": 358,
+        "x": 16,
+        "y": 118.984375
+      },
+      "tag": "DIV",
+      "text": "Превратим идею в понятный план",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "73a5bcf",
+      "rect": {
+        "height": 64.796875,
+        "width": 358,
+        "x": 16,
+        "y": 195.390625
+      },
+      "tag": "DIV",
+      "text": "Расскажите о задаче — обсудим цели, ограничения и следующий шаг",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "computed": {
+        "alignItems": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "href": null,
+      "id": "c08b4f3",
+      "rect": {
+        "height": 92,
+        "width": 358,
+        "x": 16,
+        "y": 292.1875
+      },
+      "tag": "DIV",
+      "text": "Обсудить проект\nПосмотреть работы",
+      "type": "container"
+    },
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "left"
+      },
+      "href": "#contact",
+      "id": "3f75e3e",
+      "rect": {
+        "height": 39,
+        "width": 168.0703125,
+        "x": 16,
+        "y": 292.1875
+      },
+      "tag": "DIV",
+      "text": "Обсудить проект",
+      "type": "widget",
+      "widget": "button.default"
+    },
+    {
+      "computed": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "left"
+      },
+      "href": "#projects",
+      "id": "691550b",
+      "rect": {
+        "height": 41,
+        "width": 192.6796875,
+        "x": 16,
+        "y": 343.1875
+      },
+      "tag": "DIV",
+      "text": "Посмотреть работы",
+      "type": "widget",
+      "widget": "button.default"
+    }
+  ],
+  "rootIds": [
+    "d6020a0",
+    "06a67aa",
+    "8b3b9a4",
+    "081f181",
+    "c08b4f3"
+  ],
+  "scroll": {
+    "bodyWidth": 390,
+    "clientWidth": 390,
+    "documentWidth": 390
+  },
+  "source": "public",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 390,
+    "dpr": 1,
+    "innerHeight": 844,
+    "innerWidth": 390
+  }
+}

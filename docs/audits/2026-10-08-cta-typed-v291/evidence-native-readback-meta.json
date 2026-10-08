@@ -1,0 +1,25 @@
+{
+  "source": "server-delivered ElementorConfig.initial_document extracted from reloaded editor",
+  "capturedAt": "2026-10-08T09:21:42.020Z",
+  "post_id": 5214,
+  "elementor_document_version": "4.1.1",
+  "editor_inline_wpae": "v02.11.291",
+  "publish_disabled": true,
+  "root_ids": [
+    "d6020a0"
+  ],
+  "exported_root_id": "d6020a0",
+  "tree_counts": {
+    "containers": 5,
+    "widgets": 5,
+    "elementor_widgets": {
+      "heading": 2,
+      "text-editor": 1,
+      "button": 2
+    },
+    "max_depth": 5,
+    "total_elements": 10
+  },
+  "export_string_bytes": 11202,
+  "max_depth_placeholder": false
+}

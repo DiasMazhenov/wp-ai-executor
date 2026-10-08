@@ -81,6 +81,12 @@ try {
     package_assert( $serialization_metadata_json !== false, 'UTF-8 diagnostic metadata JSON serialization failed: ' . $serialization_metadata_json_error );
     $serialization_metadata_round_trip = json_decode( $serialization_metadata_json, true );
     package_assert( $serialization_metadata_round_trip === $serialization_metadata, 'UTF-8 diagnostic metadata JSON did not round-trip.' );
+    $binary_payload_contract = [
+        'status' => $full_result_json === false ? 'NOT_APPLICABLE' : 'MEASURED',
+        'reason' => $full_result_json === false
+            ? 'The validator result embeds opaque archive file bytes; whole-result JSON is not the package transport contract. Hash and manifest validation are measured separately, while compact UTF-8 metadata is JSON-serialized and round-tripped.'
+            : 'The validator result was JSON-serializable; this probe still reports the measured encoding result and compact metadata separately.',
+    ];
 
     $bad_manifest = $manifest;
     $first_file = (string) array_key_first( $bad_manifest['files'] );
@@ -114,6 +120,8 @@ try {
             'full_result_json_encode' => $full_result_json !== false,
             'full_result_json_error' => $full_result_json_error,
             'full_result_json_bytes' => is_string( $full_result_json ) ? strlen( $full_result_json ) : null,
+            'full_result_json_scope' => 'validator result includes opaque archive file bytes; whole-result JSON is not the package transport contract',
+            'binary_payload_json_contract' => $binary_payload_contract,
             'metadata_json_encode' => $serialization_metadata_json !== false,
             'metadata_json_error' => $serialization_metadata_json_error,
             'metadata_round_trip' => $serialization_metadata_round_trip === $serialization_metadata,
