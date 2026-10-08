@@ -1281,9 +1281,19 @@ function wpae_elementor_ir_image_attachment_id_for_alt( array $media ): int {
 
 function wpae_elementor_ir_focal_position( $focal ): string {
 	if ( ! is_array( $focal ) || ! is_numeric( $focal['x'] ?? null ) || ! is_numeric( $focal['y'] ?? null ) ) { return ''; }
-	$x = round( max( 0, min( 1, (float) $focal['x'] ) ) * 100, 2 );
-	$y = round( max( 0, min( 1, (float) $focal['y'] ) ) * 100, 2 );
-	return rtrim( rtrim( number_format( $x, 2, '.', '' ), '0' ), '.' ) . '% ' . rtrim( rtrim( number_format( $y, 2, '.', '' ), '0' ), '.' ) . '%';
+	// Elementor's Image widget exposes a nine-position select, not arbitrary
+	// percentages. Keep the exact normalized focal point in Brief/Plan, but lower
+	// it to the closest supported native keyword pair instead of writing a value
+	// the control cannot represent. This is intentionally a coarse 3x3 mapping.
+	$axis = static function ( float $value, string $start, string $middle, string $end ): string {
+		$value = max( 0.0, min( 1.0, $value ) );
+		if ( $value < ( 1 / 3 ) ) { return $start; }
+		if ( $value > ( 2 / 3 ) ) { return $end; }
+		return $middle;
+	};
+	$horizontal = $axis( (float) $focal['x'], 'left', 'center', 'right' );
+	$vertical = $axis( (float) $focal['y'], 'top', 'center', 'bottom' );
+	return $vertical . ' ' . $horizontal;
 }
 
 function wpae_elementor_ir_service_image_radius( string $card_radius ): array {

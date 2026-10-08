@@ -278,11 +278,12 @@ function wpae_design_plan_media_render_policy( array $media, string $family, arr
 		$render['width'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
 		$render['shape'] = 'circle'; $render['radius_token'] = null;
 	} elseif ( $purpose === 'portrait' ) {
-		// Preserve the source aspect ratio at every breakpoint. The native image
-		// widget receives a width ceiling and no forced height, so mixed portrait
-		// aspect ratios remain natural instead of being stretched or cropped.
+		// Give every Team portrait the same responsive native frame. A definite
+		// height makes Elementor's object-fit control effective; contain preserves
+		// the complete source without distorting it or letting one tall portrait
+		// set the height of every card in its row.
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
-		$render['height'] = [ 'desktop' => 'auto', 'tablet' => 'auto', 'mobile' => 'auto' ];
+		$render['height'] = [ 'desktop' => '18rem', 'tablet' => '16rem', 'mobile' => '14rem' ];
 		$render['object_fit'] = 'contain';
 		$render['shape'] = 'rounded';
 	} elseif ( $family === 'portfolio' ) {
