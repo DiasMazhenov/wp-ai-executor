@@ -1,0 +1,387 @@
+{
+  "scenario": "E-faq-hybrid",
+  "post_id": 5214,
+  "source_version": "02.11.321",
+  "root_id": "12950c0",
+  "operation_id": "wpae-93f70e4672dc53e7",
+  "identity": "6bd622d3-c25c-47da-8cd7-8f606d9ae7be",
+  "revision": 6,
+  "accepted_record": "faq.native",
+  "profile": "default documented resolved values (no visual profile requested)",
+  "route": "provider_typed_intake_then_local_deterministic",
+  "provider_calls": 1,
+  "requested_model": "openrouter/free",
+  "returned_model": "dots-studio/dots-3-note-preview:free",
+  "provider": "AtlasCloud",
+  "http_status": 200,
+  "latency_ms": 32728,
+  "retry_count": 0,
+  "response_format": "json_schema",
+  "schema_sha256": "fe6ed8a63548b1c089134fdbe441e0aca04cc6e1fb73c94bb79383c7a9ed9bbe",
+  "brief_sha256": "47edbee94e7f2a016fb7ea17bf3cde3b9bff22071d4bd5b55ab46804eac34874",
+  "plan_sha256": "c320f170952f6542f23a12b6250a7a89bcc906049d0df20d244524a647614098",
+  "transaction_write_count": 1,
+  "transaction_write_count_after_reload": 0,
+  "contract_id": "contract-90329a72a5d7be6286e1f022",
+  "contract_sha256": "90329a72a5d7be6286e1f02266b09f73d7b757d11c366dcbf4376a66a5ca4175",
+  "saved_document_sha256": "919b6b0df336d6675b34dc28afb1f6406fbab778ab729601046cbaa4d7a12cb6",
+  "native_fingerprint": "323b249c245d4212d2f55de6f99f66fabdc53d321e44d5bc21482c3817f3a70f",
+  "before_after_native_tree_equal": true,
+  "native_widget_type": "accordion",
+  "item_count": 2,
+  "items": [
+    {
+      "question": "С чего начинается работа?",
+      "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов.",
+      "content_html": "<p>Работа начинается с обсуждения задачи, пожеланий и исходных материалов.</p>"
+    },
+    {
+      "question": "Что подготовить к первой встрече?",
+      "answer": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.",
+      "content_html": "<p>К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.</p>"
+    }
+  ],
+  "no_images": true,
+  "no_cta": true,
+  "layout": {
+    "desktop": {
+      "chat": null,
+      "images": 0,
+      "items": [
+        {
+          "content": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов.",
+          "contentDisplay": "block",
+          "contentOverflow": "visible",
+          "contentRect": {
+            "h": 66.3984375,
+            "w": 1090,
+            "x": 95,
+            "y": 177.5
+          },
+          "expanded": "true",
+          "role": "button",
+          "tag": "DIV",
+          "title": "С чего начинается работа?",
+          "titleRect": {
+            "h": 48.5,
+            "w": 1090,
+            "x": 95,
+            "y": 129
+          },
+          "titleStyle": {
+            "align": "start",
+            "color": "rgb(51, 51, 51)",
+            "font": "16px",
+            "line": "16px",
+            "padding": "16px",
+            "weight": "700"
+          }
+        },
+        {
+          "content": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.",
+          "contentDisplay": "none",
+          "contentOverflow": "visible",
+          "contentRect": {
+            "h": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0
+          },
+          "expanded": "false",
+          "role": "button",
+          "tag": "DIV",
+          "title": "Что подготовить к первой встрече?",
+          "titleRect": {
+            "h": 48.5,
+            "w": 1090,
+            "x": 95,
+            "y": 244.8984375
+          },
+          "titleStyle": {
+            "align": "start",
+            "color": "rgb(51, 51, 51)",
+            "font": "16px",
+            "line": "16px",
+            "padding": "16px",
+            "weight": "700"
+          }
+        }
+      ],
+      "root": true,
+      "rootRect": {
+        "h": 358.3984375,
+        "w": 1280,
+        "x": 0,
+        "y": 32
+      },
+      "rootStyle": {
+        "align": "normal",
+        "bg": "rgba(97, 206, 112, 0.2)",
+        "display": "flex",
+        "flex": "column",
+        "gap": "normal",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 32px"
+      },
+      "rootText": "С чего начинается работа?\n\nРабота начинается с обсуждения задачи, пожеланий и исходных материалов.\n\nЧто подготовить к первой встрече?",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "viewport": {
+        "clientHeight": 720,
+        "clientWidth": 1280,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollWidth": 1280
+      },
+      "widgets": "elementor-element elementor-element-c457442 wpae-faq-accordion elementor-widget elementor-widget-accordion"
+    },
+    "mobile_first_open": {
+      "fixed": [
+        {
+          "cls": "wpdsac-chat wpdsac-position--bottom-right",
+          "rect": {
+            "bottom": 820,
+            "height": 60,
+            "left": 306,
+            "right": 366,
+            "top": 760,
+            "width": 60,
+            "x": 306,
+            "y": 760
+          },
+          "text": "AI-Dana"
+        }
+      ],
+      "items": [
+        {
+          "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов.",
+          "answerRect": {
+            "h": 82.3984375,
+            "w": 340,
+            "x": 25,
+            "y": 135.5
+          },
+          "ariaControls": "elementor-tab-content-2051",
+          "ariaExpanded": "true",
+          "clientHeight": 82,
+          "display": "block",
+          "overflow": "visible",
+          "question": "С чего начинается работа?",
+          "role": "button",
+          "scrollHeight": 82,
+          "tabindex": "0",
+          "titleColor": "rgb(51, 51, 51)",
+          "titleFont": "16px",
+          "titleLine": "16px",
+          "titleRect": {
+            "h": 44.5,
+            "w": 340,
+            "x": 25,
+            "y": 91
+          }
+        },
+        {
+          "answer": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.",
+          "answerRect": {
+            "h": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0
+          },
+          "ariaControls": "elementor-tab-content-2052",
+          "ariaExpanded": "false",
+          "clientHeight": 0,
+          "display": "none",
+          "overflow": "visible",
+          "question": "Что подготовить к первой встрече?",
+          "role": "button",
+          "scrollHeight": 0,
+          "tabindex": null,
+          "titleColor": "rgb(51, 51, 51)",
+          "titleFont": "16px",
+          "titleLine": "16px",
+          "titleRect": {
+            "h": 44.5,
+            "w": 340,
+            "x": 25,
+            "y": 218.8984375
+          }
+        }
+      ],
+      "root": {
+        "bg": "rgba(97, 206, 112, 0.2)",
+        "overflow": "visible",
+        "rect": {
+          "h": 262.3984375,
+          "w": 390,
+          "x": 0,
+          "y": 46
+        },
+        "text": "С чего начинается работа?\n\nРабота начинается с обсуждения задачи, пожеланий и исходных материалов.\n\nЧто подготовить к первой встрече?"
+      },
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "viewport": {
+        "clientHeight": 844,
+        "clientWidth": 390,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "scrollHeight": 844,
+        "scrollWidth": 390
+      }
+    },
+    "mobile_second_open": {
+      "clientWidth": 390,
+      "items": [
+        {
+          "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов.",
+          "answerRect": {
+            "h": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0
+          },
+          "clientHeight": 0,
+          "display": "none",
+          "open": "false",
+          "overflow": "visible",
+          "q": "С чего начинается работа?",
+          "scrollHeight": 0,
+          "titleRect": {
+            "h": 44.5,
+            "w": 340,
+            "x": 25,
+            "y": 91
+          }
+        },
+        {
+          "answer": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.",
+          "answerRect": {
+            "h": 178.3984375,
+            "w": 340,
+            "x": 25,
+            "y": 181
+          },
+          "clientHeight": 178,
+          "display": "block",
+          "open": "true",
+          "overflow": "visible",
+          "q": "Что подготовить к первой встрече?",
+          "scrollHeight": 178,
+          "titleRect": {
+            "h": 44.5,
+            "w": 340,
+            "x": 25,
+            "y": 136.5
+          }
+        }
+      ],
+      "rootRect": {
+        "h": 358.3984375,
+        "w": 390,
+        "x": 0,
+        "y": 46
+      },
+      "scrollWidth": 390,
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    "desktop_second_open": {
+      "clientWidth": 1280,
+      "items": [
+        {
+          "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов.",
+          "clientHeight": 0,
+          "display": "none",
+          "expanded": "false",
+          "overflow": "visible",
+          "question": "С чего начинается работа?",
+          "rect": {
+            "h": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0
+          },
+          "scrollHeight": 0,
+          "titleRect": {
+            "h": 48.5,
+            "w": 1090,
+            "x": 95,
+            "y": 129
+          }
+        },
+        {
+          "answer": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.",
+          "clientHeight": 114,
+          "display": "block",
+          "expanded": "true",
+          "overflow": "visible",
+          "question": "Что подготовить к первой встрече?",
+          "rect": {
+            "h": 114.3984375,
+            "w": 1090,
+            "x": 95,
+            "y": 227
+          },
+          "scrollHeight": 114,
+          "titleRect": {
+            "h": 48.5,
+            "w": 1090,
+            "x": 95,
+            "y": 178.5
+          }
+        }
+      ],
+      "root": {
+        "overflow": "visible",
+        "rect": {
+          "h": 406.3984375,
+          "w": 1280,
+          "x": 0,
+          "y": 32
+        }
+      },
+      "scrollWidth": 1280,
+      "viewport": [
+        1280,
+        720
+      ]
+    }
+  },
+  "visual_review": {
+    "vision_score": 92,
+    "vision_confidence": 95,
+    "vision_claim": "white card on dark background",
+    "verified_observation": "screenshots and DOM show white Accordion card on pale green rgba(97,206,112,.2), so background description is inaccurate; no fixes applied"
+  },
+  "screenshots": {
+    "first_editor": {
+      "path": "screenshots/E-faq-first-editor-v321.png",
+      "css_viewport": "1232x923",
+      "png": "1232x923"
+    },
+    "public_desktop_first": {
+      "path": "screenshots/E-faq-public-desktop-first-open-v321.png",
+      "css_viewport": "1280x720",
+      "png": "1280x720"
+    },
+    "public_desktop_second": {
+      "path": "screenshots/E-faq-public-desktop-second-open-v321.png",
+      "css_viewport": "1280x720",
+      "png": "1280x720"
+    },
+    "public_mobile_first": {
+      "path": "screenshots/E-faq-public-mobile-first-open-390x844-v321.png",
+      "css_viewport": "390x844",
+      "png": "390x844"
+    },
+    "public_mobile_second": {
+      "path": "screenshots/E-faq-public-mobile-second-open-390x844-v321.png",
+      "css_viewport": "390x844",
+      "png": "390x844"
+    }
+  }
+}

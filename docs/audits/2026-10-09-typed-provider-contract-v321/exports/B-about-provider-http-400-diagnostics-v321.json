@@ -1,0 +1,38 @@
+{
+  "case": "B-about-hybrid",
+  "post_id": 5214,
+  "source_version": "v02.11.321",
+  "source_commit": "40c686b",
+  "fixture": "fixtures/B-about-hybrid.txt",
+  "fixture_sha256": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+  "status": "NO_WRITE_PROVIDER_FAILURE",
+  "attempt_diagnostics": {
+    "schema": "wpae-intake-failure-diagnostics-v1",
+    "intake": {
+      "source": "provider_typed_intake",
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "provider_calls": 1,
+      "latency_ms": 1769,
+      "retry_count": 0,
+      "retry_reason": "",
+      "first_finish_reason": "",
+      "finish_reason": "",
+      "refusal": "provider_http_failure",
+      "http_status": 400
+    },
+    "validation": {
+      "ok": false,
+      "errors": []
+    }
+  },
+  "write_count": 0,
+  "root_ids": [],
+  "operation_id": null,
+  "reason_assessment": "HTTP 400 is confirmed; provider response body and endpoint-specific reason were not exposed, so the underlying cause remains unknown. No retry was sent.",
+  "baseline_after_refusal": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "publish_disabled": true
+  }
+}

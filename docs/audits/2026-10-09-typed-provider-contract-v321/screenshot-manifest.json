@@ -1,0 +1,248 @@
+{
+  "schema": "wpae-live-screenshot-manifest-v1",
+  "source_version": "v02.11.321",
+  "post_id": 5214,
+  "note": "CSS viewport is measured separately from PNG raster dimensions. A/B are no-write editor diagnostics and are not accepted output screenshots.",
+  "screenshots": [
+    {
+      "case": "C",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish and editor reload",
+      "root_id": "a90c6ae",
+      "operation_id": "wpae-f11d9d469dbabb84",
+      "revision": 5,
+      "css_viewport": "1280x720",
+      "png": "screenshots/C-benefits-public-desktop-after-reload-v321.png",
+      "png_dimensions_px": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_sha256": "b44b34507b5442d309ce8cb10ada24e81ba25eca6f82dde5a907297cc491f894",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/C-benefits-public-desktop-after-reload-v321.jpg",
+      "source_jpeg_sha256": "7c1613f59b2d26d62e37e8bc03645229618103de08877504ea2632635cc0dcff"
+    },
+    {
+      "case": "C",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish and editor reload",
+      "root_id": "a90c6ae",
+      "operation_id": "wpae-f11d9d469dbabb84",
+      "revision": 5,
+      "css_viewport": "390x844",
+      "png": "screenshots/C-benefits-public-mobile-after-reload-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 390,
+        "height": 844
+      },
+      "png_sha256": "199bafbc0f80c29010d65701567bac21acafb07fcdefef575c4552189f9184ac",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/C-benefits-public-mobile-after-reload-390x844-v321.jpg",
+      "source_jpeg_sha256": "899c1a1d1494816bfc579fb4e6b0446e480a358445ee4f05442ebcfe792b1e52"
+    },
+    {
+      "case": "C",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "full page after Publish and editor reload",
+      "root_id": "a90c6ae",
+      "operation_id": "wpae-f11d9d469dbabb84",
+      "revision": 5,
+      "css_viewport": "390x844",
+      "png": "screenshots/C-benefits-public-mobile-full-after-reload-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 390,
+        "height": 844
+      },
+      "png_sha256": "9e377cdf3d243c9f9f0d02cf3b7ac10e4acf9e06890476b2ff0c223fb6962f1c",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/C-benefits-public-mobile-full-after-reload-390x844-v321.jpg",
+      "source_jpeg_sha256": "4248191a3e258672a9aeb78698871db9adfeeb733dd5811a189c4a9126e5dd10"
+    },
+    {
+      "case": "A",
+      "post_id": 5214,
+      "source": "editor",
+      "phase": "after provider no-write refusal",
+      "root_id": null,
+      "operation_id": null,
+      "revision": null,
+      "css_viewport": null,
+      "png": "screenshots/A-hero-provider-http-400-editor-v321.png",
+      "png_dimensions_px": {
+        "width": 1232,
+        "height": 923
+      },
+      "png_sha256": "5c92daa2d902d3df585ccde87e9da56b6b40d0b40ed7ead14744ba8d788ced3c",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/A-hero-provider-http-400-editor-v321.jpg",
+      "source_jpeg_sha256": "87a6f13677b438c55fa26917f583f2efc5fe348131773a8ff94066310a362207"
+    },
+    {
+      "case": "B",
+      "post_id": 5214,
+      "source": "editor",
+      "phase": "after provider no-write refusal",
+      "root_id": null,
+      "operation_id": null,
+      "revision": null,
+      "css_viewport": null,
+      "png": "screenshots/B-about-provider-failure-editor-v321.png",
+      "png_dimensions_px": {
+        "width": 1232,
+        "height": 923
+      },
+      "png_sha256": "9ff8264af616f0a7d2a803948c07836959da69b002c9051249a62d34e193fcb3",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/B-about-provider-failure-editor-v321.jpg",
+      "source_jpeg_sha256": "e3b143c29ac9f22d4ffc842873164813c2462d9abe129cab32e95cc5cf3b2f38"
+    },
+    {
+      "case": "D",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish and editor reload",
+      "root_id": "1b719d9",
+      "operation_id": "wpae-535444eed4e31760",
+      "revision": 6,
+      "css_viewport": "1280x720",
+      "png": "screenshots/D-pricing-public-desktop-v321.png",
+      "png_dimensions_px": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_sha256": "f04987ca7d4684ffd9dd2307835b3427562b568d16ddb7621f1d11c1decf39f4",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/D-pricing-public-desktop-v321.jpg",
+      "source_jpeg_sha256": "435ebc9d4313014ab33da492aafc6ec0dc51759f2f53108fb9390074169c8cd6"
+    },
+    {
+      "case": "D",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "full page; initial site greeting overlaps CTA #project",
+      "root_id": "1b719d9",
+      "operation_id": "wpae-535444eed4e31760",
+      "revision": 6,
+      "css_viewport": "390x844",
+      "png": "screenshots/D-pricing-public-mobile-full-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 375,
+        "height": 1089
+      },
+      "png_sha256": "01ded7bdec4a0e6f96588b509c2c97a664d7c2c232e763851eaf41a494ff835d",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/D-pricing-public-mobile-full-390x844-v321.jpg",
+      "source_jpeg_sha256": "cb6d9a4ccf0f917ec4608fd1aba483eaad3c0973698cf38476b901b7d4d6e9f1"
+    },
+    {
+      "case": "D",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "full page after collapsing site chat via visible UI",
+      "root_id": "1b719d9",
+      "operation_id": "wpae-535444eed4e31760",
+      "revision": 6,
+      "css_viewport": "390x844",
+      "png": "screenshots/D-pricing-public-mobile-chat-collapsed-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 375,
+        "height": 1089
+      },
+      "png_sha256": "699b12469c92418f6dd6d5624b82eb61856cb18fc92874fd5228a04c2c1491c7",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/D-pricing-public-mobile-chat-collapsed-390x844-v321.jpg",
+      "source_jpeg_sha256": "860421a23e8bfaecf79f5fa5047f9a641c2f99b6a90cb2cd9a671a41b4657296"
+    },
+    {
+      "case": "E",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish/reload; first native Accordion answer open",
+      "root_id": "12950c0",
+      "operation_id": "wpae-93f70e4672dc53e7",
+      "revision": 6,
+      "css_viewport": "1280x720",
+      "png": "screenshots/E-faq-public-desktop-first-open-v321.png",
+      "png_dimensions_px": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_sha256": "31552bb908c9010eaa28f080539e144b6103c31555cedcc483cccaa7aaa14239",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/E-faq-public-desktop-first-open-v321.jpg",
+      "source_jpeg_sha256": "25a1552ad09ed28dbf19b362f1b2dce8ab8c6ae3582f48fb5a1aa4431fb9520e"
+    },
+    {
+      "case": "E",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish/reload; second native Accordion answer open",
+      "root_id": "12950c0",
+      "operation_id": "wpae-93f70e4672dc53e7",
+      "revision": 6,
+      "css_viewport": "1280x720",
+      "png": "screenshots/E-faq-public-desktop-second-open-v321.png",
+      "png_dimensions_px": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_sha256": "9b21e54ddf3d08aaaf691fb81bb4c7a527837c3f0a20093a31663c4d2d920e69",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/E-faq-public-desktop-second-open-v321.jpg",
+      "source_jpeg_sha256": "cd9c26fe6bdcb62b4705fff3f4766c44e8c44c33183de3b9c9eb36287169deb0"
+    },
+    {
+      "case": "E",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish/reload; first native Accordion answer open",
+      "root_id": "12950c0",
+      "operation_id": "wpae-93f70e4672dc53e7",
+      "revision": 6,
+      "css_viewport": "390x844",
+      "png": "screenshots/E-faq-public-mobile-first-open-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 390,
+        "height": 844
+      },
+      "png_sha256": "d5aabeab9e76070244952993aee4fd62f9535257330f6c2806e5eb560c71e288",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/E-faq-public-mobile-first-open-390x844-v321.jpg",
+      "source_jpeg_sha256": "5b3cab69f757a366cda826df1b8d33f824517d21fd9c1e78c6ccabfcde532031"
+    },
+    {
+      "case": "E",
+      "post_id": 5214,
+      "source": "public",
+      "phase": "after Publish/reload; second native Accordion answer open",
+      "root_id": "12950c0",
+      "operation_id": "wpae-93f70e4672dc53e7",
+      "revision": 6,
+      "css_viewport": "390x844",
+      "png": "screenshots/E-faq-public-mobile-second-open-390x844-v321.png",
+      "png_dimensions_px": {
+        "width": 390,
+        "height": 844
+      },
+      "png_sha256": "0cb7b8783ee1692c715201e2761839f8f498e2b20a55a2e67db99b2932b36c11",
+      "opened_and_visually_inspected": true,
+      "capture_workflow": "Browser Use existing tab screenshot bytes; JPEG source retained and PNG signature/dimensions checked",
+      "source_jpeg": "screenshots/E-faq-public-mobile-second-open-390x844-v321.jpg",
+      "source_jpeg_sha256": "2e89af38a16ebb76f8b9a858fc98e81756398467043aa5e43ed06d6e35181407"
+    }
+  ]
+}

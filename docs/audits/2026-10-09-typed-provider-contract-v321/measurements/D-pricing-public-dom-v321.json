@@ -1,0 +1,160 @@
+{
+  "desktop": {
+    "root": {
+      "height": 559.203125,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    },
+    "viewport": [
+      1280,
+      720
+    ],
+    "overflow": false,
+    "headings": [
+      {
+        "align": "start",
+        "font": "40px",
+        "rect": {
+          "height": 46,
+          "width": 161.015625,
+          "x": 70,
+          "y": 104
+        },
+        "tag": "H2",
+        "text": "Тарифы"
+      },
+      {
+        "align": "start",
+        "font": "18px",
+        "rect": {
+          "height": 23.3984375,
+          "width": 313.9921875,
+          "x": 95,
+          "y": 248.6015625
+        },
+        "tag": "H3",
+        "text": "Старт"
+      },
+      {
+        "align": "start",
+        "font": "32px",
+        "rect": {
+          "height": 38.3984375,
+          "width": 124.5625,
+          "x": 95,
+          "y": 284
+        },
+        "tag": "H3",
+        "text": "50 000 ₸"
+      },
+      {
+        "align": "start",
+        "font": "18px",
+        "rect": {
+          "height": 23.3984375,
+          "width": 313.9921875,
+          "x": 482.9921875,
+          "y": 248.6015625
+        },
+        "tag": "H3",
+        "text": "Проект"
+      },
+      {
+        "align": "start",
+        "font": "32px",
+        "rect": {
+          "height": 38.3984375,
+          "width": 142.359375,
+          "x": 482.9921875,
+          "y": 284
+        },
+        "tag": "H3",
+        "text": "150 000 ₸"
+      },
+      {
+        "align": "start",
+        "font": "18px",
+        "rect": {
+          "height": 23.3984375,
+          "width": 313.9921875,
+          "x": 870.984375,
+          "y": 248.6015625
+        },
+        "tag": "H3",
+        "text": "Сопровождение"
+      },
+      {
+        "align": "start",
+        "font": "32px",
+        "rect": {
+          "height": 38.3984375,
+          "width": 142.359375,
+          "x": 870.984375,
+          "y": 284
+        },
+        "tag": "H3",
+        "text": "210 000 ₸"
+      }
+    ],
+    "links": [
+      {
+        "href": "#start",
+        "rect": {
+          "h": 39,
+          "w": 154.3203125,
+          "x": 95,
+          "y": 455.203125
+        },
+        "text": "Выбрать Старт"
+      },
+      {
+        "href": "#project",
+        "rect": {
+          "h": 39,
+          "w": 165.0703125,
+          "x": 482.9921875,
+          "y": 455.203125
+        },
+        "text": "Выбрать Проект"
+      },
+      {
+        "href": "#support",
+        "rect": {
+          "h": 39,
+          "w": 229.1015625,
+          "x": 870.984375,
+          "y": 455.203125
+        },
+        "text": "Выбрать Сопровождение"
+      }
+    ],
+    "images": 0
+  },
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "documentScrollWidth": 375,
+    "root": {
+      "h": 1043.171875,
+      "w": 375,
+      "x": 0,
+      "y": 46
+    },
+    "rootText": "Тарифы\nВыберите подходящий тариф для вашего проекта.\nСтарт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение",
+    "cards": [],
+    "ctaOrder": [
+      "#start",
+      "#project",
+      "#support"
+    ],
+    "overlay_before_collapse": "greeting bubble overlapped CTA #project at x46,y699.6,w320,h48.4",
+    "overlay_after_collapse": "site chat collapsed via visible AI-Dana toggle; CTA #project visible in saved image"
+  },
+  "native_readback_equal": true,
+  "operation": "wpae-535444eed4e31760",
+  "root": "1b719d9",
+  "revision": 6
+}

@@ -1,0 +1,24 @@
+{
+  "editor": {
+    "canvasText": [],
+    "parseError": null,
+    "publishDisabled": true,
+    "rootCount": 0,
+    "rootIds": [],
+    "scriptFound": true,
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor"
+  },
+  "public": {
+    "clientWidth": 390,
+    "pricingRoot": false,
+    "rootCount": 0,
+    "scrollWidth": 390,
+    "textPresent": false,
+    "titlePresent": false,
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": [
+      390,
+      844
+    ]
+  }
+}

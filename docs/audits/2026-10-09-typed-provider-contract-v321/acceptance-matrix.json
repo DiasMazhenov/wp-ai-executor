@@ -1,0 +1,285 @@
+{
+  "schema": "wpae-typed-provider-final-live-matrix-v1",
+  "date": "2026-10-09",
+  "post_id": 5214,
+  "source": {
+    "version": "v02.11.321",
+    "commit": "40c686bc95fbcfc552bd10d5055f6f59277c60a4",
+    "installed_plugins_version": "v02.11.321",
+    "reloaded_editor_inline_version": "v02.11.321",
+    "push_reported_success": true,
+    "remote_head_independently_confirmed": false,
+    "remote_check_error": "git ls-remote failed to resolve github.com (DNS); remote HEAD is unknown"
+  },
+  "starting_baseline": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "publish_disabled": true,
+    "confirmed_before_first_submit": true
+  },
+  "gate": {
+    "required_full_acceptances": 5,
+    "full_acceptances": 3,
+    "remaining": 2,
+    "closed": false,
+    "order": [
+      "C",
+      "A",
+      "B",
+      "D",
+      "E"
+    ]
+  },
+  "cases": [
+    {
+      "id": "C",
+      "family": "Benefits",
+      "fixture": "fixtures/C-benefits-generated.txt",
+      "fixture_sha256": "901fc200330ed70d75924bf7ce10ffa62392aa8254bfc9d3b8fbdbd673fd1da7",
+      "status": "FULL_ACCEPTANCE",
+      "counted": true,
+      "route": "provider_typed_intake_then_local_deterministic",
+      "provider_calls": 1,
+      "requested_model": "openrouter/free",
+      "returned_model": "dots-studio/dots-3-note-preview:free",
+      "endpoint_provider": "AtlasCloud",
+      "http_status": 200,
+      "retry_count": 0,
+      "brief_sha256": "86943e43698f1662d358c059337d3345e79a8b96ced9557e40e4a541b92ce982",
+      "plan_sha256": "5eb80f029915ec461eefc2a52d184f620f909c086bfbaf4ae93940695f3bf38c",
+      "record": "benefits.editorial_list",
+      "profile": "editorial_light",
+      "root_id": "a90c6ae",
+      "operation_id": "wpae-f11d9d469dbabb84",
+      "identity": "cfe6d993-b70c-4209-8359-21699667d7f0",
+      "revision": 5,
+      "transaction_write_count": 1,
+      "native_readback": "exact structure and authored copy match after editor reload",
+      "public_viewports_css": {
+        "desktop": "1280x720",
+        "mobile": "390x844"
+      },
+      "screenshots": [
+        "screenshots/C-benefits-public-desktop-after-reload-v321.png",
+        "screenshots/C-benefits-public-mobile-after-reload-390x844-v321.png",
+        "screenshots/C-benefits-public-mobile-full-after-reload-390x844-v321.png"
+      ],
+      "undo": "guarded operation-scoped Undo; editor/server/public baseline [] confirmed"
+    },
+    {
+      "id": "A",
+      "family": "Hero",
+      "fixture": "fixtures/A-hero-generated.txt",
+      "fixture_sha256": "387237de2ea9c9e44b7658776a80a576da3d8c378b6e370fd36c77d54ba679df",
+      "status": "NO_WRITE_PROVIDER_FAILURE",
+      "counted": false,
+      "route": "ordinary_plugin_chat_provider_typed_intake_then_local_deterministic",
+      "provider_calls": 1,
+      "requested_model": "openrouter/free",
+      "returned_model": null,
+      "endpoint_provider": null,
+      "http_status": 400,
+      "retry_count": 0,
+      "refusal": "provider_http_failure",
+      "write_count": 0,
+      "operation_id": null,
+      "root_ids": [],
+      "underlying_cause": "UNKNOWN: provider body and endpoint-specific error were not exposed"
+    },
+    {
+      "id": "B",
+      "family": "About",
+      "fixture": "fixtures/B-about-hybrid.txt",
+      "fixture_sha256": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+      "status": "NO_WRITE_PROVIDER_FAILURE",
+      "counted": false,
+      "route": "ordinary_plugin_chat_provider_typed_intake_then_local_deterministic",
+      "provider_calls": 1,
+      "requested_model": "openrouter/free",
+      "returned_model": null,
+      "endpoint_provider": null,
+      "http_status": 400,
+      "retry_count": 0,
+      "refusal": "provider_http_failure",
+      "write_count": 0,
+      "operation_id": null,
+      "root_ids": [],
+      "underlying_cause": "UNKNOWN: provider body and endpoint-specific error were not exposed"
+    },
+    {
+      "id": "D",
+      "family": "Pricing",
+      "fixture": "fixtures/D-pricing-hybrid.txt",
+      "fixture_sha256": "87ae0b6fb5c208eaa9cd0ec16829e79d68ef76e8dbbd7972d59eb909c27cb111",
+      "status": "FULL_ACCEPTANCE",
+      "counted": true,
+      "route": "provider_typed_intake_then_local_deterministic",
+      "provider_calls": 1,
+      "requested_model": "openrouter/free",
+      "returned_model": "dots-studio/dots-3-note-preview:free",
+      "endpoint_provider": "AtlasCloud",
+      "http_status": 200,
+      "retry_count": 0,
+      "brief_sha256": "71327fa62178e82472148cb7fb4a2e277f8aea3ea34782ba9740c869a70e2c60",
+      "plan_sha256": "862b37508162dc31ee05d09cf7ecbe6589d7b8bec720f44dfb59db8b938b8466",
+      "record": "pricing.tiers",
+      "profile": "documented default; no visual profile requested",
+      "root_id": "1b719d9",
+      "operation_id": "wpae-535444eed4e31760",
+      "identity": "174c0455-43c9-43fc-9b6f-75e64f27c9f6",
+      "revision": 6,
+      "transaction_write_count": 1,
+      "native_readback": "exact pre-Publish selected tree equals independent selected native JSON after reload; owned check passed",
+      "content": {
+        "item_count": 3,
+        "tiers": [
+          "Старт",
+          "Проект",
+          "Сопровождение"
+        ],
+        "prices": [
+          "50 000 ₸/мес",
+          "150 000 ₸/год",
+          "210 000 ₸/год"
+        ],
+        "cta_hrefs": [
+          "#start",
+          "#project",
+          "#support"
+        ],
+        "images": 0
+      },
+      "geometry": {
+        "desktop_css_viewport": "1280x720",
+        "root": {
+          "x": 0,
+          "y": 32,
+          "width": 1280,
+          "height": 559.203
+        },
+        "desktop_cards": 3,
+        "card_rects": [
+          {
+            "x": 70,
+            "y": 223.602,
+            "width": 363.992,
+            "height": 295.602
+          },
+          {
+            "x": 457.992,
+            "y": 223.602,
+            "width": 363.992,
+            "height": 295.602
+          },
+          {
+            "x": 845.984,
+            "y": 223.602,
+            "width": 363.992,
+            "height": 295.602
+          }
+        ],
+        "cta_top_y": [
+          455.203,
+          455.203,
+          455.203
+        ],
+        "mobile_css_viewport": "390x844",
+        "mobile_root_width": 375,
+        "mobile_root_height": 1043.172,
+        "mobile_column_cards_natural_height": true,
+        "horizontal_overflow": false,
+        "overlay": "greeting bubble overlapped the second CTA in the first mobile frame; the existing chat was collapsed through its visible AI-Dana toggle and the CTA was fully visible in the additional frame"
+      },
+      "screenshots": [
+        "screenshots/D-pricing-public-desktop-v321.png",
+        "screenshots/D-pricing-public-mobile-full-390x844-v321.png",
+        "screenshots/D-pricing-public-mobile-chat-collapsed-390x844-v321.png"
+      ],
+      "undo": "guarded operation-scoped Undo; editor/server/public baseline [] confirmed",
+      "public_viewports_css": {
+        "desktop": "1280x720",
+        "mobile": "390x844"
+      }
+    },
+    {
+      "id": "E",
+      "family": "FAQ",
+      "fixture": "fixtures/E-faq-hybrid.txt",
+      "fixture_sha256": "0facb9da879e1a04d928757d7effd4a757852f4782423210ebfb914210ead475",
+      "status": "FULL_ACCEPTANCE",
+      "counted": true,
+      "route": "provider_typed_intake_then_local_deterministic",
+      "provider_calls": 1,
+      "requested_model": "openrouter/free",
+      "returned_model": "dots-studio/dots-3-note-preview:free",
+      "endpoint_provider": "AtlasCloud",
+      "http_status": 200,
+      "retry_count": 0,
+      "brief_sha256": "47edbee94e7f2a016fb7ea17bf3cde3b9bff22071d4bd5b55ab46804eac34874",
+      "plan_sha256": "c320f170952f6542f23a12b6250a7a89bcc906049d0df20d244524a647614098",
+      "record": "faq.native",
+      "profile": "documented default; no visual profile requested",
+      "root_id": "12950c0",
+      "operation_id": "wpae-93f70e4672dc53e7",
+      "identity": "6bd622d3-c25c-47da-8cd7-8f606d9ae7be",
+      "revision": 6,
+      "transaction_write_count": 1,
+      "native_readback": "exact selected native tree before Publish equals independent after-reload export; full editor/server comparison and owned model check passed",
+      "accordion_widget": "native Elementor accordion",
+      "items": [
+        {
+          "question": "С чего начинается работа?",
+          "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов."
+        },
+        {
+          "question": "Что подготовить к первой встрече?",
+          "answer": "К первой встрече можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей."
+        }
+      ],
+      "geometry": {
+        "desktop_css_viewport": "1280x720",
+        "desktop_root": {
+          "x": 0,
+          "y": 32,
+          "width": 1280,
+          "height": 358.398
+        },
+        "desktop_accordion": {
+          "x": 95,
+          "width": 1090
+        },
+        "desktop_second_answer_height": 114.398,
+        "mobile_css_viewport": "390x844",
+        "mobile_first_answer_height": 82.398,
+        "mobile_second_answer_height": 178.398,
+        "horizontal_overflow": false,
+        "clipping": false,
+        "title_control": "role=button; aria-expanded; aria-controls; tabindex=0 for active item"
+      },
+      "screenshots": [
+        "screenshots/E-faq-public-desktop-first-open-v321.png",
+        "screenshots/E-faq-public-desktop-second-open-v321.png",
+        "screenshots/E-faq-public-mobile-first-open-390x844-v321.png",
+        "screenshots/E-faq-public-mobile-second-open-390x844-v321.png"
+      ],
+      "vision_advisory": "score 92, confidence 95; background described as dark is contradicted by the opened screenshots and computed rgba(97,206,112,.2); no automated repair applied",
+      "undo": "guarded operation-scoped Undo; editor/server/public baseline [] confirmed",
+      "public_viewports_css": {
+        "desktop": "1280x720",
+        "mobile": "390x844"
+      }
+    }
+  ],
+  "final_root_set": {
+    "editor": [],
+    "public": [],
+    "saved_native": []
+  },
+  "repeat_policy": "A and B were attempted once on v321. They were not repeated because no source correction or other permitted changed precondition addressed the unknown HTTP 400 cause.",
+  "status_notes": [
+    "C, D and E are three complete accepted generations on the single installed source commit.",
+    "A and B are no-write failures and do not count toward the five-case gate.",
+    "The v321 technical fix is committed, reported pushed, and installed; independent remote HEAD is unverified due DNS.",
+    "The five-case acceptance is open with two cases remaining."
+  ]
+}

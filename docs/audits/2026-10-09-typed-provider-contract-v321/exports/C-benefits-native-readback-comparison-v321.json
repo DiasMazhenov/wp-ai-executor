@@ -1,0 +1,426 @@
+{
+  "accepted_root_ids": [
+    "a90c6ae"
+  ],
+  "reloaded_server_root_ids": [
+    "a90c6ae"
+  ],
+  "node_structure_equal": true,
+  "node_count_accepted": 20,
+  "node_count_reloaded": 20,
+  "native_widgets_accepted": 9,
+  "native_widgets_reloaded": 9,
+  "exact_copy_equal": true,
+  "accepted_copy": [
+    {
+      "id": "620c40b",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Планировка под повседневные сценарии"
+    },
+    {
+      "id": "1dfc6c5",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Планировка учитывает повседневные сценарии, делая пространство функциональным и удобным."
+    },
+    {
+      "id": "4fc61f4",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Работа с дневным светом"
+    },
+    {
+      "id": "b4e1b14",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Оптимальное использование дневного света создаёт светлую и живую атмосферу."
+    },
+    {
+      "id": "f979537",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Продуманное хранение"
+    },
+    {
+      "id": "4cbe18d",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Продуманная система хранения обеспечивает порядок и лёгкий доступ к вещам."
+    }
+  ],
+  "reloaded_copy": [
+    {
+      "id": "620c40b",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Планировка под повседневные сценарии"
+    },
+    {
+      "id": "1dfc6c5",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Планировка учитывает повседневные сценарии, делая пространство функциональным и удобным."
+    },
+    {
+      "id": "4fc61f4",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Работа с дневным светом"
+    },
+    {
+      "id": "b4e1b14",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Оптимальное использование дневного света создаёт светлую и живую атмосферу."
+    },
+    {
+      "id": "f979537",
+      "elType": "widget",
+      "widgetType": "heading",
+      "text": "Продуманное хранение"
+    },
+    {
+      "id": "4cbe18d",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "text": "Продуманная система хранения обеспечивает порядок и лёгкий доступ к вещам."
+    }
+  ],
+  "root_controls_equal": true,
+  "accepted_root_controls": {
+    "background_background": "classic",
+    "background_color": "#61ce7033",
+    "flex_direction": "column",
+    "flex_direction_tablet": "column",
+    "flex_direction_mobile": "column",
+    "padding": {
+      "unit": "rem",
+      "top": "5",
+      "right": "2",
+      "bottom": "5",
+      "left": "2",
+      "isLinked": false,
+      "sizes": []
+    },
+    "padding_tablet": {
+      "unit": "rem",
+      "top": "3.5",
+      "right": "2",
+      "bottom": "3.5",
+      "left": "2",
+      "isLinked": false,
+      "sizes": []
+    },
+    "padding_mobile": {
+      "unit": "rem",
+      "top": "2.5",
+      "right": "1",
+      "bottom": "2.5",
+      "left": "1",
+      "isLinked": false,
+      "sizes": []
+    },
+    "flex_gap": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    },
+    "flex_gap_tablet": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    },
+    "flex_gap_mobile": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    }
+  },
+  "reloaded_root_controls": {
+    "background_background": "classic",
+    "background_color": "#61ce7033",
+    "flex_direction": "column",
+    "flex_direction_tablet": "column",
+    "flex_direction_mobile": "column",
+    "padding": {
+      "unit": "rem",
+      "top": "5",
+      "right": "2",
+      "bottom": "5",
+      "left": "2",
+      "isLinked": false,
+      "sizes": []
+    },
+    "padding_tablet": {
+      "unit": "rem",
+      "top": "3.5",
+      "right": "2",
+      "bottom": "3.5",
+      "left": "2",
+      "isLinked": false,
+      "sizes": []
+    },
+    "padding_mobile": {
+      "unit": "rem",
+      "top": "2.5",
+      "right": "1",
+      "bottom": "2.5",
+      "left": "1",
+      "isLinked": false,
+      "sizes": []
+    },
+    "flex_gap": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    },
+    "flex_gap_tablet": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    },
+    "flex_gap_mobile": {
+      "unit": "rem",
+      "size": 2,
+      "column": "2",
+      "row": "2",
+      "isLinked": true
+    }
+  },
+  "item_container_rows_equal": true,
+  "accepted_item_containers": [
+    {
+      "id": "db3fe04",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "9897852",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "2e69921",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "8737346",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "411c1b1",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "61a5844",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "5d976b3",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "11893a6",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "1dd971a",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "763fd37",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    }
+  ],
+  "reloaded_item_containers": [
+    {
+      "id": "db3fe04",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "9897852",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "2e69921",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "8737346",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "411c1b1",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "61a5844",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "5d976b3",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "11893a6",
+      "direction": "row",
+      "gap": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "1dd971a",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "763fd37",
+      "direction": "column",
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    }
+  ]
+}

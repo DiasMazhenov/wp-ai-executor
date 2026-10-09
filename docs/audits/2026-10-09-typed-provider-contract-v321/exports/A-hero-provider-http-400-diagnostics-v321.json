@@ -1,0 +1,50 @@
+{
+  "case": "A-hero-generated",
+  "post_id": 5214,
+  "source_version": "v02.11.321",
+  "source_commit": "40c686b",
+  "fixture": "docs/audits/2026-10-09-typed-intake-copy-v320/fixtures/A-hero-generated.txt",
+  "fixture_sha256": "387237de2ea9c9e44b7658776a80a576da3d8c378b6e370fd36c77d54ba679df",
+  "route": "ordinary_plugin_chat_provider_typed_intake_then_local_deterministic",
+  "status": "NO_WRITE_PROVIDER_FAILURE",
+  "operation_id": null,
+  "root_ids": [],
+  "write_count": 0,
+  "provider_diagnostics": {
+    "source": "provider_typed_intake",
+    "provider": "openrouter",
+    "model": "openrouter/free",
+    "provider_calls": 1,
+    "latency_ms": 1150,
+    "retry_count": 0,
+    "retry_reason": "",
+    "first_finish_reason": "",
+    "finish_reason": "",
+    "refusal": "provider_http_failure",
+    "http_status": 400
+  },
+  "validation": {
+    "ok": false,
+    "errors": []
+  },
+  "observed_ui_error": "Typed content intake не прошёл schema/provenance проверки; запись не выполнялась. (intake refusal: provider_http_failure)",
+  "reason_assessment": "HTTP 400 is confirmed; provider response body and endpoint-specific reason were not exposed, so the underlying cause remains unknown. No retry was sent.",
+  "screenshot": {
+    "path": "docs/audits/2026-10-09-typed-provider-contract-v321/screenshots/A-hero-provider-http-400-editor-v321.png",
+    "source": "editor",
+    "css_viewport": {
+      "width": 1232,
+      "height": 923
+    },
+    "png_dimensions": {
+      "width": 1232,
+      "height": 923
+    },
+    "opened_and_inspected": true
+  },
+  "baseline_after_refusal": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "publish_disabled": true
+  }
+}

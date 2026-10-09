@@ -881,3 +881,13 @@ The v320 live matrix on post 5214 records four full results out of five requeste
 ### v320 audit publication record
 
 The report/evidence snapshot was first published in scoped commit `62eb4b808719db633ccb52f9520593370a18673f`; `git ls-remote origin refs/heads/main` independently returned the same SHA after push. This publication check does not change the 4/5 live gate or claim the remaining Benefits result.
+
+### Strict typed provider transport and retry boundary — v02.11.321
+
+The provider transport retains two explicit caller policies. Typed copy intake uses `typed_intake_strict`: normalized wire requests retain `response_format: {type: json_schema, json_schema: {name, strict, schema}}` and OpenRouter `provider.require_parameters=true`. The legacy structured-response downgrade remains scoped to its older non-typed caller. A missing compatible route or rejected typed response fails before any transaction; HTTP 200 alone is not accepted. Raw provider JSON never becomes Elementor structure.
+
+The typed intake allows one primary generation and at most one retry for bounded syntax/schema correction. Retry diagnostics may identify a malformed/truncated response, but the same family, exact copy, slot IDs, approved facts, and schema remain frozen. HTTP/transport errors are not blindly retried; semantic/provenance violations do not loop. Truncated or malformed output, schema mismatch, and budget exhaustion stop before the transaction boundary. Server-side schema and provenance validation remain required even when an endpoint supports strict structured outputs.
+
+Successful telemetry records requested and returned model separately, endpoint/provider when disclosed, format/schema fingerprint, HTTP and finish status, available token/reasoning usage, elapsed/remaining budget, retry cause, validation and write count. Undisclosed provider metadata stays null/unknown; credentials, authorization headers and unfiltered response bodies are excluded. The `openrouter/free` route can select different serving models. In the v321 final live pass, Benefits, Pricing and FAQ disclosed `dots-studio/dots-3-note-preview:free` on AtlasCloud and returned HTTP 200; Hero and About each returned generic HTTP 400 with only route/call/status diagnostics, so their specific upstream cause remains unknown and both stopped with zero writes.
+
+This contract stays within the existing `BriefIR → DesignPlan → ElementorIR → native compiler → validation → transaction/readback` path. It adds neither a second generator nor a family-specific copy planner. The complete code and live evidence are recorded in [the v321 audit](../audits/2026-10-09-typed-provider-contract-v321/REPORT.md).

@@ -1,0 +1,311 @@
+{
+  "content": [
+    {
+      "rect": {
+        "height": 45,
+        "width": 302,
+        "x": 72,
+        "y": 86
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "gap": "normal",
+        "height": "45px",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "H3",
+      "text": "Планировка под повседневные сценарии"
+    },
+    {
+      "rect": {
+        "height": 91.2,
+        "width": 302,
+        "x": 72,
+        "y": 143
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "91.1953px",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "DIV",
+      "text": "Планировка учитывает повседневные сценарии, делая пространство функциональным и удобным."
+    },
+    {
+      "rect": {
+        "height": 22.5,
+        "width": 233.5,
+        "x": 72,
+        "y": 250.2
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "gap": "normal",
+        "height": "22.5px",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "H3",
+      "text": "Работа с дневным светом"
+    },
+    {
+      "rect": {
+        "height": 91.2,
+        "width": 302,
+        "x": 72,
+        "y": 284.7
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "91.1953px",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "DIV",
+      "text": "Оптимальное использование дневного света создаёт светлую и живую атмосферу."
+    },
+    {
+      "rect": {
+        "height": 22.5,
+        "width": 211.6,
+        "x": 72,
+        "y": 391.9
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "gap": "normal",
+        "height": "22.5px",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "H3",
+      "text": "Продуманное хранение"
+    },
+    {
+      "rect": {
+        "height": 91.2,
+        "width": 302,
+        "x": 72,
+        "y": 426.4
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "91.1953px",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "tag": "DIV",
+      "text": "Продуманная система хранения обеспечивает порядок и лёгкий доступ к вещам."
+    }
+  ],
+  "document": {
+    "horizontalOverflow": false,
+    "scrollHeight": 844,
+    "scrollWidth": 390
+  },
+  "icons": [
+    {
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 16,
+        "y": 86
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "50px",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "text": ""
+    },
+    {
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 16,
+        "y": 250.2
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "50px",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "text": ""
+    },
+    {
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 16,
+        "y": 391.9
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "50px",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start"
+      },
+      "text": ""
+    }
+  ],
+  "images": [],
+  "inner": {
+    "rect": {
+      "height": 511.6,
+      "width": 358,
+      "x": 16,
+      "y": 46
+    },
+    "style": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(51, 51, 51)",
+      "display": "flex",
+      "flexDirection": "column",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "32px",
+      "height": "511.586px",
+      "lineHeight": "24px",
+      "margin": "0px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "40px 0px",
+      "textAlign": "start"
+    }
+  },
+  "operationId": "wpae-f11d9d469dbabb84",
+  "operationIdentity": "cfe6d993-b70c-4209-8359-21699667d7f0",
+  "postId": 5214,
+  "root": {
+    "rect": {
+      "height": 511.6,
+      "width": 390,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "color": "rgb(51, 51, 51)",
+      "display": "flex",
+      "flexDirection": "column",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "normal",
+      "height": "511.586px",
+      "lineHeight": "24px",
+      "margin": "0px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "textAlign": "start"
+    }
+  },
+  "rootId": "a90c6ae",
+  "source": "public_mobile_390x844",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  }
+}
