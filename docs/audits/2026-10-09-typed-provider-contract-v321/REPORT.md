@@ -27,7 +27,7 @@ OpenRouter documents structured-output support per endpoint, says support can va
 
 On v321, before publication, the project checks completed successfully: Design Pipeline Contract **986**, Flex Runtime **1596**, Node suites **27/27**, changed PHP lint, Elementor patch guard, catalog check and package probe (**253 hashes, zero mismatches; four scenarios**), and `git diff --check`. The scoped runtime commit is `40c686bc95fbcfc552bd10d5055f6f59277c60a4`.
 
-The runtime `git push` reported success. An independent `git ls-remote origin refs/heads/main` failed because `github.com` could not be resolved by DNS, so remote HEAD remains unverified. WP Pusher installed only WP AI Executor; the Plugins page showed v321 and the reloaded Elementor editor's inline configuration showed v321. No other plugin or site setting was changed. Source, push report, remote verification, install and editor version are separate statuses.
+The runtime `git push` reported success; the immediate `git ls-remote origin refs/heads/main` failed because `github.com` could not be resolved by DNS, leaving that first verification attempt inconclusive. The scoped audit commit `ab66563ba97a226be3a23ed2216f8ffac6ebb36b` was subsequently pushed, and an independent `git ls-remote` returned that SHA for `refs/heads/main`; this remote history includes runtime source commit `40c686bc95fbcfc552bd10d5055f6f59277c60a4`. WP Pusher installed only WP AI Executor; the Plugins page showed v321 and the reloaded Elementor editor's inline configuration showed v321. No other plugin or site setting was changed. Source, each push, remote verification, install and editor version are separate statuses.
 
 ## Case results
 
