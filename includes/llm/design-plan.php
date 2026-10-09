@@ -1353,6 +1353,17 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		$collection_implementation = $collection_implementation_default;
 	}
 	$item_surface_contract = wpae_design_plan_item_surface_contract( $record, $family, $values );
+	$cards_policy = [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'avatar_alignment' => 'start', 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ];
+	if ( $family === 'testimonials' && ( $item_surface_contract['mode'] ?? '' ) === 'card' ) {
+		// `align=left` aligns inside the card's padded content box. Freeze the
+		// surface inset too, so the native image can reach the card's start edge.
+		$cards_policy['avatar_edge_alignment'] = 'surface_start';
+		$cards_policy['avatar_edge_inset'] = [
+			'desktop' => (string) ( $item_surface_contract['padding'] ?? '1.5rem' ),
+			'tablet' => (string) ( $item_surface_contract['padding_tablet'] ?? $item_surface_contract['padding'] ?? '1.25rem' ),
+			'mobile' => (string) ( $item_surface_contract['padding_mobile'] ?? $item_surface_contract['padding'] ?? '1rem' ),
+		];
+	}
 	$intro_text_align = (string) $pick( 'intro_text_align', 'left' );
 	if ( $family === 'cta' ) {
 		$explicit_cta_alignment = wpae_design_plan_constraint_value( $brief, 'cta_alignment' );
@@ -1381,7 +1392,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
 		'collection' => [ 'implementation' => $collection_implementation, 'axis' => $is_list ? 'list' : 'grid', 'alignment' => $collection_alignment, 'surface_alignment' => $collection_surface_alignment, 'column_sources' => $column_sources, 'width' => $collection_width, 'item_height' => $item_height_mode, 'item_count' => $item_count, 'columns' => $collection_columns, 'gap' => $collection_gap ],
 		'list_row' => $is_list && ( $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' ) ? [ 'icon_width' => $pick( 'list_icon_width', '44px' ), 'gap' => [ 'desktop' => $pick( 'list_item_gap_desktop', '1rem' ), 'tablet' => $pick( 'list_item_gap_tablet', '1rem' ), 'mobile' => $pick( 'list_item_gap_mobile', '0.75rem' ) ], 'copy_measure' => $pick( 'list_copy_measure', '48rem' ), 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ] ] : null,
-		'cards' => [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'avatar_alignment' => 'start', 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ],
+		'cards' => $cards_policy,
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 		'cta' => $cta_policy,
 	];
@@ -2506,6 +2517,15 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			// Older frozen plans predate this optional key; new plans own the
 			// testimonial avatar axis explicitly, and only start alignment is valid.
 			if ( array_key_exists( 'avatar_alignment', (array) $cards ) && ( $cards['avatar_alignment'] ?? '' ) !== 'start' ) { $errors[] = 'visual_policy_avatar_alignment_invalid'; }
+			if ( array_key_exists( 'avatar_edge_alignment', (array) $cards ) ) {
+				$record = wpae_composition_records()[ (string) ( $plan['composition_decision']['record_id'] ?? '' ) ] ?? [];
+				$expected_surface = $record ? wpae_design_plan_item_surface_contract( $record, (string) ( $plan['archetype'] ?? '' ), (array) ( $plan['resolved_visual']['values'] ?? [] ) ) : null;
+				$inset = (array) ( $cards['avatar_edge_inset'] ?? [] );
+				if ( ( $plan['archetype'] ?? '' ) !== 'testimonials' || ( $cards['avatar_edge_alignment'] ?? '' ) !== 'surface_start' || ! is_array( $expected_surface ) || ( $expected_surface['mode'] ?? '' ) !== 'card' ) { $errors[] = 'visual_policy_avatar_edge_alignment_invalid'; }
+				foreach ( [ 'desktop' => 'padding', 'tablet' => 'padding_tablet', 'mobile' => 'padding_mobile' ] as $device => $surface_key ) {
+					if ( ! wpae_design_plan_layout_measure_valid( $inset[ $device ] ?? null ) || ( $inset[ $device ] ?? null ) !== ( $expected_surface[ $surface_key ] ?? null ) ) { $errors[] = 'visual_policy_avatar_edge_inset_invalid:' . $device; }
+				}
+			}
 			foreach ( [ 'body_copy_gap', 'media_copy_gap', 'body_actions_gap' ] as $gap_key ) { if ( ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(?:px|rem|em)$/', (string) ( $cards[$gap_key] ?? '' ) ) ) { $errors[] = 'visual_policy_cards_spacing_invalid'; } }
 		}
 		$collection = (array) ( $visual_policy['collection'] ?? [] );

@@ -358,6 +358,59 @@ check( array_reduce( $intake_live_benefits_titles, static fn( bool $valid, array
 check( count( array_intersect( array_values( $intake_live_benefits_copy ), $intake_live_benefits_strings ) ) === 3 && ! array_filter( $intake_live_benefits_strings, static fn( string $text ): bool => str_contains( $text, 'images.unsplash.com' ) || str_contains( $text, '#contact' ) ), 'Benefits generated body text does not add media or CTA when forbidden' );
 check( str_contains( $intake_live_benefits_system_prompt, 'slot_id is a required schema field' ) && str_contains( $intake_live_benefits_system_prompt, 'sole exception to the prohibition on IDs' ) && str_contains( $intake_live_benefits_system_prompt, 'Elementor element IDs' ), 'Typed intake prompt explicitly distinguishes required Brief slot IDs from forbidden Elementor element IDs' );
 
+$intake_density_fixture_path = __DIR__ . '/../docs/audits/2026-10-10-generated-copy-density-v328/fixtures/C-benefits-grid-generated.txt';
+$intake_density_prompt = trim( (string) file_get_contents( $intake_density_fixture_path ) );
+$intake_density_base = wpae_brief_ir_parse( $intake_density_prompt );
+$intake_density_facts = wpae_brief_ir_approved_facts( $intake_density_base, $intake_density_prompt );
+$intake_density_slots = wpae_brief_ir_generated_copy_slots( $intake_density_base, $intake_density_prompt );
+$intake_density_fact_for = static function ( string $fragment, array $slot ) use ( $intake_density_facts ): ?string {
+	foreach ( $intake_density_facts as $fact ) {
+		$text = function_exists( 'mb_strtolower' ) ? mb_strtolower( (string) ( $fact['exact_text'] ?? '' ), 'UTF-8' ) : strtolower( (string) ( $fact['exact_text'] ?? '' ) );
+		$needle = function_exists( 'mb_strtolower' ) ? mb_strtolower( $fragment, 'UTF-8' ) : strtolower( $fragment );
+		if ( strpos( $text, $needle ) !== false && wpae_brief_ir_source_record_allowed_for_slot( $fact, $slot ) ) { return (string) ( $fact['id'] ?? '' ); }
+	}
+	return null;
+};
+$intake_density_copy = [
+	'На первой встрече обсуждаем пожелания и ограничения, затем согласуем планировку до чертежей.',
+	'При проектировании учитываем дневной свет.',
+	'Учитываем повседневное движение и хранение.',
+	'Студия проектирует жилые и общественные пространства.',
+];
+$intake_density_refs = [ [ 'первой встрече', 'перед чертежами' ], [ 'дневной свет' ], [ 'повседневное движение' ], [ 'жилые и общественные пространства' ] ];
+$intake_density_payload = static function ( bool $unsupported ) use ( $intake_density_slots, $intake_density_copy, $intake_density_refs, $intake_density_fact_for ): array {
+	$payload = [ 'family' => 'benefits', 'generated' => [] ];
+	foreach ( $intake_density_slots as $index => $slot ) {
+		$slot_context = [ 'slot_id' => (string) $slot['slot_id'], 'role' => 'feature_body', 'group_id' => 'benefits_' . ( $index + 1 ) ];
+		$text = (string) ( $intake_density_copy[$index] ?? '' );
+		if ( $unsupported && $index === 0 ) { $text .= ' Подходит для проектов любого масштаба.'; }
+		$refs = [];
+		foreach ( (array) ( $intake_density_refs[$index] ?? [] ) as $fragment ) {
+			$ref = $intake_density_fact_for( (string) $fragment, $slot_context );
+			if ( $ref !== null && $ref !== '' ) { $refs[] = $ref; }
+		}
+		$payload['generated'][] = [ 'slot_id' => (string) $slot['slot_id'], 'text' => $text, 'fact_refs' => array_values( array_unique( $refs ) ) ];
+	}
+	return $payload;
+};
+$intake_density_retry = $run_services_route( $intake_density_prompt, [
+	provider_reply( wp_json_encode( $intake_density_payload( true ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+	provider_reply( wp_json_encode( $intake_density_payload( false ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+], [], 'intake-live-benefits-semantic-correction-retry' );
+$intake_density_pipeline = (array) ( $intake_density_retry['response']['diagnostics']['design_pipeline'] ?? [] );
+$intake_density_trace = (array) ( $intake_density_retry['response']['diagnostics']['intake'] ?? [] );
+$intake_density_attempts = array_values( (array) ( $intake_density_trace['attempts'] ?? [] ) );
+$intake_density_expected_titles = [ 'Планировка под повседневные сценарии', 'Работа с дневным светом', 'Продуманное хранение', 'Целостная организация пространства' ];
+$intake_density_request_first = (array) ( $intake_density_retry['http_calls'][0]['body'] ?? [] );
+$intake_density_request_second = (array) ( $intake_density_retry['http_calls'][1]['body'] ?? [] );
+$intake_density_strings = $intake_collect_strings( [ $intake_density_retry['written'] ] );
+check( count( $intake_density_slots ) === 4 && count( array_filter( $intake_density_payload( false )['generated'], static fn( array $item ): bool => ! empty( $item['fact_refs'] ) ) ) === 4 && ! empty( $intake_density_retry['response']['ok'] ) && $intake_density_retry['calls'] === 2 && $intake_density_retry['writes'] === 1 && $intake_density_retry['write_attempts'] === 1 && ( $intake_density_trace['retry_count'] ?? -1 ) === 1 && ( $intake_density_trace['retry_reason'] ?? '' ) === 'unsupported_generated_claim' && ( $intake_density_attempts[0]['schema_validation_result'] ?? '' ) === 'semantic_provenance_failure' && ( $intake_density_attempts[0]['write_count'] ?? -1 ) === 0 && ( $intake_density_attempts[1]['schema_validation_result'] ?? '' ) === 'accepted', 'Exact live Benefits fixture gets one semantic correction retry after a no-write unsupported-claim refusal: ' . wp_json_encode( [ 'error' => $intake_density_retry['error'], 'calls' => $intake_density_retry['calls'], 'writes' => $intake_density_retry['writes'], 'retry_reason' => $intake_density_trace['retry_reason'] ?? '', 'attempts' => $intake_density_attempts, 'payload' => $intake_density_payload( false ) ], JSON_UNESCAPED_UNICODE ) );
+check( ( $intake_density_request_first['messages'][1]['content'] ?? '' ) !== '' && ( $intake_density_request_first['messages'][1]['content'] ?? '' ) === ( $intake_density_request_second['messages'][1]['content'] ?? null ) && ( $intake_density_request_first['model'] ?? '' ) === ( $intake_density_request_second['model'] ?? null ) && ( $intake_density_request_first['response_format']['type'] ?? '' ) === 'json_schema' && ! empty( $intake_density_request_first['response_format']['json_schema']['strict'] ) && ! empty( $intake_density_request_first['provider']['require_parameters'] ) && ( $intake_density_request_first['response_format'] ?? [] ) === ( $intake_density_request_second['response_format'] ?? null ) && ( $intake_density_request_first['provider'] ?? [] ) === ( $intake_density_request_second['provider'] ?? null ) && str_contains( (string) ( $intake_density_request_second['messages'][0]['content'] ?? '' ), 'every factual clause must be a close, meaning-preserving paraphrase' ), 'Semantic correction changes only retry guidance: same source Brief, selected model, strict JSON Schema and require_parameters remain fixed' );
+$intake_density_title_positions = array_map( static fn( string $title ) => array_search( $title, $intake_density_strings, true ), $intake_density_expected_titles );
+$intake_density_sorted_title_positions = $intake_density_title_positions;
+sort( $intake_density_sorted_title_positions );
+check( ( $intake_density_pipeline['brief']['hash'] ?? '' ) !== '' && ( $intake_density_pipeline['brief']['hash'] ?? '' ) === ( $intake_density_pipeline['plan']['brief_hash'] ?? '' ) && ( $intake_density_trace['provider_calls'] ?? -1 ) === 2 && count( array_filter( $intake_density_title_positions, static fn( $position ): bool => $position !== false ) ) === 4 && $intake_density_title_positions === array_values( array_unique( $intake_density_title_positions ) ) && $intake_density_title_positions === $intake_density_sorted_title_positions && count( array_intersect( $intake_density_copy, $intake_density_strings ) ) === 4 && ! in_array( 'Подходит для проектов любого масштаба.', $intake_density_strings, true ), 'Recovered production Plan consumes one typed Brief, keeps the four exact Benefits groups in order, and excludes the rejected claim: ' . wp_json_encode( [ 'brief_hash' => $intake_density_pipeline['brief']['hash'] ?? null, 'plan_hash' => $intake_density_pipeline['plan']['brief_hash'] ?? null, 'provider_calls' => $intake_density_trace['provider_calls'] ?? null, 'titles' => $intake_density_title_positions, 'copy_found' => array_values( array_intersect( $intake_density_copy, $intake_density_strings ) ), 'strings' => $intake_density_strings ], JSON_UNESCAPED_UNICODE ) );
+
 $intake_pricing_prompt = "Создай Pricing. Напиши только заголовок раздела и вступление; тарифные факты не меняй.\n«Старт» — «50 000 ₸/мес» — «Малый проект»\nFeatures: «Аудит», «План»\nКнопка: «Выбрать Старт», ссылка #start\n«Проект» — «150 000 ₸/год» — «Полный проект»\nFeatures: «Дизайн», «Разработка»\nКнопка: «Выбрать Проект», ссылка #project\n«Сопровождение» — «210 000 ₸/год» — «Контроль реализации»\nFeatures: «Выезды», «Отчёт»\nКнопка: «Выбрать Сопровождение», ссылка #support";
 $intake_pricing_probe = wpae_brief_ir_parse( $intake_pricing_prompt );
 $intake_pricing_slots = wpae_brief_ir_generated_copy_slots( $intake_pricing_probe, $intake_pricing_prompt );
@@ -367,9 +420,10 @@ $intake_pricing_strings = $intake_collect_strings( [ $intake_pricing['written'] 
 check( array_column( $intake_pricing_slots, 'slot_id' ) === [ 'section_title', 'section_intro' ] && ! empty( $intake_pricing['response']['ok'] ) && $intake_pricing['calls'] === 1 && $intake_pricing['writes'] === 1, 'Pricing generated slots are limited to the explicitly requested section title and intro' );
 foreach ( [ '50 000 ₸', '/мес', 'Малый проект', 'Аудит', 'План', 'Выбрать Старт', '#start', '150 000 ₸', '/год', 'Полный проект', 'Дизайн', 'Разработка', 'Выбрать Проект', '#project', '210 000 ₸', 'Контроль реализации', 'Выезды', 'Отчёт', 'Выбрать Сопровождение', '#support' ] as $pricing_exact ) { check( in_array( $pricing_exact, $intake_pricing_strings, true ), 'Hybrid Pricing exact tier fact survives intake/compiler/readback: ' . $pricing_exact ); }
 $intake_pricing_claim_payload = [ 'family' => 'pricing', 'generated' => [ [ 'slot_id' => 'section_title', 'text' => 'Тарифные планы для вашего проекта', 'fact_refs' => [] ], [ 'slot_id' => 'section_intro', 'text' => 'Мы предлагаем гибкие условия сотрудничества, подходящие для задач любого масштаба. Выберите вариант, который соответствует вашим потребностям, и начните работу уже сегодня.', 'fact_refs' => [] ] ] ];
-$intake_pricing_claim = $run_services_route( $intake_pricing_prompt, [ provider_reply( wp_json_encode( $intake_pricing_claim_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-refusal-unsupported-pricing-claims' );
+$intake_pricing_claim_reply = provider_reply( wp_json_encode( $intake_pricing_claim_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+$intake_pricing_claim = $run_services_route( $intake_pricing_prompt, [ $intake_pricing_claim_reply, $intake_pricing_claim_reply ], [], 'intake-refusal-unsupported-pricing-claims' );
 $intake_pricing_claim_trace = (array) ( $intake_pricing_claim['response']['diagnostics']['intake'] ?? [] );
-check( empty( $intake_pricing_claim['response']['ok'] ) && $intake_pricing_claim['calls'] === 1 && $intake_pricing_claim['writes'] === 0 && $intake_pricing_claim['write_attempts'] === 0 && $intake_pricing_claim['page_data'] === $legacy_page && ( $intake_pricing_claim['error']['code'] ?? '' ) === 'intake_generated_copy_rejected' && ( $intake_pricing_claim['error']['data']['intake']['refusal'] ?? '' ) === 'unsupported_generated_claim', 'Pricing provider copy with ungrounded flexible terms, any-scale scope, and today claims is refused before the transaction' );
+check( empty( $intake_pricing_claim['response']['ok'] ) && $intake_pricing_claim['calls'] === 2 && $intake_pricing_claim['writes'] === 0 && $intake_pricing_claim['write_attempts'] === 0 && $intake_pricing_claim['page_data'] === $legacy_page && ( $intake_pricing_claim['error']['code'] ?? '' ) === 'intake_generated_copy_rejected' && ( $intake_pricing_claim['error']['data']['intake']['refusal'] ?? '' ) === 'unsupported_generated_claim' && ( $intake_pricing_claim['error']['data']['intake']['retry_count'] ?? -1 ) === 1 && ( $intake_pricing_claim['error']['data']['intake']['attempts'][0]['schema_validation_result'] ?? '' ) === 'semantic_provenance_failure', 'Pricing with unsupported broad-scope, commercial and availability claims gets one semantic correction retry, then refuses without transaction' );
 check( ! wpae_brief_ir_generated_claims_grounded( 'Гибкие условия доступны сегодня для проектов любого масштаба.', [], [] ) && wpae_brief_ir_generated_claims_grounded( 'Гибкие условия доступны сегодня для проектов любого масштаба.', [ 'fact_1' ], [ 'fact_1' => 'Гибкие условия доступны сегодня для проектов любого масштаба.' ] ) && wpae_brief_ir_generated_claims_grounded( 'Сравните составы тарифов и выберите подходящий вариант.', [], [] ), 'Unsupported commercial claims require exact cited source support while neutral generated copy remains allowed' );
 check( ! wpae_brief_ir_generated_text_matches_locale( 'Pricing Plans', 'ru' ) && ! wpae_brief_ir_generated_text_matches_locale( 'Choose the plan that best fits your project needs.', 'ru-RU' ) && wpae_brief_ir_generated_text_matches_locale( 'Тарифы для вашего проекта', 'ru' ) && wpae_brief_ir_generated_text_matches_locale( 'Project pricing options', 'en' ), 'Generated copy must follow the frozen Brief locale without rejecting a matching Russian or English value' );
 $intake_pricing_english_payload = [ 'family' => 'pricing', 'generated' => [ [ 'slot_id' => 'section_title', 'text' => 'Pricing Plans', 'fact_refs' => [] ], [ 'slot_id' => 'section_intro', 'text' => 'Choose the plan that best fits your project needs.', 'fact_refs' => [] ] ] ];

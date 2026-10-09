@@ -626,7 +626,13 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 		$node['visual_policy']['item_surface_scope'] = $is_surface_owner ? 'owner' : ( $inside_surface_owner ? 'interior' : 'outside' );
 	}
 	if ( ( ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) || $role === 'portfolio_project_row' || in_array( $role, [ 'entity_identity', 'entity_identity_metadata' ], true ) ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
-	if ( $role === 'testimonial_photo' ) { $node['visual_policy']['avatar_alignment'] = (string) ( $policy['cards']['avatar_alignment'] ?? 'start' ); }
+	if ( $role === 'testimonial_photo' ) {
+		$node['visual_policy']['avatar_alignment'] = (string) ( $policy['cards']['avatar_alignment'] ?? 'start' );
+		if ( ( $policy['cards']['avatar_edge_alignment'] ?? '' ) === 'surface_start' ) {
+			$node['visual_policy']['avatar_edge_alignment'] = 'surface_start';
+			$node['visual_policy']['avatar_edge_inset'] = (array) ( $policy['cards']['avatar_edge_inset'] ?? [] );
+		}
+	}
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
 		$node['visual_policy']['collection_item_alignment'] = $policy['collection']['surface_alignment'];
@@ -2122,11 +2128,20 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		if ( $role === 'testimonial_photo' ) {
 			// The image widget's center default detached the portrait from the
-			// quote's left axis. Freeze the semantic start alignment through Plan
-			// and compile it to native image controls at every breakpoint.
+			// card's left edge. Freeze the start axis and accepted surface inset
+			// through Plan, then compile them to native image controls.
 			$avatar_alignment = (string) ( $node['visual_policy']['avatar_alignment'] ?? 'start' );
 			$settings['align'] = [ 'start' => 'left' ][ $avatar_alignment ] ?? 'left';
 			$settings['align_tablet'] = $settings['align_mobile'] = $settings['align'];
+			if ( ( $node['visual_policy']['avatar_edge_alignment'] ?? '' ) === 'surface_start' ) {
+				$edge_inset = (array) ( $node['visual_policy']['avatar_edge_inset'] ?? [] );
+				foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+					$measure = trim( (string) ( $edge_inset[ $device ] ?? '' ) );
+					if ( preg_match( '/^(\d+(?:\.\d+)?)(px|rem|em)$/', $measure, $matches ) ) {
+						$settings['margin' . $suffix] = [ 'unit' => $matches[2], 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '-' . $matches[1], 'isLinked' => false ];
+					}
+				}
+			}
 			$identity_presentation = (string) ( $node['visual_policy']['entity_layout']['tracks']['identity_presentation'] ?? '' );
 			if ( $identity_presentation === 'avatar_with_metadata' ) {
 				foreach ( [ '' => '', '_tablet' => '_tablet', '_mobile' => '_mobile' ] as $suffix => $_unused ) {
