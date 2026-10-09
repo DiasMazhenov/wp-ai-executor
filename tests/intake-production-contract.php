@@ -67,6 +67,13 @@ $intake_legacy_signed_items = array_map( static function ( array $item ) use ( $
 	return $item;
 }, $intake_generated_items );
 check( count( $intake_legacy_signed_items ) === 2 && count( array_filter( $intake_legacy_signed_items, static fn( $item ): bool => wpae_brief_ir_generated_content_valid( $item, $intake_direct['brief'] ) ) ) === 2, 'v315-style generated Brief signatures remain valid when the optional paragraph-count extension is absent' );
+$intake_v1_signed_items = array_map( static function ( array $item ) use ( $intake_direct ): array {
+	$item['provenance']['generation']['schema'] = 'wpae-generated-copy-v1';
+	unset( $item['provenance']['generation']['signature'] );
+	$item['provenance']['generation']['signature'] = hash_hmac( 'sha256', wpae_brief_ir_generated_copy_signature_payload( $item, $intake_direct['brief'] ), (string) wp_salt( 'auth' ) );
+	return $item;
+}, $intake_generated_items );
+check( count( $intake_v1_signed_items ) === 2 && count( array_filter( $intake_v1_signed_items, static fn( $item ): bool => wpae_brief_ir_generated_content_valid( $item, $intake_direct['brief'] ) ) ) === 2, 'Historical v1 generated-copy provenance remains valid beside the new claim-guarded v2 schema' );
 check( ( $GLOBALS['http_calls'][0]['body']['max_tokens'] ?? 0 ) === WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS, 'Typed provider intake uses its shared bounded multilingual response budget' );
 if ( $intake_previous_options === null ) { unset( $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] ); } else { $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = $intake_previous_options; }
 
@@ -189,6 +196,11 @@ $intake_pricing = $run_services_route( $intake_pricing_prompt, [ provider_reply(
 $intake_pricing_strings = $intake_collect_strings( [ $intake_pricing['written'] ] );
 check( array_column( $intake_pricing_slots, 'slot_id' ) === [ 'section_title', 'section_intro' ] && ! empty( $intake_pricing['response']['ok'] ) && $intake_pricing['calls'] === 1 && $intake_pricing['writes'] === 1, 'Pricing generated slots are limited to the explicitly requested section title and intro' );
 foreach ( [ '50 000 ₸', '/мес', 'Малый проект', 'Аудит', 'План', 'Выбрать Старт', '#start', '150 000 ₸', '/год', 'Полный проект', 'Дизайн', 'Разработка', 'Выбрать Проект', '#project', '210 000 ₸', 'Контроль реализации', 'Выезды', 'Отчёт', 'Выбрать Сопровождение', '#support' ] as $pricing_exact ) { check( in_array( $pricing_exact, $intake_pricing_strings, true ), 'Hybrid Pricing exact tier fact survives intake/compiler/readback: ' . $pricing_exact ); }
+$intake_pricing_claim_payload = [ 'family' => 'pricing', 'generated' => [ [ 'slot_id' => 'section_title', 'text' => 'Тарифные планы для вашего проекта', 'fact_refs' => [] ], [ 'slot_id' => 'section_intro', 'text' => 'Мы предлагаем гибкие условия сотрудничества, подходящие для задач любого масштаба. Выберите вариант, который соответствует вашим потребностям, и начните работу уже сегодня.', 'fact_refs' => [] ] ] ];
+$intake_pricing_claim = $run_services_route( $intake_pricing_prompt, [ provider_reply( wp_json_encode( $intake_pricing_claim_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-refusal-unsupported-pricing-claims' );
+$intake_pricing_claim_trace = (array) ( $intake_pricing_claim['response']['diagnostics']['intake'] ?? [] );
+check( empty( $intake_pricing_claim['response']['ok'] ) && $intake_pricing_claim['calls'] === 1 && $intake_pricing_claim['writes'] === 0 && $intake_pricing_claim['write_attempts'] === 0 && $intake_pricing_claim['page_data'] === $legacy_page && ( $intake_pricing_claim['error']['code'] ?? '' ) === 'intake_generated_copy_rejected' && ( $intake_pricing_claim['error']['data']['intake']['refusal'] ?? '' ) === 'unsupported_generated_claim', 'Pricing provider copy with ungrounded flexible terms, any-scale scope, and today claims is refused before the transaction' );
+check( ! wpae_brief_ir_generated_claims_grounded( 'Гибкие условия доступны сегодня для проектов любого масштаба.', [], [] ) && wpae_brief_ir_generated_claims_grounded( 'Гибкие условия доступны сегодня для проектов любого масштаба.', [ 'fact_1' ], [ 'fact_1' => 'Гибкие условия доступны сегодня для проектов любого масштаба.' ] ) && wpae_brief_ir_generated_claims_grounded( 'Сравните составы тарифов и выберите подходящий вариант.', [], [] ), 'Unsupported commercial claims require exact cited source support while neutral generated copy remains allowed' );
 
 $intake_faq_prompt = "Создай FAQ. Вопрос 1: «Какие сведения нужны для начала?»\nВопрос 2: «Как согласуем состав работ?»\nФакты: На первой встрече обсуждаем задачу и исходные материалы; После изучения исходных материалов согласуем состав работ и смету.\nСформулируй ответы только на основе этих фактов.";
 $intake_faq_probe = wpae_brief_ir_parse( $intake_faq_prompt );
