@@ -2138,7 +2138,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
 					$measure = trim( (string) ( $edge_inset[ $device ] ?? '' ) );
 					if ( preg_match( '/^(\d+(?:\.\d+)?)(px|rem|em)$/', $measure, $matches ) ) {
-						$settings['margin' . $suffix] = [ 'unit' => $matches[2], 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '-' . $matches[1], 'isLinked' => false ];
+						// Elementor stores widget spacing in the `_margin*` controls.
+						// Writing `margin*` is silently ignored, which left avatars inset
+						// by the card padding even though the accepted Plan owns the
+						// surface-start alignment at every breakpoint.
+						$settings['_margin' . $suffix] = [ 'unit' => $matches[2], 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '-' . $matches[1], 'isLinked' => false ];
 					}
 				}
 			}

@@ -2383,15 +2383,41 @@
                     if ((errorData.intake && typeof errorData.intake === 'object') || (errorData.validation && typeof errorData.validation === 'object')) {
                         var intakeTelemetry = errorData.intake && typeof errorData.intake === 'object' ? errorData.intake : {};
                         var safeIntakeTelemetry = {};
-                        ['source', 'provider', 'model', 'requested_model', 'returned_model', 'provider_name', 'provider_calls', 'actual_http_calls', 'latency_ms', 'retry_count', 'retry_reason', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status', 'failure_class', 'provider_error_class', 'provider_error_envelope', 'http_failure', 'error_code', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'api_endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_adapter', 'prompt_bytes', 'token_limit', 'semantic_validation_result', 'write_count'].forEach(function (key) {
+                        ['source', 'provider', 'model', 'requested_model', 'returned_model', 'provider_name', 'provider_calls', 'actual_http_calls', 'latency_ms', 'attempt_timeout_ms', 'retry_count', 'retry_reason', 'retry_suppressed_reason', 'minimum_retry_budget_ms', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status', 'failure_class', 'provider_error_class', 'provider_error_envelope', 'http_failure', 'error_code', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'api_endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_adapter', 'prompt_bytes', 'token_limit', 'semantic_validation_result', 'write_count'].forEach(function (key) {
                             var value = intakeTelemetry[key];
                             if (value === null) safeIntakeTelemetry[key] = null;
                             else if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, key === 'provider_message' ? 300 : 240);
                             else if (typeof value === 'number' && Number.isFinite(value)) safeIntakeTelemetry[key] = value;
                             else if (typeof value === 'boolean') safeIntakeTelemetry[key] = value;
                         });
+                        var safeUsage = function (usage) {
+                            usage = usage && typeof usage === 'object' ? usage : {};
+                            var output = {};
+                            ['input_tokens', 'output_tokens', 'total_tokens', 'reasoning_tokens'].forEach(function (key) {
+                                var value = usage[key];
+                                output[key] = typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+                            });
+                            return output;
+                        };
+                        safeIntakeTelemetry.usage = safeUsage(intakeTelemetry.usage);
+                        if (intakeTelemetry.capability_policy && typeof intakeTelemetry.capability_policy === 'object') {
+                            var safeCapabilityPolicy = {};
+                            ['policy', 'state', 'provider', 'requested_model', 'response_format', 'endpoint_selection', 'endpoint_strict_enforcement', 'capability_source', 'observed_at_utc', 'admission', 'failure_policy'].forEach(function (key) {
+                                var value = intakeTelemetry.capability_policy[key];
+                                if (value === null) safeCapabilityPolicy[key] = null;
+                                else if (typeof value === 'string') safeCapabilityPolicy[key] = value.slice(0, 240);
+                                else if (typeof value === 'boolean') safeCapabilityPolicy[key] = value;
+                            });
+                            ['strict_requested', 'require_parameters', 'source_age_seconds'].forEach(function (key) {
+                                var value = intakeTelemetry.capability_policy[key];
+                                safeCapabilityPolicy[key] = typeof value === 'number' && Number.isFinite(value) ? value : (typeof value === 'boolean' ? value : null);
+                            });
+                            safeIntakeTelemetry.capability_policy = safeCapabilityPolicy;
+                        } else {
+                            safeIntakeTelemetry.capability_policy = null;
+                        }
                         if (Array.isArray(intakeTelemetry.attempts)) {
-                            var attemptKeys = ['requested_model', 'returned_model', 'provider_name', 'endpoint_provider', 'api_endpoint', 'endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter', 'http_status', 'error_code', 'provider_error_envelope', 'http_failure', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'transport_error_code', 'transport_error_message', 'finish_reason', 'token_limit', 'duration_ms', 'retry_reason', 'schema_validation_result', 'write_count'];
+                            var attemptKeys = ['requested_model', 'returned_model', 'provider_name', 'endpoint_provider', 'api_endpoint', 'endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter', 'http_status', 'error_code', 'provider_error_envelope', 'http_failure', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'transport_error_code', 'transport_error_message', 'finish_reason', 'token_limit', 'duration_ms', 'remaining_budget_ms', 'prompt_bytes', 'retry_reason', 'schema_validation_result', 'write_count'];
                             safeIntakeTelemetry.attempts = intakeTelemetry.attempts.slice(0, 2).map(function (attempt) {
                                 var safeAttempt = {};
                                 attemptKeys.forEach(function (key) {
@@ -2401,6 +2427,7 @@
                                     else if (typeof value === 'number' && Number.isFinite(value)) safeAttempt[key] = value;
                                     else if (typeof value === 'boolean') safeAttempt[key] = value;
                                 });
+                                safeAttempt.usage = safeUsage(attempt && attempt.usage);
                                 return safeAttempt;
                             });
                         }

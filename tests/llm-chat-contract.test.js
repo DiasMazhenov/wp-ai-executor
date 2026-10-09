@@ -398,6 +398,11 @@ assert.match(js, /diagnostics\.write && typeof diagnostics\.write === 'object'/)
 assert.match(js, /Array\.isArray\(writeDiagnostics\.steps\)/);
 assert.match(js, /requestError\.diagnostics = providerDiagnostics \|\| \(diagnostics && typeof diagnostics === 'object'/);
 assert.match(js, /wpae-intake-failure-diagnostics-v1/);
+assert.match(js, /retry_suppressed_reason/);
+assert.match(js, /safeIntakeTelemetry\.usage = safeUsage\(intakeTelemetry\.usage\)/);
+assert.match(js, /safeAttempt\.usage = safeUsage\(attempt && attempt\.usage\)/);
+assert.match(js, /remaining_budget_ms/);
+assert.match(js, /safeIntakeTelemetry\.capability_policy = safeCapabilityPolicy/);
 assert.match(js, /\['source', 'provider', 'model', 'requested_model'.*'actual_http_calls'.*'provider_message'.*'canonical_schema_sha256'.*'write_count'\]/);
 assert.match(js, /'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter'/);
 assert.match(js, /rawValidation\.errors\.slice\(0, 20\)/);

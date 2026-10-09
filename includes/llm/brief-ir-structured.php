@@ -758,6 +758,10 @@ function wpae_brief_ir_generated_content_valid( array $item, array $brief ): boo
  * truth classifier for all prose.
  */
 function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs, array $facts_by_id, bool $authored_copy_anchor = false ): bool {
+	$unsupported_inference_patterns = [
+		'/\b(?:позволя\p{L}*|обеспечива\p{L}*|привод\p{L}*\s+к|да(?:е|ё)т\p{L}*|helps?\s+to|allows?\s+|enables?\s+|results?\s+in\s+|ensures?\s+)[^.!?;\n]{0,100}/iu',
+		'/\b(?:чтобы|для\s+того\s+чтобы|so\s+that|in\s+order\s+to)\s+(?:созда\p{L}*|обеспеч\p{L}*|улучш\p{L}*|повыс\p{L}*|сниз\p{L}*|сохран\p{L}*|create\p{L}*|improv\p{L}*|increase\p{L}*|reduce\p{L}*|preserv\p{L}*)\b[^.!?;\n]{0,100}/iu',
+	];
 	$patterns = [
 		'/\b(?:люб(?:ой|ого|ая|ые|ых)\s+(?:масштаб\w*|проект\w*|задач\w*|случа\w*)|без\s+ограничен\w*)\b/iu',
 		'/\b(?:уже\s+сегодн\w*|сегодн\w*|прямо\s+сейчас|немедлен\w*|мгновен\w*)\b/iu',
@@ -833,6 +837,21 @@ function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs
 			if ( $needle !== '' && str_contains( ' ' . $normalized_fact . ' ', ' ' . $needle . ' ' ) ) { $supported = true; break; }
 		}
 		if ( ! $supported ) { return false; }
+	}
+	// A fact reference cannot turn an inferred benefit or purpose into evidence.
+	// Keep these causal/outcome constructions only when the cited fact itself
+	// states that relation; ordinary grounded paraphrase remains unchanged.
+	foreach ( $unsupported_inference_patterns as $pattern ) {
+		if ( ! preg_match_all( $pattern, $text, $matches ) ) { continue; }
+		foreach ( $matches[0] as $inference ) {
+			$needle = $normalize( (string) $inference );
+			$directly_stated = false;
+			foreach ( $cited_fact_texts as $fact_text ) {
+				$normalized_fact = $normalize( $fact_text );
+				if ( $needle !== '' && str_contains( ' ' . $normalized_fact . ' ', ' ' . $needle . ' ' ) ) { $directly_stated = true; break; }
+			}
+			if ( ! $directly_stated ) { return false; }
+		}
 	}
 	return true;
 }
@@ -1020,7 +1039,7 @@ function wpae_brief_ir_intake_retry_decision( array $result, int $remaining_budg
 		$output = is_numeric( $usage['output_tokens'] ?? null ) ? (int) $usage['output_tokens'] : null;
 		$reasoning = is_numeric( $usage['reasoning_tokens'] ?? null ) ? (int) $usage['reasoning_tokens'] : null;
 		if ( $limit <= 0 || $output === null || $reasoning === null ) { return [ 'retry' => false, 'reason' => $reason, 'suppressed_reason' => 'truncation_usage_unknown', 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ]; }
-		if ( ( $output + $reasoning ) >= (int) floor( $limit * 0.9 ) ) { return [ 'retry' => false, 'reason' => $reason, 'suppressed_reason' => 'completion_budget_exhausted', 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ]; }
+		if ( $reasoning >= (int) floor( $limit * 0.5 ) ) { return [ 'retry' => false, 'reason' => $reason, 'suppressed_reason' => 'reasoning_budget_exhausted', 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ]; }
 	}
 	if ( ! $retry_context_frozen ) {
 		return [ 'retry' => false, 'reason' => $reason, 'suppressed_reason' => 'family_not_frozen', 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ];
@@ -1028,7 +1047,7 @@ function wpae_brief_ir_intake_retry_decision( array $result, int $remaining_budg
 	if ( $remaining_budget_ms < $minimum_retry_budget_ms ) {
 		return [ 'retry' => false, 'reason' => $reason, 'suppressed_reason' => $remaining_budget_ms < 1000 ? 'deadline_exhausted' : 'insufficient_retry_budget', 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ];
 	}
-	return [ 'retry' => true, 'reason' => $reason, 'suppressed_reason' => null, 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ];
+	return [ 'retry' => true, 'reason' => $reason, 'retry_mode' => $reason === 'finish_reason_length' ? 'concise_complete_response' : null, 'suppressed_reason' => null, 'minimum_retry_budget_ms' => $minimum_retry_budget_ms ];
 }
 
 /** Describe provider-output validation without storing generated or raw bodies. */
@@ -1187,6 +1206,8 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 		$retry_reason = sanitize_key( (string) $retry['reason'] );
 		if ( $retry_reason === 'unsupported_generated_claim' ) {
 			$system .= ' Your previous typed response was rejected because at least one generated factual clause was not directly supported by its cited approved fact. Rewrite the generated copy more conservatively: every factual clause must be a close, meaning-preserving paraphrase of the exact text of a cited approved fact; do not infer benefits, outcomes, quality, scope, causation, or promises. Keep the exact same family, locked copy, approved facts, authorized slots, paragraph counts, and meanings. Preserve json_schema and every required slot. If a claim cannot be grounded, omit that claim rather than inventing evidence.';
+		} elseif ( $retry_reason === 'finish_reason_length' ) {
+			$system .= ' Your previous response was cut off at the completion limit. Return the shortest complete JSON that fills every same authorized slot. Use one concise, fact-grounded sentence per generated description; preserve the exact requested paragraph count and all required copy. Do not add transitions, rationale, outcomes, or repeated context. Keep the same family, locked copy, approved facts, slots, references, and schema; do not reduce or omit required content.';
 		} else {
 			$system .= ' Your previous response did not satisfy the response schema because of ' . $retry_reason . '. Produce a complete, concise response now. Keep the exact same family, locked copy, approved facts, authorized slots, paragraph counts, and meanings. Do not remove the schema or omit a required slot.';
 		}
