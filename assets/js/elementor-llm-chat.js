@@ -2325,6 +2325,27 @@
                     var writeDiagnostics = diagnostics && diagnostics.write && typeof diagnostics.write === 'object' ? diagnostics.write : {};
                     var errorSteps = Array.isArray(diagnostics.steps) ? diagnostics.steps : (Array.isArray(writeDiagnostics.steps) ? writeDiagnostics.steps : []);
                     var providerDiagnostics = errorData.diagnostics || body.diagnostics || (diagnostics && typeof diagnostics === 'object' ? diagnostics.diagnostics : null);
+                    var intakeFailureDiagnostics = null;
+                    if ((errorData.intake && typeof errorData.intake === 'object') || (errorData.validation && typeof errorData.validation === 'object')) {
+                        var intakeTelemetry = errorData.intake && typeof errorData.intake === 'object' ? errorData.intake : {};
+                        var safeIntakeTelemetry = {};
+                        ['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'refusal', 'http_status'].forEach(function (key) {
+                            var value = intakeTelemetry[key];
+                            if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, 120);
+                            else if (typeof value === 'number' && Number.isFinite(value)) safeIntakeTelemetry[key] = value;
+                        });
+                        var rawValidation = errorData.validation && typeof errorData.validation === 'object' ? errorData.validation : {};
+                        var validationErrors = Array.isArray(rawValidation.errors) ? rawValidation.errors.slice(0, 20).map(function (value) {
+                            return String(value || '').replace(/[^a-zA-Z0-9:_-]/g, '').slice(0, 120);
+                        }).filter(Boolean) : [];
+                        intakeFailureDiagnostics = {
+                            schema: 'wpae-intake-failure-diagnostics-v1',
+                            intake: safeIntakeTelemetry,
+                            validation: { ok: rawValidation.ok === true, errors: validationErrors }
+                        };
+                        if (safeIntakeTelemetry.refusal) detail += ' (intake refusal: ' + safeIntakeTelemetry.refusal + ')';
+                        if (validationErrors.length) detail += ' (intake validation: ' + validationErrors.join(', ') + ')';
+                    }
                     if (typeof errorData.details === 'string' && errorData.details !== detail) detail += ': ' + errorData.details;
                     if (typeof diagnostics === 'string' && diagnostics !== detail && diagnostics !== errorData.details) detail += ': ' + diagnostics;
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
@@ -2361,7 +2382,7 @@
                     requestError.httpStatus = response.status;
                     requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
                     requestError.retryAfter = Number(errorData.retry_after || diagnostics.retry_after || 0);
-                    requestError.diagnostics = providerDiagnostics || (diagnostics && typeof diagnostics === 'object' && Object.keys(diagnostics).length ? diagnostics : null);
+                    requestError.diagnostics = providerDiagnostics || (diagnostics && typeof diagnostics === 'object' && Object.keys(diagnostics).length ? diagnostics : null) || intakeFailureDiagnostics;
                     requestError.pendingOperation = (diagnostics && diagnostics.operation)
                         || (diagnostics && diagnostics.details && diagnostics.details.operation)
                         || (body && body.details && body.details.operation)
