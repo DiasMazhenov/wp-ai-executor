@@ -2585,6 +2585,7 @@ $run_services_route = static function ( string $message, array $responses, array
 		'writes' => count( $GLOBALS['writes'] ),
 		'write_attempts' => (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ),
 		'provider_call_count' => count( $GLOBALS['http_calls'] ),
+		'http_calls' => (array) $GLOBALS['http_calls'],
 		'library_retrieval_count' => count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ),
 		'roots' => array_column( (array) $GLOBALS['page_data'], 'id' ),
 		'page_data' => (array) $GLOBALS['page_data'],

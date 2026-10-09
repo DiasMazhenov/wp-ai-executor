@@ -2329,7 +2329,7 @@
                     if ((errorData.intake && typeof errorData.intake === 'object') || (errorData.validation && typeof errorData.validation === 'object')) {
                         var intakeTelemetry = errorData.intake && typeof errorData.intake === 'object' ? errorData.intake : {};
                         var safeIntakeTelemetry = {};
-                        ['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'refusal', 'http_status'].forEach(function (key) {
+                        ['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status'].forEach(function (key) {
                             var value = intakeTelemetry[key];
                             if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, 120);
                             else if (typeof value === 'number' && Number.isFinite(value)) safeIntakeTelemetry[key] = value;

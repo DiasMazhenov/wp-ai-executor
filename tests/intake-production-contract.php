@@ -61,7 +61,7 @@ $GLOBALS['responses'] = [ provider_reply( wp_json_encode( $intake_hero_response,
 $intake_direct = wpae_brief_ir_intake_extract( $intake_hero_prompt, wpae_brief_ir_parse( $intake_hero_prompt ), [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'base_url' => 'https://openrouter.ai/api/v1', 'api_key' => 'test-key' ] );
 $intake_generated_items = array_values( array_filter( (array) ( $intake_direct['brief']['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['copy_status'] ?? '' ) === 'generated' ) );
 check( ! empty( $intake_direct['ok'] ) && count( $intake_generated_items ) === 2 && count( array_filter( $intake_generated_items, static fn( $item ): bool => array_key_exists( 'source_span', $item ) && $item['source_span'] === null && wpae_brief_ir_generated_content_valid( $item, $intake_direct['brief'] ) ) ) === 2, 'Generated copy has null source spans and validates only with the server HMAC provenance: ' . wp_json_encode( [ 'ok' => $intake_direct['ok'] ?? false, 'error' => $intake_direct['error'] ?? '', 'intake' => $intake_direct['brief']['intake'] ?? [], 'items' => $intake_generated_items, 'valid' => array_map( static fn( $item ): bool => wpae_brief_ir_generated_content_valid( $item, $intake_direct['brief'] ), $intake_generated_items ) ], JSON_UNESCAPED_UNICODE ) );
-check( ( $GLOBALS['http_calls'][0]['body']['max_tokens'] ?? 0 ) === 2400, 'Typed provider intake reserves a response budget that avoids routine truncation without adding a provider call' );
+check( ( $GLOBALS['http_calls'][0]['body']['max_tokens'] ?? 0 ) === WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS, 'Typed provider intake uses its shared bounded multilingual response budget' );
 if ( $intake_previous_options === null ) { unset( $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] ); } else { $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = $intake_previous_options; }
 
 // The shared OpenRouter transport can make one bounded request-format retry.
@@ -74,12 +74,23 @@ $intake_transport_retry = $run_services_route( $intake_hero_prompt, $GLOBALS['re
 $intake_transport_trace = (array) ( $intake_transport_retry['response']['diagnostics']['intake'] ?? [] );
 $intake_transport_brief = (array) ( $intake_transport_retry['response']['diagnostics']['design_pipeline']['brief'] ?? [] );
 check( ! empty( $intake_transport_retry['response']['ok'] ) && $intake_transport_retry['calls'] === 2 && $intake_transport_retry['writes'] === 1 && ( $intake_transport_trace['provider_calls'] ?? 0 ) === 2 && ( $intake_transport_trace['retry_count'] ?? 0 ) === 1 && ( $intake_transport_trace['retry_reason'] ?? '' ) === 'structured_response_format_rejected', 'Typed intake telemetry counts the shared transport retry, one frozen Brief, and one write' );
+check( ( $intake_transport_retry['http_calls'][0]['body']['max_tokens'] ?? 0 ) === WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS && ( $intake_transport_retry['http_calls'][1]['body']['max_tokens'] ?? 0 ) === WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS && ! array_key_exists( 'response_format', $intake_transport_retry['http_calls'][1]['body'] ), 'The single schema retry preserves the bounded response budget while changing only the rejected format requirement' );
 check( ( $intake_transport_brief['intake']['provider_calls'] ?? 0 ) === 2 && ( $intake_transport_brief['intake']['retry_count'] ?? 0 ) === 1, 'Frozen Brief summary keeps actual provider-attempt and retry counts' );
 $GLOBALS['http_calls'] = [];
 $GLOBALS['responses'] = [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( [ 'error' => [ 'message' => 'No endpoints found' ] ] ) ], provider_reply( wp_json_encode( $intake_hero_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ];
 $intake_direct_retry = wpae_brief_ir_intake_extract( $intake_hero_prompt, wpae_brief_ir_parse( $intake_hero_prompt ), [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'base_url' => 'https://openrouter.ai/api/v1', 'api_key' => 'test-key' ] );
 $intake_retry_items = array_values( array_filter( (array) ( $intake_direct_retry['brief']['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['copy_status'] ?? '' ) === 'generated' ) );
 check( ! empty( $intake_direct_retry['ok'] ) && ( $intake_direct_retry['telemetry']['provider_calls'] ?? 0 ) === 2 && ( $intake_direct_retry['telemetry']['retry_count'] ?? 0 ) === 1 && count( array_filter( $intake_retry_items, static fn( $item ): bool => wpae_brief_ir_generated_content_valid( $item, $intake_direct_retry['brief'] ) ) ) === 2, 'Generated provenance remains valid while retaining the true provider-attempt count' );
+
+$GLOBALS['http_calls'] = [];
+$GLOBALS['responses'] = [
+	[ 'response' => [ 'code' => 200 ], 'body' => wp_json_encode( [ 'choices' => [ [ 'finish_reason' => 'length', 'message' => [ 'content' => '{"family":"hero","generated":[' ] ] ] ] ) ],
+	provider_reply( wp_json_encode( $intake_hero_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+];
+$intake_length_retry = $run_services_route( $intake_hero_prompt, $GLOBALS['responses'], [], 'intake-generated-hero-length-retry' );
+$intake_length_trace = (array) ( $intake_length_retry['response']['diagnostics']['intake'] ?? [] );
+check( ! empty( $intake_length_retry['response']['ok'] ) && $intake_length_retry['calls'] === 2 && $intake_length_retry['writes'] === 1 && ( $intake_length_trace['retry_reason'] ?? '' ) === 'structured_response_finish_reason_length' && ( $intake_length_trace['first_finish_reason'] ?? '' ) === 'length' && ( $intake_length_trace['finish_reason'] ?? '' ) === 'stop', 'A length-truncated typed response receives exactly one bounded retry and exposes both finish reasons' );
+
 $GLOBALS['http_calls'] = [];
 $GLOBALS['responses'] = [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( [ 'error' => [ 'message' => 'No endpoints found' ] ] ) ] ];
 $GLOBALS['provider_sleep_usec'] = 200000;

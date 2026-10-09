@@ -545,7 +545,7 @@ function wpae_llm_prepare_provider_request_body( array $request_body, bool $acti
 
 function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0, ?array &$attempt_meta = null ) {
     try {
-        $attempt_meta = [ 'provider_calls' => 0, 'retry_count' => 0, 'retry_reason' => '' ];
+        $attempt_meta = [ 'provider_calls' => 0, 'retry_count' => 0, 'retry_reason' => '', 'first_finish_reason' => '', 'finish_reason' => '', 'http_status' => 0 ];
         $deadline = $deadline > 0 ? $deadline : microtime( true ) + (float) ( $remote_args['timeout'] ?? 45 );
         $remaining = $deadline - microtime( true );
         if ( $remaining < 1 ) {
@@ -561,6 +561,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
             $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
             $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
             $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
+            $attempt_meta['first_finish_reason'] = sanitize_key( (string) ( $initial_diagnostics['finish_reason'] ?? '' ) );
             $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
             $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && in_array( strtolower( (string) ( $initial_diagnostics['finish_reason'] ?? '' ) ), [ 'error', 'length', 'max_tokens', 'token_limit' ], true );
             if ( $structured_route_rejected || $structured_response_failed ) {
@@ -575,6 +576,13 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
                 unset( $request_body['response_format'], $request_body['provider'] );
                 $remote_args['body'] = wp_json_encode( $request_body );
                 $response = wp_safe_remote_post( $url, $remote_args );
+            }
+            if ( ! is_wp_error( $response ) ) {
+                $final_status = (int) wp_remote_retrieve_response_code( $response );
+                $final_body = json_decode( wp_remote_retrieve_body( $response ), true );
+                $final_diagnostics = wpae_llm_response_diagnostics( is_array( $final_body ) ? $final_body : [] );
+                $attempt_meta['finish_reason'] = sanitize_key( (string) ( $final_diagnostics['finish_reason'] ?? '' ) );
+                $attempt_meta['http_status'] = $final_status;
             }
         }
         return $response;

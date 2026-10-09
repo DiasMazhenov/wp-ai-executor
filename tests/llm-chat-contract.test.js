@@ -391,7 +391,7 @@ assert.match(js, /diagnostics\.write && typeof diagnostics\.write === 'object'/)
 assert.match(js, /Array\.isArray\(writeDiagnostics\.steps\)/);
 assert.match(js, /requestError\.diagnostics = providerDiagnostics \|\| \(diagnostics && typeof diagnostics === 'object'/);
 assert.match(js, /wpae-intake-failure-diagnostics-v1/);
-assert.match(js, /\['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'refusal', 'http_status'\]/);
+assert.match(js, /\['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status'\]/);
 assert.match(js, /rawValidation\.errors\.slice\(0, 20\)/);
 assert.match(js, /requestError\.diagnostics = providerDiagnostics \|\|[\s\S]+\|\| intakeFailureDiagnostics/);
 assert.match(js, /formatStep/);
