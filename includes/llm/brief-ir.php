@@ -233,14 +233,14 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	if ( preg_match( '/(?:(?:основн\w*|primary)\s+)?(?:кнопк\w*|cta|button)\s+(?:(?:с|with)\s+)?(?:точн\w*\s+)?(?:текст\w*|label)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return preg_match( '/(?:втор\w*|secondary)\s+(?:кнопк\w*|cta|button)|(?:кнопк\w*|cta|button)\s*#?2\s+/', $prefix ) ? 'cta_2' : 'cta';
 	}
-	if ( preg_match( '/(?:заголов\w*|heading|title|headline)\s*[:\-]?\s*$/iu', $prefix ) ) {
+	if ( preg_match( '/(?:заголов\w*|heading|title|headline)(?:\s+(?:(?:должен|должна|должно|должны)\s+быть|should\s+be|must\s+be)\s+[^«»"\n]{1,100})?\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
+	}
+	if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)(?:\s+(?:(?:должен|должна|должно|должны)\s+быть|should\s+be|must\s+be)\s+[^«»"\n]{1,100})?\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'media_alt';
 	}
 	if ( preg_match( '/(?:описани\w*|подзаголов\w*|текст|body|description|subtitle|copy)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'body';
-	}
-	if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)\s*[:\-]?\s*$/iu', $prefix ) ) {
-		return 'media_alt';
 	}
 	if ( preg_match( '/(?:архитектурн\w*\s+студи\w*|бренд|brand|studio)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'brand';
@@ -781,7 +781,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$before = substr( $source_text, 0, $start );
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
-		if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?|license|licence|лицензи\w*|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
+		if ( wpae_brief_ir_label_role( $prefix ) === 'media_alt' || preg_match( '/(?:license|licence|лицензи\w*|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
 		$role = wpae_brief_ir_label_role( $prefix );
 		$process_role_group = '';
 		$process_id_override = '';
@@ -1331,11 +1331,11 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					? [ $focal_source_base + (int) $focal['source_span'][0], $focal_source_base + (int) $focal['source_span'][1] ]
 					: null;
 
-				if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)\s*[:\-]?\s*(?:«([^»]{1,300})»|"([^"]{1,300})"|“([^”]{1,300})”)/iu', $local_media_text, $alt_match ) ) {
+				if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)(?:\s+(?:(?:должен|должна|должно|должны)\s+быть|should\s+be|must\s+be)\s+[^«»"\n]{1,100})?\s*[:\-]?\s*(?:«([^»]{1,300})»|"([^"]{1,300})"|“([^”]{1,300})”)/iu', $local_media_text, $alt_match ) ) {
 					$alt = trim( (string) ( $alt_match[1] ?: ( $alt_match[2] ?: $alt_match[3] ) ) );
 				}
 				$license = '';
-				if ( preg_match( '/(?:лицензи\w*|license)\s*[:\-]?\s*(?:«([^»]{1,120})»|"([^"]{1,120})"|([^\n,;]+))/iu', $local_media_text, $license_match ) ) {
+				if ( preg_match( '/(?:лицензи\w*|license)\s*[:\-]?\s*(?:«([^»]{1,120})»|"([^"]{1,120})"|([^\n,;.]+))/iu', $local_media_text, $license_match ) ) {
 					$license = trim( (string) ( $license_match[1] ?: ( $license_match[2] ?: $license_match[3] ) ) );
 				}
 				$attribution = '';
