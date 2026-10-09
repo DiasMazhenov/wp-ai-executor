@@ -2456,6 +2456,15 @@ function wpae_llm_extract_pricing_content( string $message ): array {
 		}
 	}
 
+	// Exact tier requests may provide only the quoted label and quoted price,
+	// with features and the CTA on following lines. Preserve the missing
+	// description as empty instead of failing to recognize the tier entirely.
+	if ( preg_match_all( '/^\s*[«"]([^»"\n]{2,80})[»"]\s*[—–-]\s*[«"]((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)[»"]\s*$/mu', $message, $quoted_price_only_matches, PREG_SET_ORDER ) ) {
+		foreach ( $quoted_price_only_matches as $match ) {
+			$append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[2] ?? '' ), '' );
+		}
+	}
+
     // Inline briefs may keep all tiers in one sentence and quote the amount,
     // for example «Старт» — «Описание» — «от 50 000 ₸» — кнопка ... .
     // Capture only quoted triples whose third field contains a numeric price;

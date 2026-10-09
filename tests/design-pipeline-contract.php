@@ -2424,6 +2424,28 @@ foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact
   $check($pricing_surface_ok,'Pricing tiers keep the accepted surface on each whole pricing_card while body/details remain transparent and unboxed');
  }
 }
+$pricing_pair_fixture_path = __DIR__ . '/fixtures/pricing-two-tiers-generated-intro.txt';
+$pricing_pair_fixture = (string) file_get_contents( $pricing_pair_fixture_path );
+$pricing_pair_contract = wpae_llm_extract_pricing_content( $pricing_pair_fixture );
+$pricing_pair_brief = wpae_brief_ir_parse( $pricing_pair_fixture );
+$pricing_pair_context = [ 'canonical_create' => true, 'composition_record' => 'pricing.tiers' ];
+$pricing_pair_plan = wpae_design_plan_from_brief( $pricing_pair_brief, $pricing_pair_context );
+$pricing_pair_validation = wpae_design_plan_validate( $pricing_pair_plan, $pricing_pair_brief );
+$pricing_pair_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $pricing_pair_plan, $pricing_pair_brief ), $pricing_pair_brief, [], [ 'resolved_visual' => $pricing_pair_plan['resolved_visual'] ?? [] ] );
+$pricing_pair_flat = $walk_elements( (array) ( $pricing_pair_native['elementor_data'] ?? [] ) );
+$pricing_pair_plan_items = [];
+foreach ( (array) ( $pricing_pair_plan['sections'][0]['children'] ?? [] ) as $pricing_pair_child ) {
+	if ( is_array( $pricing_pair_child ) && ( $pricing_pair_child['role'] ?? '' ) === 'pricing_cards' ) { $pricing_pair_plan_items = array_values( (array) ( $pricing_pair_child['items'] ?? [] ) ); }
+}
+$pricing_pair_native_tier_titles = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? '' ), array_filter( $pricing_pair_flat, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' && in_array( (string) ( $node['settings']['title'] ?? '' ), [ 'Старт', 'Проект' ], true ) ) ) );
+$pricing_pair_buttons = array_values( array_filter( $pricing_pair_flat, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$check( count( $pricing_pair_contract['items'] ?? [] ) === 2 && array_column( $pricing_pair_contract['items'], 'label' ) === [ 'Старт', 'Проект' ] && array_column( $pricing_pair_contract['items'], 'price_text' ) === [ '50 000 ₸/мес', '150 000 ₸/год' ] && array_column( $pricing_pair_contract['items'], 'description' ) === [ '', '' ], 'Quoted label-price-only lines preserve two Pricing tiers without inventing descriptions' );
+$check( array_column( $pricing_pair_contract['items'], 'cta_text' ) === [ 'Выбрать Старт', 'Выбрать Проект' ] && array_column( $pricing_pair_contract['items'], 'cta_url' ) === [ '#start', '#project' ] && array_map( static fn( array $item ): int => count( $item['feature_refs'] ?? [] ), $pricing_pair_brief['pricing_items'] ?? [] ) === [ 2, 2 ], 'Two-tier Brief keeps exact ordered CTA pairs and feature ownership' );
+$check( ! empty( wpae_brief_ir_validate( $pricing_pair_brief )['ok'] ) && ! empty( $pricing_pair_validation['ok'] ) && ( $pricing_pair_plan['composition_decision']['record_id'] ?? '' ) === 'pricing.tiers' && ! in_array( 'pricing_tiers_required', (array) ( $pricing_pair_validation['errors'] ?? [] ), true ), 'Two-tier exact Pricing Brief freezes and validates pricing.tiers in DesignPlan' );
+$check( ! empty( $pricing_pair_native['ok'] ), 'Two-tier Pricing native compiler succeeds' );
+$pricing_pair_native_texts = array_map( static fn( array $node ): string => (string) ( $node['settings']['editor'] ?? '' ), array_filter( $pricing_pair_flat, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) );
+$check( count( $pricing_pair_plan_items ) === 2 && $pricing_pair_native_tier_titles === [ 'Старт', 'Проект' ] && count( array_filter( $pricing_pair_flat, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' && in_array( (string) ( $node['settings']['title'] ?? '' ), [ '50 000 ₸', '150 000 ₸' ], true ) ) ) === 2, 'Two-tier Pricing serializes exactly the two tier labels and prices into native widgets' );
+$check( array_column( array_map( static fn( array $button ): array => [ 'text' => $button['settings']['text'] ?? '', 'url' => $button['settings']['link']['url'] ?? '' ], $pricing_pair_buttons ), 'text' ) === [ 'Выбрать Старт', 'Выбрать Проект' ] && array_column( array_map( static fn( array $button ): array => [ 'url' => $button['settings']['link']['url'] ?? '' ], $pricing_pair_buttons ), 'url' ) === [ '#start', '#project' ] && count( $pricing_pair_buttons ) === 2 && array_intersect( [ '/мес', '/год', 'Аудит', 'План', 'Дизайн', 'Разработка' ], $pricing_pair_native_texts ) === [ '/мес', '/год', 'Аудит', 'План', 'Дизайн', 'Разработка' ], 'Two-tier Pricing native widgets retain both periods, all features and ordered CTA links' );
 $paragraph_copy = "Первый абзац.\n\nВторой & <текст> с точной фразой.";
 $paragraph_brief = [ 'content' => [ [ 'id' => 'paragraph-copy', 'role' => 'body', 'exact_text' => $paragraph_copy ] ] ];
 $paragraph_ir = [
