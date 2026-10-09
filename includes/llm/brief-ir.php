@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v19';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v20';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -35,6 +35,45 @@ function wpae_brief_ir_utf8_slice( string $text, int $offset, int $length ): str
 function wpae_brief_ir_normalize_text( string $text ): string {
 	$text = trim( preg_replace( '/\s+/u', ' ', $text ) ?? $text );
 	return trim( $text, " \t\n\r\0\x0B.,;:" );
+}
+
+/** Extract explicitly ordered quoted Benefits headings and keep their source-owned spans. */
+function wpae_brief_ir_explicit_benefit_titles( string $source_text ): array {
+	if ( ! preg_match( '/(?:используй|оставь|сохрани|use|keep)\b[^:\n]{0,120}\bточн\w*\s+(?:заголовк\w*|названи\w*)\b[^:\n]{0,120}:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE ) ) {
+		return [];
+	}
+	$cursor = (int) $marker[0][1] + strlen( (string) $marker[0][0] );
+	$titles = [];
+	while ( $cursor < strlen( $source_text ) ) {
+		$tail = substr( $source_text, $cursor );
+		if ( ! preg_match( '/^\s*(?<quoted>«(?<angle>[^»\r\n]{1,200})»|“(?<curly>[^”\r\n]{1,200})”|"(?<plain>[^"\r\n]{1,200})")(?<separator>\s*[;,]\s*|\s*(?=[.!?\r\n]|$))/u', $tail, $item, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL ) ) {
+			break;
+		}
+		$text = '';
+		$text_offset = -1;
+		foreach ( [ 'angle', 'curly', 'plain' ] as $capture ) {
+			if ( isset( $item[ $capture ][1] ) && $item[ $capture ][1] >= 0 ) {
+				$text = (string) $item[ $capture ][0];
+				$text_offset = $cursor + (int) $item[ $capture ][1];
+				break;
+			}
+		}
+		if ( $text === '' || $text_offset < 0 ) {
+			break;
+		}
+		$titles[] = [
+			'text' => $text,
+			'source_span' => [ $text_offset, $text_offset + strlen( $text ) ],
+			'quote_start' => $cursor + (int) ( $item['quoted'][1] ?? 0 ),
+			'group_id' => 'benefits_' . ( count( $titles ) + 1 ),
+		];
+		$cursor += strlen( (string) $item[0][0] );
+		$separator = (string) ( $item['separator'][0] ?? '' );
+		if ( ! preg_match( '/[;,]/u', $separator ) ) {
+			break;
+		}
+	}
+	return $titles;
 }
 
 /** Parse only explicit, native-representable 3x3 image focal directions from the image's own prompt segment. */
@@ -645,6 +684,12 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$quote_pattern = '~«([^»]{1,20000})»|“([^”]{1,20000})”|"([^"]{1,20000})"~su';
 	$quote_matches = [];
 	preg_match_all( $quote_pattern, $source_text, $quote_matches, PREG_OFFSET_CAPTURE );
+	$benefit_title_groups = [];
+	if ( $archetype === 'benefits' ) {
+		foreach ( wpae_brief_ir_explicit_benefit_titles( $source_text ) as $title ) {
+			$benefit_title_groups[ (int) $title['quote_start'] ] = (string) $title['group_id'];
+		}
+	}
 	$simple_testimonial_groups = [];
 	$simple_testimonial_quote_offsets = [];
 	$simple_testimonial_author_quote_offsets = [];
@@ -802,12 +847,17 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$group_id = $pair_group_id;
 			if ( preg_match( '/(?:преимуществ\w*|benefit|feature|вопрос|ответ|question|answer)\s*#?(\d+)[^«»"]*$/iu', $prefix, $pair_index ) ) { $group_id = $archetype . '_' . (int) $pair_index[1]; }
 		}
+		$explicit_benefit_title = isset( $benefit_title_groups[ $start ] );
+		if ( $explicit_benefit_title ) {
+			$role = 'feature_title';
+			$group_id = $benefit_title_groups[ $start ];
+		}
 
 		if ( $archetype === 'testimonials' && $role === 'text' && $previous_testimonial_group !== '' && preg_match( '/(?:автор|author)\s*[:\-]?\s*$/iu', $prefix ) ) {
 			$role = 'testimonial_author';
 			$group_id = $previous_testimonial_group;
 		}
-		$id_override = $process_id_override !== '' ? $process_id_override : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial|portfolio)_/', '', $role ) : '' );
+		$id_override = $process_id_override !== '' ? $process_id_override : ( $explicit_benefit_title ? $group_id . '_title' : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial|portfolio)_/', '', $role ) : '' ) );
 		$url = null;
 		$url_requested = false;
 		// Scope URL association to the structural segment between this quoted
@@ -833,7 +883,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$role = $cta_index === 0 ? 'cta' : 'cta_' . ( $cta_index + 1 );
 			$cta_index++;
 		}
-		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author', 'portfolio_project_title', 'portfolio_project_description' ], true );
+		$required = in_array( $role, [ 'title', 'body', 'cta', 'feature_title' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author', 'portfolio_project_title', 'portfolio_project_description' ], true );
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$content_start = $start;
 		$content_length = strlen( $full );
