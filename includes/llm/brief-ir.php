@@ -39,7 +39,11 @@ function wpae_brief_ir_normalize_text( string $text ): string {
 
 /** Extract explicitly ordered quoted Benefits headings and keep their source-owned spans. */
 function wpae_brief_ir_explicit_benefit_titles( string $source_text ): array {
-	if ( ! preg_match( '/(?:используй|оставь|сохрани|use|keep)\b[^:\n]{0,120}\bточн\w*\s+(?:заголовк\w*|названи\w*)\b[^:\n]{0,120}:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE ) ) {
+	$found_marker = preg_match( '/(?:используй|оставь|сохрани|use|keep)\b[^:\n]{0,120}\bточн\w*\s+(?:заголовк\w*|названи\w*)\b[^:\n]{0,120}:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE );
+	if ( ! $found_marker ) {
+		$found_marker = preg_match( '/(?:заголовк\w*|titles?)\b(?:\s+и\s+(?:их\s+)?порядок)?\s+(?:сохрани|оставь|keep|preserve)\s+(?:точно|без\s+изменений|exactly?|unchanged)\s*:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE );
+	}
+	if ( ! $found_marker ) {
 		return [];
 	}
 	$cursor = (int) $marker[0][1] + strlen( (string) $marker[0][0] );
