@@ -1,0 +1,18 @@
+{
+  "post_id": 5214,
+  "source_version": "v02.11.317",
+  "scenario": "D-pricing-first-render",
+  "operation_id": "wpae-18bff12aaae6edb1",
+  "identity": "e4c05b68-2f7f-4c5e-bc40-9b2cbf69c7ca",
+  "root_before_undo": "2456a75",
+  "accepted_contract_id": "contract-d793e4f2bc169c65def7221b",
+  "revision_before_undo": 6,
+  "revision_after_undo": 7,
+  "undo_status": "already_undone",
+  "editor_root_ids_after_undo": [],
+  "public_root_ids_after_reload": [],
+  "publish_disabled": true,
+  "public_css_viewport": "1232x923",
+  "public_horizontal_overflow": false,
+  "guarded_undo_scope": "wpae-18bff12aaae6edb1 only"
+}

@@ -1,0 +1,1530 @@
+{
+  "captured_at": "2026-10-09T07:30:22.402Z",
+  "operation_id": "wpae-43faaa89c500ce46",
+  "editor_viewport_css": [
+    390,
+    844
+  ],
+  "evidence": {
+    "iframe": {
+      "error": "Cannot read properties of undefined (reading 'querySelectorAll')"
+    },
+    "messages": [
+      {
+        "className": "wpae-llm-message wpae-llm-message--assistant wpae-llm-message--diagnostic",
+        "data": "JSON диагностики LLM:\n{\n  \"action_path\": \"pipeline\",\n  \"provider_calls\": 1,\n  \"route\": \"provider_typed_intake_then_local_deterministic\",\n  \"intake\": {\n    \"source\": \"provider_typed_intake\",\n    \"provider\": \"openrouter\",\n    \"model\": \"openrouter/free\",\n    \"provider_calls\": 1,\n    \"latency_ms\": 26291,\n    \"retry_count\": 0,\n    \"retry_reason\": \"\",\n    \"first_finish_reason\": \"stop\",\n    \"finish_reason\": \"stop\",\n    \"request_hash\": \"d50e26eaabcccc8d5096fee4d95e418ed7c38c03d531ab93f4ff72f262628a49\",\n    \"instruction_hash\": \"54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5\",\n    \"generated_slot_count\": 2,\n    \"family\": \"hero\"\n  },\n  \"design_pipeline\": {\n    \"schema\": \"wpae-design-pipeline-trace-v1\",\n    \"mode\": \"active\",\n    \"status\": \"written\",\n    \"brief\": {\n      \"schema\": \"wpae-brief-v1\",\n      \"hash\": \"55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4\",\n      \"locale\": \"ru\",\n      \"archetype\": \"hero\",\n      \"intake_source\": \"provider_typed_intake\",\n      \"content_count\": 3,\n      \"ambiguity_count\": 0,\n      \"warnings\": [],\n      \"intake\": {\n        \"source\": \"provider_typed_intake\",\n        \"provider\": \"openrouter\",\n        \"model\": \"openrouter/free\",\n        \"provider_calls\": 1,\n        \"latency_ms\": 26291,\n        \"retry_count\": 0,\n        \"retry_reason\": \"\",\n        \"first_finish_reason\": \"stop\",\n        \"finish_reason\": \"stop\",\n        \"request_hash\": \"d50e26eaabcccc8d5096fee4d95e418ed7c38c03d531ab93f4ff72f262628a49\",\n        \"instruction_hash\": \"54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5\",\n        \"generated_slot_count\": 2,\n        \"family\": \"hero\"\n      },\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"services\": []\n      }\n    },\n    \"library_retrieval\": {\n      \"status\": \"skipped\",\n      \"reason\": \"ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed\",\n      \"called\": false\n    },\n    \"content_plan\": {\n      \"brief_hash\": \"55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4\",\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"services\": []\n      },\n      \"item_count\": 0\n    },\n    \"plan\": {\n      \"schema\": \"wpae-design-plan-v1\",\n      \"hash\": \"5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99\",\n      \"brief_hash\": \"55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4\",\n      \"archetype\": \"hero\",\n      \"composition_decision\": {\n        \"identity\": \"hero.stacked_left\",\n        \"source\": \"content_ranked_catalog\",\n        \"slot_bindings\": [\n          {\n            \"role\": \"copy_group\",\n            \"allowed_widgets\": [\n              \"heading\",\n              \"text-editor\",\n              \"button\"\n            ],\n            \"content_refs\": [\n              \"generated_section_title\",\n              \"generated_section_intro\",\n              \"hero_cta\"\n            ],\n            \"token_refs\": [\n              \"color.text\",\n              \"color.muted\",\n              \"color.primary\",\n              \"type.display\",\n              \"type.section_title\",\n              \"type.body\",\n              \"space.component\"\n            ],\n            \"layout_constraints\": {\n              \"min_width\": 0,\n              \"max_width\": 100,\n              \"eyebrow_presentation\": \"pill\"\n            },\n            \"responsive_policy\": \"copy_first_stack\",\n            \"media_refs\": [],\n            \"editable_fields\": [\n              \"text\",\n              \"url\"\n            ],\n            \"provenance\": {\n              \"source\": \"brief\",\n              \"roles\": [\n                \"brand\",\n                \"eyebrow\",\n                \"title\",\n                \"body\",\n                \"cta\"\n              ]\n            }\n          }\n        ],\n        \"record_id\": \"hero.text_only\",\n        \"record_version\": 1,\n        \"record_hash\": \"0bacf04dfe1a8635ddae8dda8313a0e295ec1627bfafa72af3b2b4bb3a6a1e03\",\n        \"brief_hash\": \"55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4\",\n        \"request_selection\": {\n          \"mode\": \"automatic\",\n          \"record_id\": null,\n          \"record_version\": null,\n          \"visual_profile\": null,\n          \"visual_profile_source\": \"not_requested\",\n          \"brief_composition\": null,\n          \"brief_media_side\": null\n        },\n        \"variant_kind\": \"structural_alternative\",\n        \"distinct\": true,\n        \"policy\": {\n          \"composition\": \"stacked_left\",\n          \"desktop\": \"stacked_left\",\n          \"tablet\": \"stack\",\n          \"mobile\": \"stack\"\n        },\n        \"visual_profile\": \"editorial_light\",\n        \"errors\": [],\n        \"selection_policy\": \"wpae-composition-selection-v2\",\n        \"catalog_id\": \"wpae-compositions-v1\",\n        \"catalog_identity\": \"078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18\",\n        \"selection_metrics\": {\n          \"item_count\": 1,\n          \"max_title_chars\": 55,\n          \"max_body_chars\": 63,\n          \"max_entity_chars\": 15,\n          \"min_entity_chars\": 15,\n          \"entity_length_spread\": 0,\n          \"cta_count\": 1,\n          \"max_cta_chars\": 15,\n          \"faq_pair_count\": 0\n        },\n        \"selection_reasons\": [\n          \"no_owned_media\"\n        ],\n        \"rejected_candidates\": {\n          \"hero.split_60_40.right\": [\n            \"composition_required_media_missing\"\n          ],\n          \"hero.split_60_40.left\": [\n            \"composition_required_media_missing\"\n          ],\n          \"hero.split_50_50.right\": [\n            \"composition_required_media_missing\"\n          ],\n          \"hero.split_50_50.left\": [\n            \"composition_required_media_missing\"\n          ],\n          \"hero.split_40_60.right\": [\n            \"composition_required_media_missing\"\n          ],\n          \"hero.split_40_60.left\": [\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_60_40.right\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_60_40.left\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_50_50.right\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_50_50.left\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_40_60.right\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"about.split_40_60.left\": [\n            \"composition_cross_family\",\n            \"composition_required_media_missing\"\n          ],\n          \"benefits.grid\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"benefits.editorial_list\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"benefits.linear\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"pricing.tiers\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"faq.native\": [\n            \"composition_cross_family\"\n          ],\n          \"team.grid\": [\n            \"composition_cross_family\"\n          ],\n          \"team.editorial_rows\": [\n            \"composition_cross_family\"\n          ],\n          \"testimonials.grid\": [\n            \"composition_cross_family\"\n          ],\n          \"testimonials.editorial_rows\": [\n            \"composition_cross_family\"\n          ],\n          \"portfolio.project_cards\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\",\n            \"composition_required_media_missing\"\n          ],\n          \"portfolio.editorial_rows\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\",\n            \"composition_required_media_missing\"\n          ],\n          \"cta.centered\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"cta.split_actions\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"services.icon_cards\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"process.ordered_steps\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ],\n          \"services.photo_cards\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\",\n            \"composition_required_media_missing\"\n          ],\n          \"services.split_editorial\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\",\n            \"composition_required_media_missing\"\n          ],\n          \"services.text_icon_list\": [\n            \"composition_cross_family\",\n            \"composition_group_cardinality\"\n          ]\n        },\n        \"alternatives\": []\n      },\n      \"resolved_visual\": {\n        \"errors\": [],\n        \"profile\": \"editorial_light\",\n        \"values\": {\n          \"type.display\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"3.25rem\",\n            \"tablet\": \"2.5rem\",\n            \"mobile\": \"2rem\",\n            \"weight\": \"700\",\n            \"line_height\": \"1.1\",\n            \"line_height_tablet\": \"1.1\",\n            \"line_height_mobile\": \"1.1\"\n          },\n          \"type.section_title\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"2.5rem\",\n            \"tablet\": \"2rem\",\n            \"mobile\": \"1.75rem\",\n            \"weight\": \"700\",\n            \"line_height\": \"1.15\",\n            \"line_height_tablet\": \"1.15\",\n            \"line_height_mobile\": \"1.15\"\n          },\n          \"type.body\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.0625rem\",\n            \"tablet\": \"1rem\",\n            \"mobile\": \"1rem\",\n            \"weight\": \"400\",\n            \"line_height\": \"1.65\",\n            \"line_height_tablet\": \"1.65\",\n            \"line_height_mobile\": \"1.65\"\n          },\n          \"space.section\": \"5rem\",\n          \"space.component\": \"1.25rem\",\n          \"radius.card\": \"0.25rem\",\n          \"radius.pill\": \"999px\",\n          \"color.primary\": \"#000000\",\n          \"color.focus\": \"#000000\",\n          \"color.hover\": \"#000000\",\n          \"color.page_bg\": \"#ffffff\",\n          \"color.text\": \"#333333\",\n          \"type.feature\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.25rem\",\n            \"tablet\": \"1.1875rem\",\n            \"mobile\": \"1.125rem\",\n            \"weight\": \"600\",\n            \"line_height\": \"1.25\",\n            \"line_height_tablet\": \"1.25\",\n            \"line_height_mobile\": \"1.25\"\n          },\n          \"space.section_tablet\": \"3.5rem\",\n          \"space.section_mobile\": \"2.5rem\",\n          \"space.component_tablet\": \"1rem\",\n          \"space.component_mobile\": \"0.875rem\",\n          \"layout.copy_width\": \"38rem\",\n          \"space.card\": \"1.25rem\",\n          \"color.surface\": \"#ffffff\",\n          \"color.muted\": \"#333333\",\n          \"color.border\": \"transparent\",\n          \"color.section_bg\": \"#61ce7033\"\n        },\n        \"sources\": {\n          \"type.display\": \"visual_profile:editorial_light\",\n          \"type.section_title\": \"visual_profile:editorial_light\",\n          \"type.body\": \"visual_profile:editorial_light\",\n          \"space.section\": \"visual_profile:editorial_light\",\n          \"space.component\": \"visual_profile:editorial_light\",\n          \"radius.card\": \"visual_profile:editorial_light\",\n          \"radius.pill\": \"safe_default\",\n          \"color.primary\": \"elementor_global_color\",\n          \"color.focus\": \"contrast_safe_semantic_alias:color.primary\",\n          \"color.hover\": \"semantic_alias:color.primary\",\n          \"color.page_bg\": \"confirmed_elementor_preview_body\",\n          \"color.text\": \"confirmed_elementor_preview_body\",\n          \"type.feature\": \"visual_profile:editorial_light\",\n          \"space.section_tablet\": \"visual_profile:editorial_light\",\n          \"space.section_mobile\": \"visual_profile:editorial_light\",\n          \"space.component_tablet\": \"visual_profile:editorial_light\",\n          \"space.component_mobile\": \"visual_profile:editorial_light\",\n          \"layout.copy_width\": \"visual_profile:editorial_light\",\n          \"space.card\": \"visual_profile:editorial_light\",\n          \"color.surface\": \"semantic_alias:confirmed_color.page_bg\",\n          \"color.muted\": \"semantic_alias:confirmed_color.text\",\n          \"color.border\": \"no_confirmed_border_role_transparent\",\n          \"color.section_bg\": \"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\"\n        },\n        \"palette\": {\n          \"sources\": {\n            \"color.primary\": \"elementor_global_color\",\n            \"color.focus\": \"contrast_safe_semantic_alias:color.primary\",\n            \"color.hover\": \"semantic_alias:color.primary\",\n            \"color.surface\": \"semantic_alias:confirmed_color.page_bg\",\n            \"color.muted\": \"semantic_alias:confirmed_color.text\",\n            \"color.border\": \"no_confirmed_border_role_transparent\",\n            \"color.section_bg\": \"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\"\n          },\n          \"accent_reference\": {\n            \"value\": \"#61ce70\",\n            \"source\": \"elementor_system_color_stock_default:accent\",\n            \"confirmed\": false\n          },\n          \"missing\": [\n            \"color.page_bg\",\n            \"color.surface\",\n            \"color.text\",\n            \"color.muted\"\n          ],\n          \"unconfirmed_project_defaults\": {\n            \"elementor_system_color.secondary\": \"matches_elementor_stock_default\",\n            \"elementor_system_color.text\": \"matches_elementor_stock_default\",\n            \"elementor_system_color.accent\": \"matches_elementor_stock_default\",\n            \"color.border\": \"transparent_border_requires_confirmed_surface_context\"\n          },\n          \"elementor_global_color_ids\": [\n            \"primary\",\n            \"d7c2294\",\n            \"1148f8d\",\n            \"9a6360b\",\n            \"a03dfb3\",\n            \"83a384a\"\n          ]\n        },\n        \"page_context\": {\n          \"source\": \"elementor_preview_computed_body\",\n          \"post_id\": 5214,\n          \"viewport\": {\n            \"width\": 1025,\n            \"height\": 781\n          },\n          \"roles\": [\n            \"color.page_bg\",\n            \"color.text\"\n          ]\n        },\n        \"contrast_context\": {\n          \"background_underlay\": \"#ffffff\",\n          \"color.page_bg_underlay\": \"#ffffff\",\n          \"color.surface_underlay\": \"#ffffff\",\n          \"color.section_bg_underlay\": \"#ffffff\"\n        },\n        \"precedence\": [\n          \"safe_non_color_default\",\n          \"confirmed_wpae_project_option_or_elementor_global_color\",\n          \"elementor_preview_inherited_context_missing_roles_only\",\n          \"confirmed_page\",\n          \"selected_visual_profile_non_color\",\n          \"explicit_brief\"\n        ],\n        \"adjustments\": [],\n        \"contrast\": {\n          \"ok\": true,\n          \"pairs\": [\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.primary\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.hover\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 18.296755558105843,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            }\n          ],\n          \"errors\": []\n        }\n      },\n      \"visual_policy\": {\n        \"version\": 1,\n        \"precedence\": [\n          \"explicit_brief\",\n          \"composition_record\",\n          \"visual_profile\",\n          \"documented_default\"\n        ],\n        \"intro\": {\n          \"placement\": \"above_collection\",\n          \"text_align\": \"left\",\n          \"container_align\": \"start\",\n          \"reading_measure\": \"38rem\",\n          \"heading_level\": \"h1\",\n          \"title_token\": \"type.display\",\n          \"eyebrow_presentation\": \"pill\"\n        },\n        \"typography\": {\n          \"intro_title\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"3.25rem\",\n            \"tablet\": \"2.5rem\",\n            \"mobile\": \"2rem\",\n            \"weight\": \"700\",\n            \"line_height\": \"1.1\",\n            \"line_height_tablet\": \"1.1\",\n            \"line_height_mobile\": \"1.1\"\n          },\n          \"item_title\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.25rem\",\n            \"tablet\": \"1.1875rem\",\n            \"mobile\": \"1.125rem\",\n            \"weight\": \"600\",\n            \"line_height\": \"1.25\",\n            \"line_height_tablet\": \"1.25\",\n            \"line_height_mobile\": \"1.25\"\n          },\n          \"body\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.0625rem\",\n            \"tablet\": \"1rem\",\n            \"mobile\": \"1rem\",\n            \"weight\": \"400\",\n            \"line_height\": \"1.65\",\n            \"line_height_tablet\": \"1.65\",\n            \"line_height_mobile\": \"1.65\"\n          },\n          \"eyebrow\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"0.75rem\",\n            \"tablet\": \"0.75rem\",\n            \"mobile\": \"0.75rem\",\n            \"weight\": \"600\",\n            \"line_height\": \"1.2\",\n            \"line_height_tablet\": \"1.65\",\n            \"line_height_mobile\": \"1.65\"\n          },\n          \"price\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"2rem\",\n            \"tablet\": \"1.8rem\",\n            \"mobile\": \"1.6rem\",\n            \"weight\": \"800\",\n            \"line_height\": \"1.2\",\n            \"line_height_tablet\": \"1.65\",\n            \"line_height_mobile\": \"1.65\"\n          }\n        },\n        \"spacing\": {\n          \"eyebrow_title\": \"0.75rem\",\n          \"title_description\": \"1rem\",\n          \"description_cta\": \"1.5rem\",\n          \"intro_collection\": \"2rem\",\n          \"item_copy\": \"0.75rem\",\n          \"item_cta\": \"1.25rem\",\n          \"section\": {\n            \"desktop\": \"5rem\",\n            \"tablet\": \"3.5rem\",\n            \"mobile\": \"2.5rem\"\n          }\n        },\n        \"eyebrow_colors\": {\n          \"plain\": \"#000000\",\n          \"pill\": \"#ffffff\",\n          \"pill_background\": \"#000000\",\n          \"pill_border\": \"#000000\"\n        },\n        \"item_surface\": {\n          \"padding\": \"1.25rem\",\n          \"radius\": \"0.25rem\",\n          \"background\": \"#ffffff\"\n        },\n        \"section_surface\": {\n          \"token\": \"color.section_bg\",\n          \"source\": \"documented_default\",\n          \"palette_role\": \"accent\",\n          \"opacity\": 0.2,\n          \"transparency\": 0.8,\n          \"accent_source\": \"elementor_system_color_stock_default:accent\",\n          \"accent_confirmed\": false\n        },\n        \"entity_layout\": {\n          \"variant\": \"grid\",\n          \"columns\": {\n            \"desktop\": 1,\n            \"tablet\": 1,\n            \"mobile\": 1\n          },\n          \"gap\": \"0.75rem\"\n        },\n        \"inline_value\": {\n          \"direction\": {\n            \"desktop\": \"row\",\n            \"tablet\": \"row\",\n            \"mobile\": \"row\"\n          },\n          \"wrap\": \"wrap\",\n          \"main_align\": \"flex-start\",\n          \"cross_align\": \"center\",\n          \"gap\": \"0.25rem\"\n        },\n        \"collection\": {\n          \"implementation\": \"native_flex_equal\",\n          \"axis\": \"grid\",\n          \"alignment\": \"start\",\n          \"surface_alignment\": \"stretch\",\n          \"column_sources\": {\n            \"desktop\": \"documented_default\",\n            \"tablet\": \"composition_record\",\n            \"mobile\": \"documented_default\"\n          },\n          \"width\": {\n            \"desktop\": \"100%\",\n            \"tablet\": \"100%\",\n            \"mobile\": \"100%\"\n          },\n          \"item_height\": \"equal_row\",\n          \"item_count\": 1,\n          \"columns\": {\n            \"desktop\": 1,\n            \"tablet\": 1,\n            \"mobile\": 1\n          },\n          \"gap\": {\n            \"desktop\": \"1.25rem\",\n            \"tablet\": \"1rem\",\n            \"mobile\": \"0.875rem\"\n          }\n        },\n        \"cards\": {\n          \"direction\": \"column\",\n          \"row_alignment\": \"stretch\",\n          \"body_actions_distribution\": \"space_between\",\n          \"body_copy_gap\": \"0.75rem\",\n          \"media_copy_gap\": \"1.25rem\",\n          \"body_actions_gap\": \"1.25rem\",\n          \"mobile_height\": \"content\",\n          \"footer\": \"when_actions_exist\"\n        },\n        \"split\": {\n          \"gap\": {\n            \"desktop\": \"1.25rem\",\n            \"tablet\": \"1rem\",\n            \"mobile\": \"0.875rem\"\n          },\n          \"ratio\": [],\n          \"media_side\": \"right\",\n          \"mobile_direction\": \"column\",\n          \"responsive\": {\n            \"tablet\": \"stack\",\n            \"mobile\": \"stack\"\n          }\n        },\n        \"provenance\": {\n          \"record_id\": \"hero.text_only\",\n          \"profile\": \"editorial_light\",\n          \"field_sources\": {\n            \"intro_title_token\": \"documented_default\",\n            \"collection_width_desktop\": \"documented_default\",\n            \"collection_width_tablet\": \"documented_default\",\n            \"collection_width_mobile\": \"documented_default\",\n            \"collection_gap_desktop\": \"documented_default\",\n            \"collection_gap_tablet\": \"documented_default\",\n            \"collection_gap_mobile\": \"documented_default\",\n            \"collection_item_height\": \"documented_default\",\n            \"collection_alignment\": \"documented_default\",\n            \"collection_surface_alignment\": \"documented_default\",\n            \"section_surface_token\": \"documented_default\",\n            \"collection_implementation\": \"documented_default\",\n            \"intro_text_align\": \"documented_default\",\n            \"intro_placement\": \"documented_default\",\n            \"intro_container_align\": \"documented_default\",\n            \"reading_measure\": \"documented_default\",\n            \"eyebrow_presentation\": \"documented_default\",\n            \"eyebrow_title_gap\": \"documented_default\",\n            \"title_description_gap\": \"documented_default\",\n            \"description_cta_gap\": \"documented_default\",\n            \"intro_collection_gap\": \"documented_default\",\n            \"item_copy_gap\": \"documented_default\",\n            \"item_cta_gap\": \"documented_default\",\n            \"item_media_gap\": \"documented_default\",\n            \"inline_value\": \"documented_default\"\n          },\n          \"token_sources\": {\n            \"type.display\": \"visual_profile:editorial_light\",\n            \"type.section_title\": \"visual_profile:editorial_light\",\n            \"type.body\": \"visual_profile:editorial_light\",\n            \"space.section\": \"visual_profile:editorial_light\",\n            \"space.component\": \"visual_profile:editorial_light\",\n            \"radius.card\": \"visual_profile:editorial_light\",\n            \"radius.pill\": \"safe_default\",\n            \"color.primary\": \"elementor_global_color\",\n            \"color.focus\": \"contrast_safe_semantic_alias:color.primary\",\n            \"color.hover\": \"semantic_alias:color.primary\",\n            \"color.page_bg\": \"confirmed_elementor_preview_body\",\n            \"color.text\": \"confirmed_elementor_preview_body\",\n            \"type.feature\": \"visual_profile:editorial_light\",\n            \"space.section_tablet\": \"visual_profile:editorial_light\",\n            \"space.section_mobile\": \"visual_profile:editorial_light\",\n            \"space.component_tablet\": \"visual_profile:editorial_light\",\n            \"space.component_mobile\": \"visual_profile:editorial_light\",\n            \"layout.copy_width\": \"visual_profile:editorial_light\",\n            \"space.card\": \"visual_profile:editorial_light\",\n            \"color.surface\": \"semantic_alias:confirmed_color.page_bg\",\n            \"color.muted\": \"semantic_alias:confirmed_color.text\",\n            \"color.border\": \"no_confirmed_border_role_transparent\",\n            \"color.section_bg\": \"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\"\n          }\n        }\n      },\n      \"section_count\": 1,\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"capabilities\": {\n          \"schema\": \"wpae-widget-capability-v1\",\n          \"ok\": true,\n          \"requested\": [\n            \"container\",\n            \"heading\",\n            \"text-editor\",\n            \"button\"\n          ],\n          \"available\": [\n            \"container\",\n            \"heading\",\n            \"text-editor\",\n            \"button\"\n          ],\n          \"resolved\": [\n            {\n              \"from\": \"container\",\n              \"to\": \"container\",\n              \"downgraded\": false,\n              \"runtime_result\": \"structural\"\n            },\n            {\n              \"from\": \"heading\",\n              \"to\": \"heading\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            },\n            {\n              \"from\": \"text-editor\",\n              \"to\": \"text-editor\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            },\n            {\n              \"from\": \"button\",\n              \"to\": \"button\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            }\n          ],\n          \"unavailable\": [],\n          \"unknown\": [],\n          \"downgrades\": [],\n          \"failures\": []\n        },\n        \"tokens\": {\n          \"ok\": true,\n          \"resolved\": [\n            {\n              \"token\": \"color.page_bg\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.surface\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.text\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.muted\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.primary\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.border\",\n              \"value\": \"transparent\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.focus\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.hover\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.display\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"3.25rem\",\n                \"tablet\": \"2.5rem\",\n                \"mobile\": \"2rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.1\",\n                \"line_height_tablet\": \"1.1\",\n                \"line_height_mobile\": \"1.1\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.section_title\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"2.5rem\",\n                \"tablet\": \"2rem\",\n                \"mobile\": \"1.75rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.15\",\n                \"line_height_tablet\": \"1.15\",\n                \"line_height_mobile\": \"1.15\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.body\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"1.0625rem\",\n                \"tablet\": \"1rem\",\n                \"mobile\": \"1rem\",\n                \"weight\": \"400\",\n                \"line_height\": \"1.65\",\n                \"line_height_tablet\": \"1.65\",\n                \"line_height_mobile\": \"1.65\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"space.section\",\n              \"value\": \"5rem\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"space.component\",\n              \"value\": \"1.25rem\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"radius.card\",\n              \"value\": \"0.25rem\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"radius.pill\",\n              \"value\": \"999px\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.section_bg\",\n              \"value\": \"#61ce7033\",\n              \"source\": \"resolved_plan\"\n            }\n          ],\n          \"missing\": [],\n          \"fallbacks\": [],\n          \"collisions\": []\n        },\n        \"contrast\": {\n          \"ok\": true,\n          \"pairs\": [\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.primary\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.hover\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 18.296755558105843,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            }\n          ],\n          \"errors\": []\n        }\n      }\n    },\n    \"layout\": {\n      \"schema\": \"wpae-layout-report-v1\",\n      \"ok\": true,\n      \"violations\": [],\n      \"breakpoints\": [\n        {\n          \"breakpoint\": \"desktop\",\n          \"container_width\": 1376,\n          \"used_width\": 1376,\n          \"mobile_stack_result\": \"text_only_single_column\"\n        },\n        {\n          \"breakpoint\": \"laptop\",\n          \"container_width\": 960,\n          \"used_width\": 960,\n          \"mobile_stack_result\": \"text_only_single_column\"\n        },\n        {\n          \"breakpoint\": \"tablet\",\n          \"container_width\": 704,\n          \"used_width\": 704,\n          \"mobile_stack_result\": \"text_only_single_column\"\n        },\n        {\n          \"breakpoint\": \"mobile\",\n          \"container_width\": 358,\n          \"used_width\": 358,\n          \"mobile_stack_result\": \"text_only_single_column\"\n        }\n      ]\n    },\n    \"routing\": {\n      \"schema\": \"wpae-llm-route-v1\",\n      \"provider\": \"openrouter\",\n      \"model\": \"openrouter/free\",\n      \"route\": \"reliable_structured\",\n      \"input_tokens\": null,\n      \"output_tokens\": null,\n      \"latency_ms\": null,\n      \"retry_count\": null,\n      \"fallback_used\": false,\n      \"estimated_cost\": null,\n      \"success\": null,\n      \"provider_calls\": 0,\n      \"source\": \"not_called\",\n      \"action_path\": \"\",\n      \"metrics_known\": {\n        \"input_tokens\": false,\n        \"output_tokens\": false,\n        \"latency_ms\": false,\n        \"retry_count\": false,\n        \"estimated_cost\": false,\n        \"success\": false\n      }\n    },\n    \"elementor_ir\": {\n      \"schema\": \"wpae-elementor-ir-v2\",\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"widgets\": [\n          \"container\",\n          \"heading\",\n          \"text-editor\",\n          \"button\"\n        ],\n        \"capabilities\": {\n          \"schema\": \"wpae-widget-capability-v1\",\n          \"ok\": true,\n          \"requested\": [\n            \"container\",\n            \"heading\",\n            \"text-editor\",\n            \"button\"\n          ],\n          \"available\": [\n            \"container\",\n            \"heading\",\n            \"text-editor\",\n            \"button\"\n          ],\n          \"resolved\": [\n            {\n              \"from\": \"container\",\n              \"to\": \"container\",\n              \"downgraded\": false,\n              \"runtime_result\": \"structural\"\n            },\n            {\n              \"from\": \"heading\",\n              \"to\": \"heading\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            },\n            {\n              \"from\": \"text-editor\",\n              \"to\": \"text-editor\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            },\n            {\n              \"from\": \"button\",\n              \"to\": \"button\",\n              \"downgraded\": false,\n              \"runtime_result\": \"present\"\n            }\n          ],\n          \"unavailable\": [],\n          \"unknown\": [],\n          \"downgrades\": [],\n          \"failures\": []\n        }\n      },\n      \"compiled\": true,\n      \"report\": {\n        \"schema\": \"wpae-elementor-compile-report-v1\",\n        \"downgrades\": [],\n        \"errors\": [],\n        \"warnings\": [],\n        \"tokens\": {\n          \"resolved\": [\n            {\n              \"token\": \"color.section_bg\",\n              \"value\": \"#61ce7033\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"space.section\",\n              \"value\": \"5rem\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.section_bg\",\n              \"value\": \"#61ce7033\",\n              \"source\": \"documented_default\",\n              \"role\": \"section_surface\"\n            },\n            {\n              \"token\": \"color.text\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.muted\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.primary\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.display\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"3.25rem\",\n                \"tablet\": \"2.5rem\",\n                \"mobile\": \"2rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.1\",\n                \"line_height_tablet\": \"1.1\",\n                \"line_height_mobile\": \"1.1\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.section_title\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"2.5rem\",\n                \"tablet\": \"2rem\",\n                \"mobile\": \"1.75rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.15\",\n                \"line_height_tablet\": \"1.15\",\n                \"line_height_mobile\": \"1.15\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.body\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"1.0625rem\",\n                \"tablet\": \"1rem\",\n                \"mobile\": \"1rem\",\n                \"weight\": \"400\",\n                \"line_height\": \"1.65\",\n                \"line_height_tablet\": \"1.65\",\n                \"line_height_mobile\": \"1.65\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"space.component\",\n              \"value\": \"1.25rem\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.text\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.display\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"3.25rem\",\n                \"tablet\": \"2.5rem\",\n                \"mobile\": \"2rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.1\",\n                \"line_height_tablet\": \"1.1\",\n                \"line_height_mobile\": \"1.1\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.section_title\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"2.5rem\",\n                \"tablet\": \"2rem\",\n                \"mobile\": \"1.75rem\",\n                \"weight\": \"700\",\n                \"line_height\": \"1.15\",\n                \"line_height_tablet\": \"1.15\",\n                \"line_height_mobile\": \"1.15\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.body\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"1.0625rem\",\n                \"tablet\": \"1rem\",\n                \"mobile\": \"1rem\",\n                \"weight\": \"400\",\n                \"line_height\": \"1.65\",\n                \"line_height_tablet\": \"1.65\",\n                \"line_height_mobile\": \"1.65\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.muted\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"type.body\",\n              \"value\": {\n                \"font_family\": \"inherit\",\n                \"desktop\": \"1.0625rem\",\n                \"tablet\": \"1rem\",\n                \"mobile\": \"1rem\",\n                \"weight\": \"400\",\n                \"line_height\": \"1.65\",\n                \"line_height_tablet\": \"1.65\",\n                \"line_height_mobile\": \"1.65\"\n              },\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.primary\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.text\",\n              \"value\": \"#333333\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.surface\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.hover\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.focus\",\n              \"value\": \"#000000\",\n              \"source\": \"resolved_plan\"\n            }\n          ],\n          \"missing\": [],\n          \"fallbacks\": [],\n          \"collisions\": []\n        },\n        \"node_count\": 6,\n        \"contrast\": {\n          \"ok\": true,\n          \"pairs\": [\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 12.63465434445799,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.primary\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.hover\",\n              \"effective_foreground\": \"#ffffff\",\n              \"effective_background\": \"#000000\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.page_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#ffffff\",\n              \"ratio\": 21,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            },\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#333333\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 11.008246766747993,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.focus\",\n              \"background\": \"color.section_bg\",\n              \"effective_foreground\": \"#000000\",\n              \"effective_background\": \"#dff5e2\",\n              \"ratio\": 18.296755558105843,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            }\n          ],\n          \"errors\": []\n        },\n        \"native_roundtrip\": {\n          \"version\": \"wpae-native-roundtrip-v3\",\n          \"control_aware\": true,\n          \"authored_copy\": \"BriefIR exact_text retained; native representation freezes before accepted signature\",\n          \"repeater_order_and_count\": \"authored and strictly compared\",\n          \"repeater_ids\": \"technical-only; seven-character Elementor IDs may be projected to the accepted IDs\",\n          \"allowed_legacy_serialization\": \"one exact <p> wrapper around single-line plain Accordion answer or Text Editor content; a plan-bound Elementor global page-background reference\",\n          \"global_background_reference\": \"single background_color reference on an inherited container only when its active-kit value equals the frozen color.page_bg\",\n          \"registered_platform_defaults\": [],\n          \"decisions\": []\n        }\n      }\n    },\n    \"preflight\": {\n      \"selected_scope\": \"page\",\n      \"roots_to_add\": 1,\n      \"nodes_to_change\": 6,\n      \"widgets\": [\n        \"container\",\n        \"heading\",\n        \"text-editor\",\n        \"button\"\n      ],\n      \"warnings\": [\n        \"media_unspecified_no_asset_text_only\"\n      ],\n      \"provider\": \"openrouter\",\n      \"model\": \"openrouter/free\",\n      \"estimated_cost\": null,\n      \"estimated_latency_ms\": null,\n      \"route\": \"provider_typed_intake_then_local_deterministic\",\n      \"provider_calls\": 1\n    },\n    \"frozen_decisions\": {\n      \"plan_hash\": \"5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99\",\n      \"compiled_signature\": \"b6cddba960bf1608369a87d818bd201dc047a688679f890f9422ae37abdf7048\",\n      \"readback_signature\": \"b6cddba960bf1608369a87d818bd201dc047a688679f890f9422ae37abdf7048\",\n      \"readback_matches\": true\n    }\n  },\n  \"operation_ledger\": {\n    \"schema\": \"wpae-design-operation-v1\",\n    \"operation_id\": \"wpae-43faaa89c500ce46\",\n    \"operation_identity\": \"94b7f560-a292-4a6e-a105-6cc0c02a4188\",\n    \"idempotency_key\": \"92a65611f222361960ab319864c12f6a683a9b5408128199abf7f115fe51248b\",\n    \"post_id\": 5214,\n    \"selected_scope\": \"page\",\n    \"operation_type\": \"design\",\n    \"brief_hash\": \"55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4\",\n    \"plan_hash\": \"5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99\",\n    \"compiled_hash\": \"45b1587f0b6b4d5da23467486fa2c2f4c545851d10270e664386e2842070fd8e\",\n    \"saved_hash\": \"803b306d8a8c96ab456db7125247489514a172d649d7768b363b6456b41b3067\",\n    \"rendered_html_hash\": \"\",\n    \"vision_report_id\": \"\",\n    \"root_ids\": [\n      \"86f632a\"\n    ],\n    \"target_fingerprint\": \"eb293ff1d5ca049f946d52cf76c620afbb27daaa473d9b93bbcc2c2a3b4a06b8\",\n    \"provider\": \"openrouter\",\n    \"model\": \"openrouter/free\",\n    \"latency_ms\": 0,\n    \"retry_count\": 0,\n    \"fallback_used\": false,\n    \"current_state\": \"written\",\n    \"revision\": 4,\n    \"created_at\": \"2026-10-09 07:29:20\",\n    \"updated_at\": \"2026-10-09 07:29:21\",\n    \"rollback_snapshot_id\": \"780b735075f51dba69d2170f\",\n    \"accepted_contract_id\": \"contract-9f64431b2de1cf977f387610\",\n    \"accepted_contract_hash\": \"9f64431b2de1cf977f3876100fc1ce22d14a5c53e220f9467e5cf55919329edd\",\n    \"parent_operation_id\": \"\"\n  },\n  \"write_count\": 1,\n  \"render_review_pending\": true\n}",
+        "text": "JSON диагностики LLM"
+      }
+    ],
+    "navigatorRoots": [
+      "86f632a",
+      "b98e012",
+      "836a512"
+    ]
+  },
+  "diagnostics": {
+    "action_path": "pipeline",
+    "provider_calls": 1,
+    "route": "provider_typed_intake_then_local_deterministic",
+    "intake": {
+      "source": "provider_typed_intake",
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "provider_calls": 1,
+      "latency_ms": 26291,
+      "retry_count": 0,
+      "retry_reason": "",
+      "first_finish_reason": "stop",
+      "finish_reason": "stop",
+      "request_hash": "d50e26eaabcccc8d5096fee4d95e418ed7c38c03d531ab93f4ff72f262628a49",
+      "instruction_hash": "54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5",
+      "generated_slot_count": 2,
+      "family": "hero"
+    },
+    "design_pipeline": {
+      "schema": "wpae-design-pipeline-trace-v1",
+      "mode": "active",
+      "status": "written",
+      "brief": {
+        "schema": "wpae-brief-v1",
+        "hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+        "locale": "ru",
+        "archetype": "hero",
+        "intake_source": "provider_typed_intake",
+        "content_count": 3,
+        "ambiguity_count": 0,
+        "warnings": [],
+        "intake": {
+          "source": "provider_typed_intake",
+          "provider": "openrouter",
+          "model": "openrouter/free",
+          "provider_calls": 1,
+          "latency_ms": 26291,
+          "retry_count": 0,
+          "retry_reason": "",
+          "first_finish_reason": "stop",
+          "finish_reason": "stop",
+          "request_hash": "d50e26eaabcccc8d5096fee4d95e418ed7c38c03d531ab93f4ff72f262628a49",
+          "instruction_hash": "54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5",
+          "generated_slot_count": 2,
+          "family": "hero"
+        },
+        "validation": {
+          "ok": true,
+          "errors": [],
+          "services": []
+        }
+      },
+      "library_retrieval": {
+        "status": "skipped",
+        "reason": "ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed",
+        "called": false
+      },
+      "content_plan": {
+        "brief_hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+        "validation": {
+          "ok": true,
+          "errors": [],
+          "services": []
+        },
+        "item_count": 0
+      },
+      "plan": {
+        "schema": "wpae-design-plan-v1",
+        "hash": "5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99",
+        "brief_hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+        "archetype": "hero",
+        "composition_decision": {
+          "identity": "hero.stacked_left",
+          "source": "content_ranked_catalog",
+          "slot_bindings": [
+            {
+              "role": "copy_group",
+              "allowed_widgets": [
+                "heading",
+                "text-editor",
+                "button"
+              ],
+              "content_refs": [
+                "generated_section_title",
+                "generated_section_intro",
+                "hero_cta"
+              ],
+              "token_refs": [
+                "color.text",
+                "color.muted",
+                "color.primary",
+                "type.display",
+                "type.section_title",
+                "type.body",
+                "space.component"
+              ],
+              "layout_constraints": {
+                "min_width": 0,
+                "max_width": 100,
+                "eyebrow_presentation": "pill"
+              },
+              "responsive_policy": "copy_first_stack",
+              "media_refs": [],
+              "editable_fields": [
+                "text",
+                "url"
+              ],
+              "provenance": {
+                "source": "brief",
+                "roles": [
+                  "brand",
+                  "eyebrow",
+                  "title",
+                  "body",
+                  "cta"
+                ]
+              }
+            }
+          ],
+          "record_id": "hero.text_only",
+          "record_version": 1,
+          "record_hash": "0bacf04dfe1a8635ddae8dda8313a0e295ec1627bfafa72af3b2b4bb3a6a1e03",
+          "brief_hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+          "request_selection": {
+            "mode": "automatic",
+            "record_id": null,
+            "record_version": null,
+            "visual_profile": null,
+            "visual_profile_source": "not_requested",
+            "brief_composition": null,
+            "brief_media_side": null
+          },
+          "variant_kind": "structural_alternative",
+          "distinct": true,
+          "policy": {
+            "composition": "stacked_left",
+            "desktop": "stacked_left",
+            "tablet": "stack",
+            "mobile": "stack"
+          },
+          "visual_profile": "editorial_light",
+          "errors": [],
+          "selection_policy": "wpae-composition-selection-v2",
+          "catalog_id": "wpae-compositions-v1",
+          "catalog_identity": "078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18",
+          "selection_metrics": {
+            "item_count": 1,
+            "max_title_chars": 55,
+            "max_body_chars": 63,
+            "max_entity_chars": 15,
+            "min_entity_chars": 15,
+            "entity_length_spread": 0,
+            "cta_count": 1,
+            "max_cta_chars": 15,
+            "faq_pair_count": 0
+          },
+          "selection_reasons": [
+            "no_owned_media"
+          ],
+          "rejected_candidates": {
+            "hero.split_60_40.right": [
+              "composition_required_media_missing"
+            ],
+            "hero.split_60_40.left": [
+              "composition_required_media_missing"
+            ],
+            "hero.split_50_50.right": [
+              "composition_required_media_missing"
+            ],
+            "hero.split_50_50.left": [
+              "composition_required_media_missing"
+            ],
+            "hero.split_40_60.right": [
+              "composition_required_media_missing"
+            ],
+            "hero.split_40_60.left": [
+              "composition_required_media_missing"
+            ],
+            "about.split_60_40.right": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "about.split_60_40.left": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "about.split_50_50.right": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "about.split_50_50.left": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "about.split_40_60.right": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "about.split_40_60.left": [
+              "composition_cross_family",
+              "composition_required_media_missing"
+            ],
+            "benefits.grid": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "benefits.editorial_list": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "benefits.linear": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "pricing.tiers": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "faq.native": [
+              "composition_cross_family"
+            ],
+            "team.grid": [
+              "composition_cross_family"
+            ],
+            "team.editorial_rows": [
+              "composition_cross_family"
+            ],
+            "testimonials.grid": [
+              "composition_cross_family"
+            ],
+            "testimonials.editorial_rows": [
+              "composition_cross_family"
+            ],
+            "portfolio.project_cards": [
+              "composition_cross_family",
+              "composition_group_cardinality",
+              "composition_required_media_missing"
+            ],
+            "portfolio.editorial_rows": [
+              "composition_cross_family",
+              "composition_group_cardinality",
+              "composition_required_media_missing"
+            ],
+            "cta.centered": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "cta.split_actions": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "services.icon_cards": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "process.ordered_steps": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ],
+            "services.photo_cards": [
+              "composition_cross_family",
+              "composition_group_cardinality",
+              "composition_required_media_missing"
+            ],
+            "services.split_editorial": [
+              "composition_cross_family",
+              "composition_group_cardinality",
+              "composition_required_media_missing"
+            ],
+            "services.text_icon_list": [
+              "composition_cross_family",
+              "composition_group_cardinality"
+            ]
+          },
+          "alternatives": []
+        },
+        "resolved_visual": {
+          "errors": [],
+          "profile": "editorial_light",
+          "values": {
+            "type.display": {
+              "font_family": "inherit",
+              "desktop": "3.25rem",
+              "tablet": "2.5rem",
+              "mobile": "2rem",
+              "weight": "700",
+              "line_height": "1.1",
+              "line_height_tablet": "1.1",
+              "line_height_mobile": "1.1"
+            },
+            "type.section_title": {
+              "font_family": "inherit",
+              "desktop": "2.5rem",
+              "tablet": "2rem",
+              "mobile": "1.75rem",
+              "weight": "700",
+              "line_height": "1.15",
+              "line_height_tablet": "1.15",
+              "line_height_mobile": "1.15"
+            },
+            "type.body": {
+              "font_family": "inherit",
+              "desktop": "1.0625rem",
+              "tablet": "1rem",
+              "mobile": "1rem",
+              "weight": "400",
+              "line_height": "1.65",
+              "line_height_tablet": "1.65",
+              "line_height_mobile": "1.65"
+            },
+            "space.section": "5rem",
+            "space.component": "1.25rem",
+            "radius.card": "0.25rem",
+            "radius.pill": "999px",
+            "color.primary": "#000000",
+            "color.focus": "#000000",
+            "color.hover": "#000000",
+            "color.page_bg": "#ffffff",
+            "color.text": "#333333",
+            "type.feature": {
+              "font_family": "inherit",
+              "desktop": "1.25rem",
+              "tablet": "1.1875rem",
+              "mobile": "1.125rem",
+              "weight": "600",
+              "line_height": "1.25",
+              "line_height_tablet": "1.25",
+              "line_height_mobile": "1.25"
+            },
+            "space.section_tablet": "3.5rem",
+            "space.section_mobile": "2.5rem",
+            "space.component_tablet": "1rem",
+            "space.component_mobile": "0.875rem",
+            "layout.copy_width": "38rem",
+            "space.card": "1.25rem",
+            "color.surface": "#ffffff",
+            "color.muted": "#333333",
+            "color.border": "transparent",
+            "color.section_bg": "#61ce7033"
+          },
+          "sources": {
+            "type.display": "visual_profile:editorial_light",
+            "type.section_title": "visual_profile:editorial_light",
+            "type.body": "visual_profile:editorial_light",
+            "space.section": "visual_profile:editorial_light",
+            "space.component": "visual_profile:editorial_light",
+            "radius.card": "visual_profile:editorial_light",
+            "radius.pill": "safe_default",
+            "color.primary": "elementor_global_color",
+            "color.focus": "contrast_safe_semantic_alias:color.primary",
+            "color.hover": "semantic_alias:color.primary",
+            "color.page_bg": "confirmed_elementor_preview_body",
+            "color.text": "confirmed_elementor_preview_body",
+            "type.feature": "visual_profile:editorial_light",
+            "space.section_tablet": "visual_profile:editorial_light",
+            "space.section_mobile": "visual_profile:editorial_light",
+            "space.component_tablet": "visual_profile:editorial_light",
+            "space.component_mobile": "visual_profile:editorial_light",
+            "layout.copy_width": "visual_profile:editorial_light",
+            "space.card": "visual_profile:editorial_light",
+            "color.surface": "semantic_alias:confirmed_color.page_bg",
+            "color.muted": "semantic_alias:confirmed_color.text",
+            "color.border": "no_confirmed_border_role_transparent",
+            "color.section_bg": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent"
+          },
+          "palette": {
+            "sources": {
+              "color.primary": "elementor_global_color",
+              "color.focus": "contrast_safe_semantic_alias:color.primary",
+              "color.hover": "semantic_alias:color.primary",
+              "color.surface": "semantic_alias:confirmed_color.page_bg",
+              "color.muted": "semantic_alias:confirmed_color.text",
+              "color.border": "no_confirmed_border_role_transparent",
+              "color.section_bg": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent"
+            },
+            "accent_reference": {
+              "value": "#61ce70",
+              "source": "elementor_system_color_stock_default:accent",
+              "confirmed": false
+            },
+            "missing": [
+              "color.page_bg",
+              "color.surface",
+              "color.text",
+              "color.muted"
+            ],
+            "unconfirmed_project_defaults": {
+              "elementor_system_color.secondary": "matches_elementor_stock_default",
+              "elementor_system_color.text": "matches_elementor_stock_default",
+              "elementor_system_color.accent": "matches_elementor_stock_default",
+              "color.border": "transparent_border_requires_confirmed_surface_context"
+            },
+            "elementor_global_color_ids": [
+              "primary",
+              "d7c2294",
+              "1148f8d",
+              "9a6360b",
+              "a03dfb3",
+              "83a384a"
+            ]
+          },
+          "page_context": {
+            "source": "elementor_preview_computed_body",
+            "post_id": 5214,
+            "viewport": {
+              "width": 1025,
+              "height": 781
+            },
+            "roles": [
+              "color.page_bg",
+              "color.text"
+            ]
+          },
+          "contrast_context": {
+            "background_underlay": "#ffffff",
+            "color.page_bg_underlay": "#ffffff",
+            "color.surface_underlay": "#ffffff",
+            "color.section_bg_underlay": "#ffffff"
+          },
+          "precedence": [
+            "safe_non_color_default",
+            "confirmed_wpae_project_option_or_elementor_global_color",
+            "elementor_preview_inherited_context_missing_roles_only",
+            "confirmed_page",
+            "selected_visual_profile_non_color",
+            "explicit_brief"
+          ],
+          "adjustments": [],
+          "contrast": {
+            "ok": true,
+            "pairs": [
+              {
+                "foreground": "color.text",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.primary",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.hover",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.page_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#ffffff",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.text",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.section_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#dff5e2",
+                "ratio": 18.296755558105843,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              }
+            ],
+            "errors": []
+          }
+        },
+        "visual_policy": {
+          "version": 1,
+          "precedence": [
+            "explicit_brief",
+            "composition_record",
+            "visual_profile",
+            "documented_default"
+          ],
+          "intro": {
+            "placement": "above_collection",
+            "text_align": "left",
+            "container_align": "start",
+            "reading_measure": "38rem",
+            "heading_level": "h1",
+            "title_token": "type.display",
+            "eyebrow_presentation": "pill"
+          },
+          "typography": {
+            "intro_title": {
+              "font_family": "inherit",
+              "desktop": "3.25rem",
+              "tablet": "2.5rem",
+              "mobile": "2rem",
+              "weight": "700",
+              "line_height": "1.1",
+              "line_height_tablet": "1.1",
+              "line_height_mobile": "1.1"
+            },
+            "item_title": {
+              "font_family": "inherit",
+              "desktop": "1.25rem",
+              "tablet": "1.1875rem",
+              "mobile": "1.125rem",
+              "weight": "600",
+              "line_height": "1.25",
+              "line_height_tablet": "1.25",
+              "line_height_mobile": "1.25"
+            },
+            "body": {
+              "font_family": "inherit",
+              "desktop": "1.0625rem",
+              "tablet": "1rem",
+              "mobile": "1rem",
+              "weight": "400",
+              "line_height": "1.65",
+              "line_height_tablet": "1.65",
+              "line_height_mobile": "1.65"
+            },
+            "eyebrow": {
+              "font_family": "inherit",
+              "desktop": "0.75rem",
+              "tablet": "0.75rem",
+              "mobile": "0.75rem",
+              "weight": "600",
+              "line_height": "1.2",
+              "line_height_tablet": "1.65",
+              "line_height_mobile": "1.65"
+            },
+            "price": {
+              "font_family": "inherit",
+              "desktop": "2rem",
+              "tablet": "1.8rem",
+              "mobile": "1.6rem",
+              "weight": "800",
+              "line_height": "1.2",
+              "line_height_tablet": "1.65",
+              "line_height_mobile": "1.65"
+            }
+          },
+          "spacing": {
+            "eyebrow_title": "0.75rem",
+            "title_description": "1rem",
+            "description_cta": "1.5rem",
+            "intro_collection": "2rem",
+            "item_copy": "0.75rem",
+            "item_cta": "1.25rem",
+            "section": {
+              "desktop": "5rem",
+              "tablet": "3.5rem",
+              "mobile": "2.5rem"
+            }
+          },
+          "eyebrow_colors": {
+            "plain": "#000000",
+            "pill": "#ffffff",
+            "pill_background": "#000000",
+            "pill_border": "#000000"
+          },
+          "item_surface": {
+            "padding": "1.25rem",
+            "radius": "0.25rem",
+            "background": "#ffffff"
+          },
+          "section_surface": {
+            "token": "color.section_bg",
+            "source": "documented_default",
+            "palette_role": "accent",
+            "opacity": 0.2,
+            "transparency": 0.8,
+            "accent_source": "elementor_system_color_stock_default:accent",
+            "accent_confirmed": false
+          },
+          "entity_layout": {
+            "variant": "grid",
+            "columns": {
+              "desktop": 1,
+              "tablet": 1,
+              "mobile": 1
+            },
+            "gap": "0.75rem"
+          },
+          "inline_value": {
+            "direction": {
+              "desktop": "row",
+              "tablet": "row",
+              "mobile": "row"
+            },
+            "wrap": "wrap",
+            "main_align": "flex-start",
+            "cross_align": "center",
+            "gap": "0.25rem"
+          },
+          "collection": {
+            "implementation": "native_flex_equal",
+            "axis": "grid",
+            "alignment": "start",
+            "surface_alignment": "stretch",
+            "column_sources": {
+              "desktop": "documented_default",
+              "tablet": "composition_record",
+              "mobile": "documented_default"
+            },
+            "width": {
+              "desktop": "100%",
+              "tablet": "100%",
+              "mobile": "100%"
+            },
+            "item_height": "equal_row",
+            "item_count": 1,
+            "columns": {
+              "desktop": 1,
+              "tablet": 1,
+              "mobile": 1
+            },
+            "gap": {
+              "desktop": "1.25rem",
+              "tablet": "1rem",
+              "mobile": "0.875rem"
+            }
+          },
+          "cards": {
+            "direction": "column",
+            "row_alignment": "stretch",
+            "body_actions_distribution": "space_between",
+            "body_copy_gap": "0.75rem",
+            "media_copy_gap": "1.25rem",
+            "body_actions_gap": "1.25rem",
+            "mobile_height": "content",
+            "footer": "when_actions_exist"
+          },
+          "split": {
+            "gap": {
+              "desktop": "1.25rem",
+              "tablet": "1rem",
+              "mobile": "0.875rem"
+            },
+            "ratio": [],
+            "media_side": "right",
+            "mobile_direction": "column",
+            "responsive": {
+              "tablet": "stack",
+              "mobile": "stack"
+            }
+          },
+          "provenance": {
+            "record_id": "hero.text_only",
+            "profile": "editorial_light",
+            "field_sources": {
+              "intro_title_token": "documented_default",
+              "collection_width_desktop": "documented_default",
+              "collection_width_tablet": "documented_default",
+              "collection_width_mobile": "documented_default",
+              "collection_gap_desktop": "documented_default",
+              "collection_gap_tablet": "documented_default",
+              "collection_gap_mobile": "documented_default",
+              "collection_item_height": "documented_default",
+              "collection_alignment": "documented_default",
+              "collection_surface_alignment": "documented_default",
+              "section_surface_token": "documented_default",
+              "collection_implementation": "documented_default",
+              "intro_text_align": "documented_default",
+              "intro_placement": "documented_default",
+              "intro_container_align": "documented_default",
+              "reading_measure": "documented_default",
+              "eyebrow_presentation": "documented_default",
+              "eyebrow_title_gap": "documented_default",
+              "title_description_gap": "documented_default",
+              "description_cta_gap": "documented_default",
+              "intro_collection_gap": "documented_default",
+              "item_copy_gap": "documented_default",
+              "item_cta_gap": "documented_default",
+              "item_media_gap": "documented_default",
+              "inline_value": "documented_default"
+            },
+            "token_sources": {
+              "type.display": "visual_profile:editorial_light",
+              "type.section_title": "visual_profile:editorial_light",
+              "type.body": "visual_profile:editorial_light",
+              "space.section": "visual_profile:editorial_light",
+              "space.component": "visual_profile:editorial_light",
+              "radius.card": "visual_profile:editorial_light",
+              "radius.pill": "safe_default",
+              "color.primary": "elementor_global_color",
+              "color.focus": "contrast_safe_semantic_alias:color.primary",
+              "color.hover": "semantic_alias:color.primary",
+              "color.page_bg": "confirmed_elementor_preview_body",
+              "color.text": "confirmed_elementor_preview_body",
+              "type.feature": "visual_profile:editorial_light",
+              "space.section_tablet": "visual_profile:editorial_light",
+              "space.section_mobile": "visual_profile:editorial_light",
+              "space.component_tablet": "visual_profile:editorial_light",
+              "space.component_mobile": "visual_profile:editorial_light",
+              "layout.copy_width": "visual_profile:editorial_light",
+              "space.card": "visual_profile:editorial_light",
+              "color.surface": "semantic_alias:confirmed_color.page_bg",
+              "color.muted": "semantic_alias:confirmed_color.text",
+              "color.border": "no_confirmed_border_role_transparent",
+              "color.section_bg": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent"
+            }
+          }
+        },
+        "section_count": 1,
+        "validation": {
+          "ok": true,
+          "errors": [],
+          "capabilities": {
+            "schema": "wpae-widget-capability-v1",
+            "ok": true,
+            "requested": [
+              "container",
+              "heading",
+              "text-editor",
+              "button"
+            ],
+            "available": [
+              "container",
+              "heading",
+              "text-editor",
+              "button"
+            ],
+            "resolved": [
+              {
+                "from": "container",
+                "to": "container",
+                "downgraded": false,
+                "runtime_result": "structural"
+              },
+              {
+                "from": "heading",
+                "to": "heading",
+                "downgraded": false,
+                "runtime_result": "present"
+              },
+              {
+                "from": "text-editor",
+                "to": "text-editor",
+                "downgraded": false,
+                "runtime_result": "present"
+              },
+              {
+                "from": "button",
+                "to": "button",
+                "downgraded": false,
+                "runtime_result": "present"
+              }
+            ],
+            "unavailable": [],
+            "unknown": [],
+            "downgrades": [],
+            "failures": []
+          },
+          "tokens": {
+            "ok": true,
+            "resolved": [
+              {
+                "token": "color.page_bg",
+                "value": "#ffffff",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.surface",
+                "value": "#ffffff",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.text",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.muted",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.primary",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.border",
+                "value": "transparent",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.focus",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.hover",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.display",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "3.25rem",
+                  "tablet": "2.5rem",
+                  "mobile": "2rem",
+                  "weight": "700",
+                  "line_height": "1.1",
+                  "line_height_tablet": "1.1",
+                  "line_height_mobile": "1.1"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.section_title",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "2.5rem",
+                  "tablet": "2rem",
+                  "mobile": "1.75rem",
+                  "weight": "700",
+                  "line_height": "1.15",
+                  "line_height_tablet": "1.15",
+                  "line_height_mobile": "1.15"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.body",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "1.0625rem",
+                  "tablet": "1rem",
+                  "mobile": "1rem",
+                  "weight": "400",
+                  "line_height": "1.65",
+                  "line_height_tablet": "1.65",
+                  "line_height_mobile": "1.65"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "space.section",
+                "value": "5rem",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "space.component",
+                "value": "1.25rem",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "radius.card",
+                "value": "0.25rem",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "radius.pill",
+                "value": "999px",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.section_bg",
+                "value": "#61ce7033",
+                "source": "resolved_plan"
+              }
+            ],
+            "missing": [],
+            "fallbacks": [],
+            "collisions": []
+          },
+          "contrast": {
+            "ok": true,
+            "pairs": [
+              {
+                "foreground": "color.text",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.primary",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.hover",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.page_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#ffffff",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.text",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.section_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#dff5e2",
+                "ratio": 18.296755558105843,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              }
+            ],
+            "errors": []
+          }
+        }
+      },
+      "layout": {
+        "schema": "wpae-layout-report-v1",
+        "ok": true,
+        "violations": [],
+        "breakpoints": [
+          {
+            "breakpoint": "desktop",
+            "container_width": 1376,
+            "used_width": 1376,
+            "mobile_stack_result": "text_only_single_column"
+          },
+          {
+            "breakpoint": "laptop",
+            "container_width": 960,
+            "used_width": 960,
+            "mobile_stack_result": "text_only_single_column"
+          },
+          {
+            "breakpoint": "tablet",
+            "container_width": 704,
+            "used_width": 704,
+            "mobile_stack_result": "text_only_single_column"
+          },
+          {
+            "breakpoint": "mobile",
+            "container_width": 358,
+            "used_width": 358,
+            "mobile_stack_result": "text_only_single_column"
+          }
+        ]
+      },
+      "routing": {
+        "schema": "wpae-llm-route-v1",
+        "provider": "openrouter",
+        "model": "openrouter/free",
+        "route": "reliable_structured",
+        "input_tokens": null,
+        "output_tokens": null,
+        "latency_ms": null,
+        "retry_count": null,
+        "fallback_used": false,
+        "estimated_cost": null,
+        "success": null,
+        "provider_calls": 0,
+        "source": "not_called",
+        "action_path": "",
+        "metrics_known": {
+          "input_tokens": false,
+          "output_tokens": false,
+          "latency_ms": false,
+          "retry_count": false,
+          "estimated_cost": false,
+          "success": false
+        }
+      },
+      "elementor_ir": {
+        "schema": "wpae-elementor-ir-v2",
+        "validation": {
+          "ok": true,
+          "errors": [],
+          "widgets": [
+            "container",
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "capabilities": {
+            "schema": "wpae-widget-capability-v1",
+            "ok": true,
+            "requested": [
+              "container",
+              "heading",
+              "text-editor",
+              "button"
+            ],
+            "available": [
+              "container",
+              "heading",
+              "text-editor",
+              "button"
+            ],
+            "resolved": [
+              {
+                "from": "container",
+                "to": "container",
+                "downgraded": false,
+                "runtime_result": "structural"
+              },
+              {
+                "from": "heading",
+                "to": "heading",
+                "downgraded": false,
+                "runtime_result": "present"
+              },
+              {
+                "from": "text-editor",
+                "to": "text-editor",
+                "downgraded": false,
+                "runtime_result": "present"
+              },
+              {
+                "from": "button",
+                "to": "button",
+                "downgraded": false,
+                "runtime_result": "present"
+              }
+            ],
+            "unavailable": [],
+            "unknown": [],
+            "downgrades": [],
+            "failures": []
+          }
+        },
+        "compiled": true,
+        "report": {
+          "schema": "wpae-elementor-compile-report-v1",
+          "downgrades": [],
+          "errors": [],
+          "warnings": [],
+          "tokens": {
+            "resolved": [
+              {
+                "token": "color.section_bg",
+                "value": "#61ce7033",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "space.section",
+                "value": "5rem",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.section_bg",
+                "value": "#61ce7033",
+                "source": "documented_default",
+                "role": "section_surface"
+              },
+              {
+                "token": "color.text",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.muted",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.primary",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.display",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "3.25rem",
+                  "tablet": "2.5rem",
+                  "mobile": "2rem",
+                  "weight": "700",
+                  "line_height": "1.1",
+                  "line_height_tablet": "1.1",
+                  "line_height_mobile": "1.1"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.section_title",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "2.5rem",
+                  "tablet": "2rem",
+                  "mobile": "1.75rem",
+                  "weight": "700",
+                  "line_height": "1.15",
+                  "line_height_tablet": "1.15",
+                  "line_height_mobile": "1.15"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.body",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "1.0625rem",
+                  "tablet": "1rem",
+                  "mobile": "1rem",
+                  "weight": "400",
+                  "line_height": "1.65",
+                  "line_height_tablet": "1.65",
+                  "line_height_mobile": "1.65"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "space.component",
+                "value": "1.25rem",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.text",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.display",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "3.25rem",
+                  "tablet": "2.5rem",
+                  "mobile": "2rem",
+                  "weight": "700",
+                  "line_height": "1.1",
+                  "line_height_tablet": "1.1",
+                  "line_height_mobile": "1.1"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.section_title",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "2.5rem",
+                  "tablet": "2rem",
+                  "mobile": "1.75rem",
+                  "weight": "700",
+                  "line_height": "1.15",
+                  "line_height_tablet": "1.15",
+                  "line_height_mobile": "1.15"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.body",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "1.0625rem",
+                  "tablet": "1rem",
+                  "mobile": "1rem",
+                  "weight": "400",
+                  "line_height": "1.65",
+                  "line_height_tablet": "1.65",
+                  "line_height_mobile": "1.65"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.muted",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "type.body",
+                "value": {
+                  "font_family": "inherit",
+                  "desktop": "1.0625rem",
+                  "tablet": "1rem",
+                  "mobile": "1rem",
+                  "weight": "400",
+                  "line_height": "1.65",
+                  "line_height_tablet": "1.65",
+                  "line_height_mobile": "1.65"
+                },
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.primary",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.text",
+                "value": "#333333",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.surface",
+                "value": "#ffffff",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.hover",
+                "value": "#000000",
+                "source": "resolved_plan"
+              },
+              {
+                "token": "color.focus",
+                "value": "#000000",
+                "source": "resolved_plan"
+              }
+            ],
+            "missing": [],
+            "fallbacks": [],
+            "collisions": []
+          },
+          "node_count": 6,
+          "contrast": {
+            "ok": true,
+            "pairs": [
+              {
+                "foreground": "color.text",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.page_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#ffffff",
+                "ratio": 12.63465434445799,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.primary",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.surface",
+                "background": "color.hover",
+                "effective_foreground": "#ffffff",
+                "effective_background": "#000000",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.page_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#ffffff",
+                "ratio": 21,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              },
+              {
+                "foreground": "color.text",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.muted",
+                "background": "color.section_bg",
+                "effective_foreground": "#333333",
+                "effective_background": "#dff5e2",
+                "ratio": 11.008246766747993,
+                "minimum": 4.5,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": false
+              },
+              {
+                "foreground": "color.focus",
+                "background": "color.section_bg",
+                "effective_foreground": "#000000",
+                "effective_background": "#dff5e2",
+                "ratio": 18.296755558105843,
+                "minimum": 3,
+                "font_size_px": 16,
+                "font_weight": 400,
+                "large_text": false,
+                "ui_object": true
+              }
+            ],
+            "errors": []
+          },
+          "native_roundtrip": {
+            "version": "wpae-native-roundtrip-v3",
+            "control_aware": true,
+            "authored_copy": "BriefIR exact_text retained; native representation freezes before accepted signature",
+            "repeater_order_and_count": "authored and strictly compared",
+            "repeater_ids": "technical-only; seven-character Elementor IDs may be projected to the accepted IDs",
+            "allowed_legacy_serialization": "one exact <p> wrapper around single-line plain Accordion answer or Text Editor content; a plan-bound Elementor global page-background reference",
+            "global_background_reference": "single background_color reference on an inherited container only when its active-kit value equals the frozen color.page_bg",
+            "registered_platform_defaults": [],
+            "decisions": []
+          }
+        }
+      },
+      "preflight": {
+        "selected_scope": "page",
+        "roots_to_add": 1,
+        "nodes_to_change": 6,
+        "widgets": [
+          "container",
+          "heading",
+          "text-editor",
+          "button"
+        ],
+        "warnings": [
+          "media_unspecified_no_asset_text_only"
+        ],
+        "provider": "openrouter",
+        "model": "openrouter/free",
+        "estimated_cost": null,
+        "estimated_latency_ms": null,
+        "route": "provider_typed_intake_then_local_deterministic",
+        "provider_calls": 1
+      },
+      "frozen_decisions": {
+        "plan_hash": "5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99",
+        "compiled_signature": "b6cddba960bf1608369a87d818bd201dc047a688679f890f9422ae37abdf7048",
+        "readback_signature": "b6cddba960bf1608369a87d818bd201dc047a688679f890f9422ae37abdf7048",
+        "readback_matches": true
+      }
+    },
+    "operation_ledger": {
+      "schema": "wpae-design-operation-v1",
+      "operation_id": "wpae-43faaa89c500ce46",
+      "operation_identity": "94b7f560-a292-4a6e-a105-6cc0c02a4188",
+      "idempotency_key": "92a65611f222361960ab319864c12f6a683a9b5408128199abf7f115fe51248b",
+      "post_id": 5214,
+      "selected_scope": "page",
+      "operation_type": "design",
+      "brief_hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+      "plan_hash": "5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99",
+      "compiled_hash": "45b1587f0b6b4d5da23467486fa2c2f4c545851d10270e664386e2842070fd8e",
+      "saved_hash": "803b306d8a8c96ab456db7125247489514a172d649d7768b363b6456b41b3067",
+      "rendered_html_hash": "",
+      "vision_report_id": "",
+      "root_ids": [
+        "86f632a"
+      ],
+      "target_fingerprint": "eb293ff1d5ca049f946d52cf76c620afbb27daaa473d9b93bbcc2c2a3b4a06b8",
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "latency_ms": 0,
+      "retry_count": 0,
+      "fallback_used": false,
+      "current_state": "written",
+      "revision": 4,
+      "created_at": "2026-10-09 07:29:20",
+      "updated_at": "2026-10-09 07:29:21",
+      "rollback_snapshot_id": "780b735075f51dba69d2170f",
+      "accepted_contract_id": "contract-9f64431b2de1cf977f387610",
+      "accepted_contract_hash": "9f64431b2de1cf977f3876100fc1ce22d14a5c53e220f9467e5cf55919329edd",
+      "parent_operation_id": ""
+    },
+    "write_count": 1,
+    "render_review_pending": true
+  }
+}

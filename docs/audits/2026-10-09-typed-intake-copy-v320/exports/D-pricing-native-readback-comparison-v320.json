@@ -1,0 +1,226 @@
+{
+  "post_id": 5214,
+  "operation_id": "wpae-cfdd03b533ba499a",
+  "identity": "3f91a581-0c11-4a62-832d-526e6e6ffacc",
+  "revision": 5,
+  "prepublish_root": [
+    "49f75d9"
+  ],
+  "reloaded_roots": [
+    "49f75d9"
+  ],
+  "serialized_native_tree_equal": false,
+  "pre_publish_node_counts": {
+    "containers": 19,
+    "widgets": 23
+  },
+  "after_reload_node_counts": {
+    "containers": 19,
+    "widgets": 23
+  },
+  "first_result_cards": [
+    {
+      "root_id": "eafe05c",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Старт",
+          "tag": "h3"
+        },
+        {
+          "text": "50 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/мес",
+        "Малый проект",
+        "Аудит",
+        "План"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Старт",
+          "url": "#start"
+        }
+      ],
+      "image_count": 0
+    },
+    {
+      "root_id": "ac4fad5",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Проект",
+          "tag": "h3"
+        },
+        {
+          "text": "150 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/год",
+        "Полный проект",
+        "Дизайн",
+        "Разработка"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Проект",
+          "url": "#project"
+        }
+      ],
+      "image_count": 0
+    },
+    {
+      "root_id": "0bf26ba",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Сопровождение",
+          "tag": "h3"
+        },
+        {
+          "text": "210 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/год",
+        "Контроль реализации",
+        "Выезды",
+        "Отчёт"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Сопровождение",
+          "url": "#support"
+        }
+      ],
+      "image_count": 0
+    }
+  ],
+  "after_reload_cards": [
+    {
+      "root_id": "eafe05c",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Старт",
+          "tag": "h3"
+        },
+        {
+          "text": "50 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/мес",
+        "Малый проект",
+        "Аудит",
+        "План"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Старт",
+          "url": "#start"
+        }
+      ],
+      "image_count": 0
+    },
+    {
+      "root_id": "ac4fad5",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Проект",
+          "tag": "h3"
+        },
+        {
+          "text": "150 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/год",
+        "Полный проект",
+        "Дизайн",
+        "Разработка"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Проект",
+          "url": "#project"
+        }
+      ],
+      "image_count": 0
+    },
+    {
+      "root_id": "0bf26ba",
+      "node_count": 12,
+      "headings": [
+        {
+          "text": "Сопровождение",
+          "tag": "h3"
+        },
+        {
+          "text": "210 000 ₸",
+          "tag": "h3"
+        }
+      ],
+      "text_fields": [
+        "/год",
+        "Контроль реализации",
+        "Выезды",
+        "Отчёт"
+      ],
+      "buttons": [
+        {
+          "text": "Выбрать Сопровождение",
+          "url": "#support"
+        }
+      ],
+      "image_count": 0
+    }
+  ],
+  "expected_cards": [
+    {
+      "label": "Старт",
+      "price": "50 000 ₸",
+      "period": "/мес",
+      "description": "Малый проект",
+      "features": [
+        "Аудит",
+        "План"
+      ],
+      "button": "Выбрать Старт",
+      "href": "#start"
+    },
+    {
+      "label": "Проект",
+      "price": "150 000 ₸",
+      "period": "/год",
+      "description": "Полный проект",
+      "features": [
+        "Дизайн",
+        "Разработка"
+      ],
+      "button": "Выбрать Проект",
+      "href": "#project"
+    },
+    {
+      "label": "Сопровождение",
+      "price": "210 000 ₸",
+      "period": "/год",
+      "description": "Контроль реализации",
+      "features": [
+        "Выезды",
+        "Отчёт"
+      ],
+      "button": "Выбрать Сопровождение",
+      "href": "#support"
+    }
+  ],
+  "exact_authored_fields_match": true
+}

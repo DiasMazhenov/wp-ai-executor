@@ -1,0 +1,975 @@
+{
+  "source": "plugin-chat selection export before manual Publish",
+  "operation_id": "wpae-cfdd03b533ba499a",
+  "identity": "3f91a581-0c11-4a62-832d-526e6e6ffacc",
+  "root_ids": [
+    "49f75d9"
+  ],
+  "brief_hash": "c144d6959d95824d9bfdeee86b946e2c0d0326fba1a19817ea526bccb3d08a69",
+  "plan_hash": "41087ec5a3467784bbbf0d3a2474d5d3147427a6cdefcad4f496d438dae1c1c3",
+  "record_id": "pricing.tiers",
+  "profile": "",
+  "provider": {
+    "source": "provider_typed_intake",
+    "provider": "openrouter",
+    "model": "openrouter/free",
+    "provider_calls": 1,
+    "latency_ms": 15810,
+    "retry_count": 0,
+    "retry_reason": "",
+    "first_finish_reason": "stop",
+    "finish_reason": "stop",
+    "request_hash": "34deb4a8b4d3d633b18372941ceae5a92b5746aafa65cafa6c4714d96d73fa40",
+    "instruction_hash": "fbc5e9346cd4fd75833646687b121c8e6f350142098aae2afd1f601cf262aac5",
+    "generated_slot_count": 2,
+    "family": "pricing"
+  },
+  "write_count": 1,
+  "tree": [
+    {
+      "id": "49f75d9",
+      "elType": "container",
+      "depth": 0,
+      "flex_direction": "column",
+      "flex_direction_tablet": "column",
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": "",
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "#61ce7033"
+    },
+    {
+      "id": "4631ec8",
+      "elType": "container",
+      "depth": 1,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "px",
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "px",
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "px",
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "62a877d",
+      "elType": "container",
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": null,
+      "flex_wrap": null,
+      "gap": {
+        "unit": "px",
+        "size": 0,
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "column": "",
+        "row": "",
+        "isLinked": true,
+        "unit": "px"
+      },
+      "gap_mobile": {
+        "column": "",
+        "row": "",
+        "isLinked": true,
+        "unit": "px"
+      },
+      "width": {
+        "unit": "custom",
+        "size": "min(100%, 38rem)",
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "41f63e2",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 3,
+      "title": "Тарифы",
+      "tag": "h2"
+    },
+    {
+      "id": "7021d6f",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 3,
+      "text": "Выберите подходящий вариант развития вашего проекта."
+    },
+    {
+      "id": "5340613",
+      "elType": "container",
+      "depth": 1,
+      "flex_direction": "row",
+      "flex_direction_tablet": "column",
+      "flex_direction_mobile": "column",
+      "flex_wrap": "wrap",
+      "gap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1,
+        "column": "1",
+        "row": "1",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "eafe05c",
+      "elType": "container",
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_direction_tablet": "column",
+      "flex_direction_mobile": "column",
+      "flex_wrap": "nowrap",
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "custom",
+        "size": "calc((100% - 1.5rem - 1.5rem) / 3)",
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "#ffffff"
+    },
+    {
+      "id": "71af0ae",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "05eb976",
+      "elType": "container",
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "6989327",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "title": "Старт",
+      "tag": "h3"
+    },
+    {
+      "id": "3d084b0",
+      "elType": "container",
+      "depth": 5,
+      "flex_direction": "row",
+      "flex_direction_tablet": "row",
+      "flex_direction_mobile": "row",
+      "flex_wrap": "wrap",
+      "gap": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "14ac468",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 6,
+      "title": "50 000 ₸",
+      "tag": "h3"
+    },
+    {
+      "id": "22e82ce",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "text": "/мес"
+    },
+    {
+      "id": "556fdac",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Малый проект"
+    },
+    {
+      "id": "2836988",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Аудит"
+    },
+    {
+      "id": "245aaa9",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "План"
+    },
+    {
+      "id": "9630049",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "e19d034",
+      "elType": "widget",
+      "widgetType": "button",
+      "depth": 4,
+      "text": "Выбрать Старт",
+      "url": "#start"
+    },
+    {
+      "id": "ac4fad5",
+      "elType": "container",
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_direction_tablet": "column",
+      "flex_direction_mobile": "column",
+      "flex_wrap": "nowrap",
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "custom",
+        "size": "calc((100% - 1.5rem - 1.5rem) / 3)",
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "#ffffff"
+    },
+    {
+      "id": "a0c738a",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "1e162e6",
+      "elType": "container",
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "1e0aefa",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "title": "Проект",
+      "tag": "h3"
+    },
+    {
+      "id": "b7321a9",
+      "elType": "container",
+      "depth": 5,
+      "flex_direction": "row",
+      "flex_direction_tablet": "row",
+      "flex_direction_mobile": "row",
+      "flex_wrap": "wrap",
+      "gap": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "16f8cd2",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 6,
+      "title": "150 000 ₸",
+      "tag": "h3"
+    },
+    {
+      "id": "14dc516",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "text": "/год"
+    },
+    {
+      "id": "13404dc",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Полный проект"
+    },
+    {
+      "id": "776f461",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Дизайн"
+    },
+    {
+      "id": "dcdd10b",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Разработка"
+    },
+    {
+      "id": "bdc3bc3",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "a0738d1",
+      "elType": "widget",
+      "widgetType": "button",
+      "depth": 4,
+      "text": "Выбрать Проект",
+      "url": "#project"
+    },
+    {
+      "id": "0bf26ba",
+      "elType": "container",
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_direction_tablet": "column",
+      "flex_direction_mobile": "column",
+      "flex_wrap": "nowrap",
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "custom",
+        "size": "calc((100% - 1.5rem - 1.5rem) / 3)",
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "#ffffff"
+    },
+    {
+      "id": "34e6d23",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "b84470d",
+      "elType": "container",
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "4fcec86",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "title": "Сопровождение",
+      "tag": "h3"
+    },
+    {
+      "id": "eac5fb1",
+      "elType": "container",
+      "depth": 5,
+      "flex_direction": "row",
+      "flex_direction_tablet": "row",
+      "flex_direction_mobile": "row",
+      "flex_wrap": "wrap",
+      "gap": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 0.25,
+        "column": "0.25",
+        "row": "0.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "25833a5",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 6,
+      "title": "210 000 ₸",
+      "tag": "h3"
+    },
+    {
+      "id": "4338002",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "text": "/год"
+    },
+    {
+      "id": "2196a90",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Контроль реализации"
+    },
+    {
+      "id": "5518758",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Выезды"
+    },
+    {
+      "id": "c28007d",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "text": "Отчёт"
+    },
+    {
+      "id": "7cf077c",
+      "elType": "container",
+      "depth": 3,
+      "flex_direction": "column",
+      "flex_direction_tablet": null,
+      "flex_direction_mobile": "column",
+      "flex_wrap": null,
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_tablet": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "gap_mobile": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "width": {
+        "unit": "%",
+        "size": 100,
+        "sizes": []
+      },
+      "boxed_width": {
+        "unit": "px",
+        "size": "",
+        "sizes": []
+      },
+      "background": "transparent"
+    },
+    {
+      "id": "39b7187",
+      "elType": "widget",
+      "widgetType": "button",
+      "depth": 4,
+      "text": "Выбрать Сопровождение",
+      "url": "#support"
+    }
+  ]
+}

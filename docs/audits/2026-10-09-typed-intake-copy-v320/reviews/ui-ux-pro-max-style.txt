@@ -1,0 +1,57 @@
+## UI Pro Max Search Results
+**Domain:** style | **Query:** clean editorial architecture studio restrained accent
+**Source:** styles.csv | **Found:** 3 results
+
+### Result 1
+- **Style Category:** Swiss Modernism 2.0
+- **Type:** General
+- **Keywords:** Grid system, Helvetica, modular, asymmetric, international style, rational, clean, mathematical spacing
+- **Primary Colors:** #000000, #FFFFFF, #F5F5F5, single vibrant accent only
+- **Effects & Animation:** display: grid, grid-template-columns: repeat(12 1fr), gap: 1rem, mathematical ratios, clear hierarchy
+- **Best For:** Corporate sites, architecture, editorial, SaaS, museums, professional services, documentation
+- **Light Mode ✓:** ✓ Full
+- **Dark Mode ✓:** ✓ Full
+- **Performance:** ⚡ Excellent
+- **Accessibility:** ✓ WCAG AAA
+- **Framework Compatibility:** Tailwind 10/10, Bootstrap 9/10, Foundation 10/10
+- **Complexity:** Low
+- **AI Prompt Keywords:** Design with Swiss Modernism 2.0. Use: strict grid system (12 columns), Helvetica/Inter fonts, mathematical spacing, asymmetric balance, high contrast, minimal decoration, clean hierarchy, single accent color.
+- **CSS/Technical Keywords:** display: grid, grid-template-columns: repeat(12, 1fr), gap: 1rem (8px base unit), font-family: Inter/Helvetica, font-weight: 400-700, color: #000/#FFF, single accent
+- **Implementation Checklist:** ☐ 12-column grid strict, ☐ Spacing mathematical, ☐ Typography hierarchy clear, ☐ Single accent only, ☐ No decorations, ☐ High contrast verified
+- **Design System Variables:** --grid-columns: 12, --grid-gap: 1rem, --base-unit: 8px, --font-primary: Inter, --color-text: #000000, --color-bg: #FFFFFF, --accent: single vibrant
+
+### Result 2
+- **Style Category:** Exaggerated Minimalism
+- **Type:** General
+- **Keywords:** Bold minimalism, oversized typography, high contrast, negative space, loud minimal, statement design
+- **Primary Colors:** #000000 (Black), #FFFFFF (White), single vibrant accent only
+- **Effects & Animation:** font-size: clamp(3rem 10vw 12rem), font-weight: 900, letter-spacing: -0.05em, massive whitespace
+- **Best For:** Fashion, architecture, portfolios, agency landing pages, luxury brands, editorial
+- **Light Mode ✓:** ✓ Full
+- **Dark Mode ✓:** ✓ Full
+- **Performance:** ⚡ Excellent
+- **Accessibility:** ✓ WCAG AA
+- **Framework Compatibility:** Tailwind 10/10, Typography.js 10/10
+- **Complexity:** Low
+- **AI Prompt Keywords:** Design with exaggerated minimalism. Use: oversized typography (clamp 3rem-12rem), extreme negative space, black/white primary, single accent color only, bold statements, minimal elements, dramatic contrast.
+- **CSS/Technical Keywords:** font-size: clamp(3rem, 10vw, 12rem), font-weight: 900, letter-spacing: -0.05em, color: #000 or #FFF, padding: 8rem+, single accent, no decorations
+- **Implementation Checklist:** ☐ Typography oversized, ☐ White space extreme, ☐ Black/white dominant, ☐ Single accent only, ☐ Elements minimal, ☐ Statement clear
+- **Design System Variables:** --type-giant: clamp(3rem, 10vw, 12rem), --type-weight: 900, --spacing-huge: 8rem, --color-primary: #000000, --color-bg: #FFFFFF, --accent: single color only
+
+### Result 3
+- **Style Category:** Bold Typography (Mobile Poster)
+- **Type:** Mobile
+- **Keywords:** bold typography, editorial, poster, broadsheet, vermillion, negative space, edge-to-edge type, underline CTA, near-black, warm white
+- **Primary Colors:** Near Black #0A0A0A, Warm White #FAFAFA
+- **Effects & Animation:** Hero headlines 48–72px (5:1 vs body size), tight tracking (-1.5px), edge-to-edge type, massive vertical spacing (60px+), underline CTAs (2–3px accent line), instant 200ms transitions (no bounce), strictly 0px radius containers, color shifts for active state instead of elevation
+- **Best For:** Creative brand heroes, reading-focused apps, event/exhibition pages, editorial mobile experiences, landing hero sections
+- **Light Mode ✓:** ✓ Dark Mode Primary
+- **Dark Mode ✓:** ◐ Light sections optional
+- **Performance:** ⚡ Excellent
+- **Accessibility:** ✓ Contrast 18:1 achievable
+- **Framework Compatibility:** React Native 10/10, Expo 10/10
+- **Complexity:** Medium
+- **AI Prompt Keywords:** Design a Bold Typography mobile screen. Background #0A0A0A, text #FAFAFA, accent #FF3D00. Use Inter Tight/Inter 600+ for all type; JetBrains Mono for labels. Headline: 56–72px, tracking -1.5, lineHeight 1.1, full-bleed width with slight bleed off-screen. Body: 16–18px, leading 1.6. Buttons: underlin...
+- **CSS/Technical Keywords:** backgroundColor: '#0A0A0A', color: '#FAFAFA', accent: '#FF3D00', borderColor: '#262626', borderRadius: 0, paddingHorizontal: 24, headline style: fontSize:56–72, fontWeight:'700/800', letterSpacing:-1.5, lineHeight:1.1*fontSize, body: fontSize:16–18, lineHeight:1.6*fontSize, underline CTA: 2–3px heig...
+- **Implementation Checklist:** ☐ H1 at least 4–5× body size, ☐ All containers 0 radius, ☐ Underline CTA pattern used, ☐ Large vertical gaps between sections, ☐ No shadows or soft corners, ☐ Accent used only for interaction, ☐ Text bleeds to/over screen edges, ☐ Animation timings 200ms, ☐ Accessible contrast ≥ 18:1, ☐ Body text ne...
+- **Design System Variables:** --bg: #0A0A0A, --fg: #FAFAFA, --muted: #1A1A1A, --muted-fg: #737373, --accent: #FF3D00, --accent-fg: #0A0A0A, --border: #262626, --font-primary: Inter Tight, --font-display: Playfair Display Italic, --font-mono: JetBrains Mono

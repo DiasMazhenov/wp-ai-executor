@@ -1,0 +1,272 @@
+{
+  "format": "wpae-elementor-generated-v1",
+  "post_id": 5214,
+  "captured_at": "2026-10-09T09:46:17.874Z",
+  "elements": [
+    {
+      "id": "d304cd6",
+      "elType": "container",
+      "settings": {
+        "background_background": "classic",
+        "container_type": "flex",
+        "content_width": "boxed",
+        "padding": {
+          "unit": "rem",
+          "top": "4.5",
+          "right": "2",
+          "bottom": "4.5",
+          "left": "2",
+          "isLinked": false,
+          "sizes": []
+        },
+        "background_color": "#61ce7033",
+        "flex_direction": "column",
+        "flex_direction_mobile": "column",
+        "flex_gap": {
+          "unit": "rem",
+          "size": 2,
+          "column": "2",
+          "row": "2",
+          "isLinked": true
+        },
+        "flex_gap_mobile": {
+          "unit": "rem",
+          "size": 2,
+          "column": "2",
+          "row": "2",
+          "isLinked": true
+        },
+        "padding_tablet": {
+          "unit": "rem",
+          "top": "4.5",
+          "right": "2",
+          "bottom": "4.5",
+          "left": "2",
+          "isLinked": false,
+          "sizes": []
+        },
+        "padding_mobile": {
+          "unit": "rem",
+          "top": "2",
+          "right": "1",
+          "bottom": "2",
+          "left": "1",
+          "isLinked": false,
+          "sizes": []
+        },
+        "flex_direction_tablet": "column",
+        "flex_gap_tablet": {
+          "unit": "rem",
+          "size": 2,
+          "column": "2",
+          "row": "2",
+          "isLinked": true
+        },
+        "_css_classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-faq",
+        "_wpae_design_system_id": "ds-18cdb263"
+      },
+      "elements": [
+        {
+          "id": "1e3923e",
+          "elType": "container",
+          "settings": {
+            "background_background": "classic",
+            "container_type": "flex",
+            "content_width": "full",
+            "padding": {
+              "unit": "rem",
+              "top": "1.5",
+              "right": "1.5",
+              "bottom": "1.5",
+              "left": "1.5",
+              "isLinked": false,
+              "sizes": []
+            },
+            "background_color": "#ffffff",
+            "flex_direction": "column",
+            "flex_direction_mobile": "column",
+            "flex_gap": {
+              "unit": "rem",
+              "size": 1.5,
+              "column": "1.5",
+              "row": "1.5",
+              "isLinked": true
+            },
+            "flex_gap_mobile": {
+              "unit": "rem",
+              "size": 1.5,
+              "column": "1.5",
+              "row": "1.5",
+              "isLinked": true
+            },
+            "border_radius": {
+              "unit": "px",
+              "top": "12",
+              "right": "12",
+              "bottom": "12",
+              "left": "12",
+              "isLinked": true,
+              "sizes": []
+            },
+            "border_border": "solid",
+            "border_width": {
+              "unit": "px",
+              "top": "1",
+              "right": "1",
+              "bottom": "1",
+              "left": "1",
+              "isLinked": true,
+              "sizes": []
+            },
+            "border_color": "transparent",
+            "padding_mobile": {
+              "unit": "rem",
+              "top": "0.75",
+              "right": "0.5",
+              "bottom": "0.75",
+              "left": "0.5",
+              "isLinked": false,
+              "sizes": []
+            },
+            "width": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "width_tablet": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "width_mobile": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "_element_custom_width": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "_element_custom_width_tablet": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "_element_custom_width_mobile": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "_element_width": "initial",
+            "_element_width_tablet": "initial",
+            "_element_width_mobile": "initial",
+            "_flex_size": "custom",
+            "_flex_size_tablet": "custom",
+            "_flex_size_mobile": "custom",
+            "_flex_grow": 0,
+            "_flex_grow_tablet": 0,
+            "_flex_grow_mobile": 0,
+            "_flex_shrink": 1,
+            "_flex_shrink_tablet": 1,
+            "_flex_shrink_mobile": 1,
+            "flex_grow": 0,
+            "flex_grow_tablet": 0,
+            "flex_grow_mobile": 0,
+            "flex_shrink": 1,
+            "flex_shrink_tablet": 1,
+            "flex_shrink_mobile": 1
+          },
+          "elements": [
+            {
+              "id": "4136488",
+              "elType": "widget",
+              "settings": {
+                "background_background": "classic",
+                "tabs": [
+                  {
+                    "tab_title": "С чего начинается работа?",
+                    "tab_content": "<p>Работа начинается с обсуждения задачи, пожеланий и исходных материалов.</p>",
+                    "_id": "aa831d0"
+                  },
+                  {
+                    "tab_title": "Что подготовить к первой встрече?",
+                    "tab_content": "<p>К первой встрече можно подготовить планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей.</p>",
+                    "_id": "64da98d"
+                  }
+                ],
+                "selected_icon": {
+                  "value": "fas fa-angle-down",
+                  "library": "fa-solid"
+                },
+                "selected_active_icon": {
+                  "value": "fas fa-angle-up",
+                  "library": "fa-solid"
+                },
+                "title_color": "#333333",
+                "title_active_color": "#333333",
+                "title_hover_color": "#333333",
+                "content_color": "#333333",
+                "icon_color": "#333333",
+                "icon_active_color": "#333333",
+                "icon_hover_color": "#333333",
+                "border_color": "transparent",
+                "border_width": {
+                  "unit": "px",
+                  "sizes": [],
+                  "top": "0",
+                  "right": "0",
+                  "bottom": "0",
+                  "left": "0",
+                  "isLinked": false
+                },
+                "title_background": "#ffffff",
+                "content_background_color": "#ffffff",
+                "title_padding": {
+                  "unit": "rem",
+                  "top": "1",
+                  "right": "1",
+                  "bottom": "1",
+                  "left": "1",
+                  "isLinked": false,
+                  "sizes": []
+                },
+                "title_padding_mobile": {
+                  "unit": "rem",
+                  "top": "0.875",
+                  "right": "0.75",
+                  "bottom": "0.875",
+                  "left": "0.75",
+                  "isLinked": false,
+                  "sizes": []
+                },
+                "content_padding": {
+                  "unit": "rem",
+                  "top": "0.75",
+                  "right": "0.75",
+                  "bottom": "1",
+                  "left": "0.75",
+                  "isLinked": false,
+                  "sizes": []
+                },
+                "content_padding_mobile": {
+                  "unit": "rem",
+                  "top": "0.5",
+                  "right": "0.25",
+                  "bottom": "0.75",
+                  "left": "0.25",
+                  "isLinked": false,
+                  "sizes": []
+                },
+                "_css_classes": "wpae-faq-accordion",
+                "custom_css": "selector .elementor-accordion-item { border: 0; border-bottom: 1px solid transparent; }\nselector .elementor-accordion-item:last-child { border-bottom: 0; }\nselector .elementor-tab-content { border-top: 0; }\nselector .elementor-tab-content > * { max-width: 70ch; }\nselector .elementor-tab-title:focus-visible, selector .elementor-tab-title .elementor-accordion-title:focus-visible { outline: 2px solid #000000; outline-offset: 2px; border-radius: 2px; }"
+              },
+              "elements": [],
+              "widgetType": "accordion"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

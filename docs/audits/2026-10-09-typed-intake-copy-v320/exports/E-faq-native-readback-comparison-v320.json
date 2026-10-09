@@ -1,0 +1,29 @@
+{
+  "post_id": 5214,
+  "operation_id": "wpae-7780549fdb1b84d9",
+  "identity": "b8d3f2b1-c7bb-4e8b-8172-4edb8a345259",
+  "revision": 6,
+  "prepublish_root": "d304cd6",
+  "reloaded_root_ids": [
+    "d304cd6"
+  ],
+  "root_tree_equal": false,
+  "prepublish_elements_sha256": "1e2ad11c7158bd2c5d63a08f2bbab5df0368bd0860a0e7cbea7febc3d0252878",
+  "reloaded_elements_sha256": "b55b38bc4382746307451b1a203d1d9ac044f37d27a2ac4e1b188535fa6c33f6",
+  "native_widgets": [
+    {
+      "widget": "accordion",
+      "id": "4136488"
+    }
+  ],
+  "accordion_tabs": [
+    {
+      "question": "С чего начинается работа?",
+      "answer": "Работа начинается с обсуждения задачи, пожеланий и исходных материалов."
+    },
+    {
+      "question": "Что подготовить к первой встрече?",
+      "answer": "К первой встрече можно подготовить планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей."
+    }
+  ]
+}

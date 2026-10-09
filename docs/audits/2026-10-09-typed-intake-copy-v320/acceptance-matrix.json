@@ -1,0 +1,409 @@
+{
+  "schema": "wpae-typed-intake-live-acceptance-v1",
+  "audit": "2026-10-09-typed-intake-copy-v320",
+  "post_id": 5214,
+  "source": {
+    "version": "v02.11.320",
+    "commit": "5e7647193b6524a6609ccd0626139e23cb945c77",
+    "runtime_pushed": true,
+    "remote_head_verified": true
+  },
+  "installed": {
+    "plugins_php_plugin_version": "v02.11.320",
+    "editor_inline_after_reload": "v02.11.320",
+    "wppusher_scope": "WP AI Executor only"
+  },
+  "old_v301_lifecycle": {
+    "operation_id": "wpae-2c4cd41e1ae6c757",
+    "root_id": "620e60e",
+    "dirty_editor_root": "f8deb7e",
+    "guarded_undo": "refused_before_write",
+    "later_state": "user explicitly cleared page; old operation descriptor unavailable (contract_missing)",
+    "counts_toward_new_gate": false
+  },
+  "starting_and_final_baseline": {
+    "root_ids": [],
+    "starting_baseline_confirmed_editor_saved_public": true,
+    "final_root_ids_editor_saved_public": [],
+    "source": "user-cleared blank page, independently read-only checked; each accepted operation guarded-undone"
+  },
+  "gate": {
+    "required_cases": 5,
+    "cases_fully_accepted": 4,
+    "remaining_cases": 1,
+    "final_v320_cases_fully_accepted": 2,
+    "blocked_case": "C Benefits: external typed provider invalid response after one schema retry; no write",
+    "task_closed": false
+  },
+  "cases": [
+    {
+      "id": "A",
+      "fixture": "fixtures/A-hero-generated.txt",
+      "family": "hero",
+      "copy_policy": "generated",
+      "source_version": "v02.11.316",
+      "route": "ordinary_plugin_chat -> provider_typed_intake_then_local_deterministic -> transaction",
+      "record_id": "hero.text_only",
+      "composition_identity": "hero.stacked_left",
+      "visual_profile": "editorial_light",
+      "brief_hash": "55db8372b46becadd4cb8fe88c9ec0c958abe35ccf80d6133d92a482a8de69c4",
+      "plan_hash": "5302938a39b9568775fa456cbb36584ac5d50d4ae9863a87a929c2634f3cdc99",
+      "request_hash": "d50e26eaabcccc8d5096fee4d95e418ed7c38c03d531ab93f4ff72f262628a49",
+      "instruction_hash": "54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5",
+      "provider": {
+        "name": "openrouter",
+        "model": "openrouter/free",
+        "calls": 1,
+        "latency_ms": 26291,
+        "retry_count": 0,
+        "generated_slots": 2
+      },
+      "operation_id": "wpae-43faaa89c500ce46",
+      "identity": "94b7f560-a292-4a6e-a105-6cc0c02a4188",
+      "root_id": "86f632a",
+      "generation_revision": 4,
+      "refreshed_descriptor_revision": 5,
+      "write_count": 1,
+      "publish_reload": "pass",
+      "native_readback": "pass",
+      "content_fidelity": "pass",
+      "responsive_geometry": "pass",
+      "visual_composition": "pass; large four-line desktop H1 retained and readable",
+      "structural_variation": "pass; text-only Hero composition",
+      "document_restoration": "pass; editor/saved/public root set [] after guarded Undo",
+      "public_viewports_css": {
+        "desktop": "1232x923",
+        "mobile": "390x844"
+      },
+      "screenshots": [
+        {
+          "path": "history/A-B/screenshots/A-public-desktop-v316.png",
+          "source": "public",
+          "css_viewport": "1232x923",
+          "png": "1232x923"
+        },
+        {
+          "path": "history/A-B/screenshots/A-public-mobile-390x844-v316.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "390x844"
+        }
+      ],
+      "evidence": [
+        "history/prior-attempts/A-first-diagnostics-v316.json",
+        "history/prior-attempts/A-native-after-reload-v316.json",
+        "history/prior-attempts/A-post-undo-baseline-v316.json"
+      ],
+      "counts_as_full_acceptance": true,
+      "final_v320_retest": "not run; previous result was successful and not repeated; source version difference disclosed",
+      "accepted_contract_id": "contract-9f64431b2de1cf977f387610",
+      "accepted_contract_hash": "9f64431b2de1cf977f3876100fc1ce22d14a5c53e220f9467e5cf55919329edd"
+    },
+    {
+      "id": "B",
+      "fixture": "fixtures/B-about-hybrid.txt",
+      "family": "about",
+      "copy_policy": "hybrid",
+      "source_version": "v02.11.316",
+      "route": "ordinary_plugin_chat -> provider_typed_intake_then_local_deterministic -> transaction",
+      "record_id": "about.split_60_40.right",
+      "composition_identity": "about.split_60_40",
+      "visual_profile": "editorial_light",
+      "brief_hash": "412cf28b34d2760c98cb67d562122c9d5862b59c02833e1f12e25ea36bb499f3",
+      "plan_hash": "4fb83cdf2e9ca56871729e12785c1120f7812bdcc4e77a344f796a0090d75042",
+      "request_hash": "f723877e780b7d6be9b11f3493a8ce3418bdccc702cf7eb40995a4d448339c80",
+      "instruction_hash": "54c481bf4c0123d010dea5c473582186e126956e71d9e27d1d88f706ce5e12e5",
+      "provider": {
+        "name": "openrouter",
+        "model": "openrouter/free",
+        "calls": 1,
+        "latency_ms": 8814,
+        "retry_count": 0,
+        "generated_slots": 1
+      },
+      "operation_id": "wpae-828235637ae7a3b4",
+      "identity": "d3d72eae-4fd9-462a-9bee-9f36a31c8256",
+      "root_id": "2e88706",
+      "generation_revision": 4,
+      "refreshed_descriptor_revision": 5,
+      "accepted_contract_id": "contract-1b3e4070ba3508297e473d99",
+      "accepted_contract_hash": "1b3e4070ba3508297e473d99871cd34d446a4203efa54051a77bd9eb763fb55b",
+      "write_count": 1,
+      "publish_reload": "pass",
+      "native_readback": "pass; exact authored fields retained",
+      "content_fidelity": "pass; exact title, 2 fact-bounded paragraphs, approved image/alt; no CTA",
+      "responsive_geometry": "pass; copy-first mobile stack; no overflow/clipping",
+      "visual_composition": "pass; editorial split; 60/40; loaded top-centered crop",
+      "structural_variation": "pass; split editorial, distinct from Hero",
+      "document_restoration": "pass; editor/saved/public root set [] after guarded Undo",
+      "public_viewports_css": {
+        "desktop": "1232x923",
+        "mobile": "390x844"
+      },
+      "screenshots": [
+        {
+          "path": "history/A-B/screenshots/B-public-desktop-v316.png",
+          "source": "public",
+          "css_viewport": "1232x923",
+          "png": "1232x923"
+        },
+        {
+          "path": "history/A-B/screenshots/B-public-mobile-390x844-v316.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "390x844"
+        }
+      ],
+      "evidence": [
+        "history/prior-attempts/B-first-diagnostics-v316.json",
+        "history/prior-attempts/B-native-after-reload-v316.json",
+        "history/prior-attempts/B-post-undo-editor-baseline-v316.json",
+        "history/prior-attempts/B-post-undo-public-baseline-v316.json"
+      ],
+      "counts_as_full_acceptance": true,
+      "final_v320_retest": "not run; previous result was successful and not repeated; source version difference disclosed"
+    },
+    {
+      "id": "C",
+      "fixture": "fixtures/C-benefits-generated.txt",
+      "family": "benefits",
+      "copy_policy": "generated item descriptions with exact topic headings",
+      "source_version": "v02.11.317",
+      "route": "ordinary_plugin_chat -> provider_typed_intake; transaction not reached",
+      "record_id": null,
+      "composition_identity": null,
+      "visual_profile": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "provider": {
+        "name": "openrouter",
+        "model": "openrouter/free",
+        "calls": 2,
+        "latency_ms": 64635,
+        "retry_count": 1,
+        "retry_reason": "structured_response_finish_reason_length",
+        "first_finish_reason": "length",
+        "retry_finish_reason": "stop",
+        "response_bytes": 687,
+        "json_decode_error": 4,
+        "http_status": 200
+      },
+      "operation_id": null,
+      "identity": null,
+      "root_id": null,
+      "revision": null,
+      "write_count": 0,
+      "publish_reload": "not applicable; no write",
+      "native_readback": "not run",
+      "content_fidelity": "not run",
+      "responsive_geometry": "not run",
+      "visual_composition": "not run",
+      "structural_variation": "not run",
+      "document_restoration": "pass by no-write; editor/public remained []",
+      "screenshots": [],
+      "confirmed_prior_source_defect": "v307 exact-heading parser left generic text unbound and made zero provider calls; fixed in v308; the post-fix live provider failed externally",
+      "counts_as_full_acceptance": false,
+      "repeat_after_external_failure": "not run"
+    },
+    {
+      "id": "D",
+      "fixture": "fixtures/D-pricing-hybrid.txt",
+      "family": "pricing",
+      "copy_policy": "exact tiers + generated heading/intro",
+      "source_version": "v02.11.320",
+      "route": "ordinary_plugin_chat -> provider_typed_intake_then_local_deterministic -> transaction",
+      "record_id": "pricing.tiers",
+      "composition_identity": "pricing.three_cards",
+      "visual_profile": "automatic/default; no explicit profile requested",
+      "brief_hash": "c144d6959d95824d9bfdeee86b946e2c0d0326fba1a19817ea526bccb3d08a69",
+      "plan_hash": "41087ec5a3467784bbbf0d3a2474d5d3147427a6cdefcad4f496d438dae1c1c3",
+      "request_hash": "34deb4a8b4d3d633b18372941ceae5a92b5746aafa65cafa6c4714d96d73fa40",
+      "instruction_hash": "fbc5e9346cd4fd75833646687b121c8e6f350142098aae2afd1f601cf262aac5",
+      "provider": {
+        "name": "openrouter",
+        "model": "openrouter/free",
+        "calls": 1,
+        "latency_ms": 15810,
+        "retry_count": 0,
+        "generated_slots": 2
+      },
+      "operation_id": "wpae-cfdd03b533ba499a",
+      "identity": "3f91a581-0c11-4a62-832d-526e6e6ffacc",
+      "root_id": "49f75d9",
+      "generation_revision": 4,
+      "refreshed_descriptor_revision": 5,
+      "accepted_contract_id": "contract-d01b1722a18913540d0ecb3c",
+      "accepted_contract_hash": "d01b1722a18913540d0ecb3c273c5180fb1712fe5fd3768326c50ef5efa18037",
+      "write_count": 1,
+      "publish_reload": "pass",
+      "native_readback": "pass; exact fields match, platform normalization differences disclosed",
+      "content_fidelity": "pass; exactly 3 prices, periods, feature lists, CTA labels and hrefs",
+      "responsive_geometry": "pass; 3 desktop columns, tablet/mobile stack, CTA accessible, no overflow",
+      "visual_composition": "pass after native greeting collapse; original overlay evidence retained",
+      "structural_variation": "pass; three-tier pricing distinct from Hero/About/FAQ",
+      "document_restoration": "pass; guarded Undo restored editor/saved/public []",
+      "public_viewports_css": {
+        "desktop": "1232x923",
+        "tablet": "1024x900",
+        "mobile": "390x844"
+      },
+      "screenshots": [
+        {
+          "path": "screenshots/D-pricing-public-desktop-v320.png",
+          "source": "public",
+          "css_viewport": "1232x923",
+          "png": "1232x923"
+        },
+        {
+          "path": "screenshots/D-pricing-public-mobile-after-chat-close-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "375x812"
+        },
+        {
+          "path": "screenshots/D-pricing-public-mobile-full-after-chat-close-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "375x1089"
+        },
+        {
+          "path": "screenshots/D-pricing-public-mobile-cta-access-after-chat-close-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "375x812",
+          "scroll": "third CTA in view"
+        },
+        {
+          "path": "screenshots/D-pricing-public-mobile-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "375x812",
+          "note": "initial SITE_OVERLAP frame"
+        }
+      ],
+      "evidence": [
+        "exports/D-pricing-first-diagnostics-v320.json",
+        "exports/D-pricing-independent-native-after-reload-v320.json",
+        "exports/D-pricing-native-readback-comparison-v320.json",
+        "measurements/D-pricing-public-dom-v320.json",
+        "measurements/D-pricing-public-tablet-dom-v320.json",
+        "exports/D-pricing-post-undo-baseline-v320.json"
+      ],
+      "counts_as_full_acceptance": true
+    },
+    {
+      "id": "E",
+      "fixture": "fixtures/E-faq-hybrid.txt",
+      "family": "faq",
+      "copy_policy": "exact questions + fact-bounded generated answers",
+      "source_version": "v02.11.320",
+      "route": "ordinary_plugin_chat -> provider_typed_intake_then_local_deterministic -> transaction",
+      "record_id": "faq.native",
+      "composition_identity": "faq.linear",
+      "native_widget": "Elementor Accordion",
+      "visual_profile": "automatic/default; no explicit profile requested",
+      "brief_hash": "8e23ef8c79c9504620522325bb966920966618ca78788b37285fc4ce838cd398",
+      "plan_hash": "6508dfd9aa7a4b109da3f938fd373c7e6f65f3b314ffe183a992c2d1e97bc0c7",
+      "request_hash": "ec9af7464963e0dc14ffa2d7c9a1ce34194f5fc6645e1c15430b66e888d19f88",
+      "instruction_hash": "fbc5e9346cd4fd75833646687b121c8e6f350142098aae2afd1f601cf262aac5",
+      "provider": {
+        "name": "openrouter",
+        "model": "openrouter/free",
+        "calls": 1,
+        "latency_ms": 23774,
+        "retry_count": 0,
+        "generated_slots": 2
+      },
+      "operation_id": "wpae-7780549fdb1b84d9",
+      "identity": "b8d3f2b1-c7bb-4e8b-8172-4edb8a345259",
+      "root_id": "d304cd6",
+      "generation_revision": 4,
+      "refreshed_descriptor_revision": 6,
+      "accepted_contract_id": "contract-b043ca0884fadcb9b794667a",
+      "accepted_contract_hash": "b043ca0884fadcb9b794667afda1b693be04beb58dcb4f6a2945e1c62c4d6a62",
+      "write_count": 1,
+      "publish_reload": "pass",
+      "native_readback": "pass; Elementor-normalized serialization fields compared separately",
+      "content_fidelity": "pass; exact ordered questions, distinct short and long factual answers",
+      "responsive_geometry": "pass; 1232x923 desktop and 390x844 mobile; long answer naturally expands",
+      "visual_composition": "pass; real Accordion interaction, no clipping/overflow",
+      "structural_variation": "pass; native Accordion rather than cards",
+      "document_restoration": "pass; guarded Undo restored editor/saved/public []",
+      "public_viewports_css": {
+        "desktop": "1232x923",
+        "mobile": "390x844"
+      },
+      "screenshots": [
+        {
+          "path": "screenshots/E-faq-public-desktop-v320.png",
+          "source": "public",
+          "css_viewport": "1232x923",
+          "png": "1232x923"
+        },
+        {
+          "path": "screenshots/E-faq-public-mobile-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "390x844"
+        },
+        {
+          "path": "screenshots/E-faq-public-full-v320.png",
+          "source": "public",
+          "css_viewport": "1232x923",
+          "png": "1232x923"
+        },
+        {
+          "path": "screenshots/E-faq-public-mobile-full-v320.png",
+          "source": "public",
+          "css_viewport": "390x844",
+          "png": "390x844"
+        }
+      ],
+      "evidence": [
+        "exports/E-faq-first-diagnostics-v320.json",
+        "exports/E-faq-independent-native-after-reload-v320.json",
+        "exports/E-faq-native-readback-comparison-v320.json",
+        "measurements/E-faq-public-dom-v320.json",
+        "exports/E-faq-post-undo-baseline-v320.json"
+      ],
+      "counts_as_full_acceptance": true
+    }
+  ],
+  "supplemental_not_counted": {
+    "id": "F",
+    "fixture": "fixtures/F-cta-hybrid.txt",
+    "family": "cta",
+    "status": "provider_no_write_failure",
+    "provider": {
+      "name": "openrouter",
+      "model": "openrouter/free",
+      "calls": 2,
+      "latency_ms": 90169,
+      "retry_count": 1,
+      "first_finish_reason": "length",
+      "refusal": "http_request_failed"
+    },
+    "write_count": 0,
+    "operation_id": null,
+    "root_id": null,
+    "counts_as_full_acceptance": false,
+    "evidence": [
+      "exports/F-cta-provider-failure-v320.json",
+      "exports/F-cta-no-write-state-v320.json"
+    ]
+  },
+  "local_checks_at_v320": {
+    "design_pipeline_contract": "986 checks OK",
+    "flex_runtime": "1579 checks OK",
+    "elementor_patch_guard": "PASS",
+    "node_suites": "27/27 PASS on isolated rerun after one parallel child timeout",
+    "php_lint": "PASS",
+    "catalog": "158 manifest, 156 retrievable, 156 previews; FAQ candidates 5, Services 2",
+    "package_hash_probe": "253 hashes, zero mismatches",
+    "git_diff_check_source_release": "PASS",
+    "runtime_changed_after_checks": false
+  },
+  "report_commit": "scoped documentation/evidence commit; SHA provided in final response",
+  "report_push": "origin/main independently checked after push; SHA provided in final response",
+  "task_closed": false
+}

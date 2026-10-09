@@ -1,0 +1,19 @@
+{
+  "schema": "wpae-intake-failure-diagnostics-v1",
+  "intake": {
+    "source": "provider_typed_intake",
+    "provider": "openrouter",
+    "model": "openrouter/free",
+    "provider_calls": 2,
+    "latency_ms": 90169,
+    "retry_count": 1,
+    "retry_reason": "structured_response_finish_reason_length",
+    "first_finish_reason": "length",
+    "finish_reason": "",
+    "refusal": "http_request_failed"
+  },
+  "validation": {
+    "ok": false,
+    "errors": []
+  }
+}

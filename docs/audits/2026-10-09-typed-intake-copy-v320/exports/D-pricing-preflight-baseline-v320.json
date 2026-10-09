@@ -1,0 +1,36 @@
+{
+  "editor": {
+    "composer": [
+      {
+        "disabled": false,
+        "placeholder": "Спросите, что угодно…",
+        "value": "",
+        "visible": false
+      }
+    ],
+    "editorBootstrapRootIds": "needs parsed config",
+    "post": 5214,
+    "publish": [
+      {
+        "disabled": true
+      }
+    ],
+    "send": [
+      {
+        "disabled": false,
+        "visible": false
+      }
+    ]
+  },
+  "public": {
+    "clientWidth": 1232,
+    "roots": [],
+    "scrollWidth": 1232,
+    "viewport": [
+      1232,
+      923
+    ]
+  },
+  "root_set": [],
+  "baseline_after": "E FAQ guarded Undo"
+}

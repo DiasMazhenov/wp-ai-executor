@@ -1,0 +1,404 @@
+{
+  "buttons": [
+    {
+      "card": {
+        "id": "eafe05c",
+        "rect": {
+          "height": 271.9,
+          "width": 343,
+          "x": 16,
+          "y": 209.4
+        },
+        "style": {
+          "align": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "271.922px",
+          "justify": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "16px",
+          "radius": "8px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+      },
+      "href": "#start",
+      "rect": {
+        "height": 39,
+        "width": 154.3,
+        "x": 33,
+        "y": 425.3
+      },
+      "text": "Выбрать Старт"
+    },
+    {
+      "card": {
+        "id": "ac4fad5",
+        "rect": {
+          "height": 271.9,
+          "width": 343,
+          "x": 16,
+          "y": 497.3
+        },
+        "style": {
+          "align": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "271.922px",
+          "justify": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "16px",
+          "radius": "8px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+      },
+      "href": "#project",
+      "rect": {
+        "height": 39,
+        "width": 165.1,
+        "x": 33,
+        "y": 713.3
+      },
+      "text": "Выбрать Проект"
+    },
+    {
+      "card": {
+        "id": "0bf26ba",
+        "rect": {
+          "height": 271.9,
+          "width": 343,
+          "x": 16,
+          "y": 785.3
+        },
+        "style": {
+          "align": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "271.922px",
+          "justify": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "16px",
+          "radius": "8px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение"
+      },
+      "href": "#support",
+      "rect": {
+        "height": 39,
+        "width": 229.1,
+        "x": 33,
+        "y": 1001.2
+      },
+      "text": "Выбрать Сопровождение"
+    }
+  ],
+  "cards": [
+    {
+      "id": "eafe05c",
+      "rect": {
+        "height": 271.9,
+        "width": 343,
+        "x": 16,
+        "y": 209.4
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "271.922px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "radius": "8px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+    },
+    {
+      "id": "ac4fad5",
+      "rect": {
+        "height": 271.9,
+        "width": 343,
+        "x": 16,
+        "y": 497.3
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "271.922px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "radius": "8px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+    },
+    {
+      "id": "0bf26ba",
+      "rect": {
+        "height": 271.9,
+        "width": 343,
+        "x": 16,
+        "y": 785.3
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "271.922px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "radius": "8px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение"
+    }
+  ],
+  "document": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "scrollHeight": 1089,
+    "scrollWidth": 375
+  },
+  "greeting": [
+    {
+      "ancestors": [
+        {
+          "cls": "wpdsac-chat__intro-bubble",
+          "rect": {
+            "height": 48.4,
+            "width": 320,
+            "x": 31,
+            "y": 699.6
+          },
+          "tag": "BUTTON"
+        },
+        {
+          "cls": "wpdsac-chat wpdsac-position--bottom-right",
+          "rect": {
+            "height": 60,
+            "width": 60,
+            "x": 291,
+            "y": 760
+          },
+          "tag": "SECTION"
+        },
+        {
+          "cls": "wp-singular page-template page-template-elementor_canvas page page-id-5214 logged-in admin-bar wp-custom-logo wp-embed-responsive wp-theme-hello-elementor hello-elementor-default elementor-default elementor-template-canvas elementor-kit-8 elementor-page elementor-page-5214 customize-support dialog-body dialog-buttons-body dialog-container dialog-buttons-container e--ua-blink e--ua-chrome e--ua-mac e--ua-webkit",
+          "rect": {
+            "height": 1043.2,
+            "width": 375,
+            "x": 0,
+            "y": 46
+          },
+          "tag": "BODY"
+        },
+        {
+          "cls": "",
+          "rect": {
+            "height": 1043.2,
+            "width": 375,
+            "x": 0,
+            "y": 46
+          },
+          "tag": "HTML"
+        }
+      ],
+      "cls": "wpdsac-chat__intro-bubble",
+      "rect": {
+        "height": 48.4,
+        "width": 320,
+        "x": 31,
+        "y": 699.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "color(srgb 1 1 1 / 0.78)",
+        "color": "rgb(23, 32, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": "48.3984px",
+        "justify": "normal",
+        "lineHeight": "22.4px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "hidden",
+        "padding": "12px 16px",
+        "radius": "16px 16px 4px",
+        "textAlign": "left",
+        "wrap": "nowrap"
+      },
+      "tag": "BUTTON",
+      "text": "Здравствуйте!"
+    },
+    {
+      "ancestors": [
+        {
+          "cls": "wpdsac-chat__message wpdsac-chat__message--bot",
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "tag": "DIV"
+        },
+        {
+          "cls": "wpdsac-chat__message-row wpdsac-chat__message-row--bot",
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "tag": "DIV"
+        },
+        {
+          "cls": "wpdsac-chat__messages",
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "tag": "DIV"
+        },
+        {
+          "cls": "wpdsac-chat__conversation",
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "tag": "DIV"
+        },
+        {
+          "cls": "wpdsac-chat__panel",
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "tag": "DIV"
+        }
+      ],
+      "cls": "wpdsac-chat__message wpdsac-chat__message--bot",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgb(239, 244, 255)",
+        "color": "rgb(23, 32, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": "auto",
+        "justify": "normal",
+        "lineHeight": "19.2px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 14px",
+        "radius": "14px 14px 14px 4.66667px",
+        "textAlign": "left",
+        "wrap": "nowrap"
+      },
+      "tag": "DIV",
+      "text": "Здравствуйте!"
+    }
+  ],
+  "root": {
+    "rect": {
+      "height": 1043.2,
+      "width": 375,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "align": "normal",
+      "bg": "rgba(97, 206, 112, 0.2)",
+      "color": "rgb(51, 51, 51)",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": "1043.17px",
+      "justify": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "radius": "0px",
+      "textAlign": "start",
+      "wrap": "nowrap"
+    }
+  },
+  "viewport": {
+    "devicePixelRatio": 1,
+    "innerHeight": 844,
+    "innerWidth": 390
+  }
+}

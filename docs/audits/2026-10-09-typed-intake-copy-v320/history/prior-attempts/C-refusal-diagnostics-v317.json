@@ -1,0 +1,44 @@
+{
+  "captured_at": "2026-10-09T08:11:39.969Z",
+  "post_id": 5214,
+  "fixture": "C-benefits-generated.txt",
+  "attempt": "v317 retry after exact schema defect fix; one submit only",
+  "no_write": true,
+  "error": "Typed content intake schema/provenance refusal; no transaction attempted",
+  "diagnostics": {
+    "schema": "wpae-intake-failure-diagnostics-v1",
+    "intake": {
+      "source": "provider_typed_intake",
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "provider_calls": 2,
+      "latency_ms": 64635,
+      "retry_count": 1,
+      "retry_reason": "structured_response_finish_reason_length",
+      "first_finish_reason": "length",
+      "finish_reason": "stop",
+      "response_bytes": 687,
+      "json_decode_error": 4,
+      "refusal": "invalid_json_or_http_status",
+      "http_status": 200
+    },
+    "validation": {
+      "ok": false,
+      "errors": []
+    }
+  },
+  "editor": {
+    "editor_root_ids": [],
+    "publish_disabled": true,
+    "version": "Версия: v02.11.317"
+  },
+  "public": {
+    "clientWidth": 1232,
+    "css_viewport": {
+      "height": 923,
+      "width": 1232
+    },
+    "root_ids": [],
+    "scrollWidth": 1232
+  }
+}

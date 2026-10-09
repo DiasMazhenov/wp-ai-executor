@@ -1,0 +1,50 @@
+╔═════════════════════════════════════════════════════════════════════════════════════════╗
+║  TARGET: Mazhenov Design Elementor - RECOMMENDED DESIGN SYSTEM                          ║
+╚═════════════════════════════════════════════════════════════════════════════════════════╝
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+├─── PATTERN ──────────────────────────────────────────────────────────────────────────────┤
+│  Name: Event/Conference Landing                                                         │
+│     Conversion: Early bird pricing with deadline. Social proof (past attendees). Speaker credibility. Multi-ticket discounts.│
+│     CTA: Register CTA sticky + After speakers + Bottom                                  │
+│     Sections:                                                                           │
+│       1. 1. Hero (date/location/countdown), 2. Speakers grid, 3. Agenda/schedule, 4. Sponsors, 5. Register CTA│
+├─── STYLE ────────────────────────────────────────────────────────────────────────────────┤
+│  Name: Exaggerated Minimalism                                                           │
+│     Mode Support: Light ✓ Full  Dark ✓ Full                                             │
+│     Keywords: Bold minimalism, oversized typography, high contrast, negative space,     │
+│     loud minimal, statement design                                                      │
+│     Best For: Fashion, architecture, portfolios, agency landing pages, luxury brands,   │
+│     editorial                                                                           │
+│     Performance: ⚡ Excellent | Accessibility: ✓ WCAG AA                                 │
+├─── COLORS ───────────────────────────────────────────────────────────────────────────────┤
+│     Primary:       #1E3A5F    (--color-primary)                                         │
+│     On Primary:    #FFFFFF    (--color-on-primary)                                      │
+│     Secondary:     #2563EB    (--color-secondary)                                       │
+│     Accent/CTA:    #A16207    (--color-accent)                                          │
+│     Background:    #F8FAFC    (--color-background)                                      │
+│     Foreground:    #0F172A    (--color-foreground)                                      │
+│     Muted:         #E9EEF5    (--color-muted)                                           │
+│     Border:        #CBD5E1    (--color-border)                                          │
+│     Destructive:   #DC2626    (--color-destructive)                                     │
+│     Ring:          #1E3A5F    (--color-ring)                                            │
+│     Notes: Academic navy + gold keynote + track chips                                   │
+├─── TYPOGRAPHY ───────────────────────────────────────────────────────────────────────────┤
+│  Cinzel / Josefin Sans                                                                  │
+│     Mood: real estate, luxury, elegant, sophisticated, property, premium                │
+│     Best For: Real estate, luxury properties, architecture, interior design             │
+│     Google Fonts: https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap│
+│     CSS Import: @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;...│
+├─── KEY EFFECTS ──────────────────────────────────────────────────────────────────────────┤
+│     font-size: clamp(3rem 10vw 12rem), font-weight: 900, letter-spacing: -0.05em,       │
+│     massive whitespace                                                                  │
+├─── AVOID ────────────────────────────────────────────────────────────────────────────────┤
+│     Poor imagery + Cluttered layout                                                     │
+├─── PRE-DELIVERY CHECKLIST ───────────────────────────────────────────────────────────────┤
+│     [ ] No emojis as icons (use SVG: Heroicons/Lucide)                                  │
+│     [ ] cursor-pointer on all clickable elements                                        │
+│     [ ] Hover states with smooth transitions (150-300ms)                                │
+│     [ ] Light mode: text contrast 4.5:1 minimum                                         │
+│     [ ] Focus states visible for keyboard nav                                           │
+│     [ ] prefers-reduced-motion respected                                                │
+│     [ ] Responsive: 375px, 768px, 1024px, 1440px                                        │
+└─────────────────────────────────────────────────────────────────────────────────────────┘

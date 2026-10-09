@@ -1,0 +1,27 @@
+## UI Pro Max Search Results
+**Domain:** landing | **Query:** hero about benefits pricing FAQ CTA hierarchy reading width call to action
+**Source:** landing.csv | **Found:** 3 results
+
+### Result 1
+- **Pattern Name:** Hero + Features + CTA
+- **Keywords:** hero, hero-centric, hero-centric design, features, feature-rich, feature-rich showcase, cta, call-to-action
+- **Section Order:** 1. Hero with headline/image, 2. Value prop, 3. Key features (3-5), 4. CTA section, 5. Footer
+- **Primary CTA Placement:** Hero (sticky) + Bottom
+- **Color Strategy:** Hero: Brand primary or vibrant. Features: Card bg #FAFAFA. CTA: Contrasting accent color
+- **Conversion Optimization:** Deep CTA placement. Use contrasting color (at least 7:1 contrast ratio). Sticky navbar CTA.
+
+### Result 2
+- **Pattern Name:** Pricing Page + CTA
+- **Keywords:** pricing, plans, tiers, comparison, cta
+- **Section Order:** 1. Hero (pricing headline), 2. Price comparison cards, 3. Feature comparison table, 4. FAQ section, 5. Final CTA
+- **Primary CTA Placement:** Each card: CTA button. Sticky CTA in nav
+- **Color Strategy:** Free: Grey, Starter: Blue, Pro: Green/Gold, Enterprise: Dark. Cards: 1px border, shadow
+- **Conversion Optimization:** Recommend starter plan (pre-select/highlight). Show annual discount (20-30%). Use FAQs to address concerns.
+
+### Result 3
+- **Pattern Name:** Pricing-Focused Landing
+- **Keywords:** pricing, price, cost, plans, subscription
+- **Section Order:** 1. Hero (value proposition), 2. Pricing cards (3 tiers), 3. Feature comparison, 4. FAQ, 5. Final CTA
+- **Primary CTA Placement:** Each pricing card + Sticky CTA in nav + Bottom
+- **Color Strategy:** Popular plan highlighted (brand color border/bg). Free: grey. Enterprise: dark/premium.
+- **Conversion Optimization:** Annual discount 20-30%. Recommend mid-tier (most popular badge). Address objections in FAQ.

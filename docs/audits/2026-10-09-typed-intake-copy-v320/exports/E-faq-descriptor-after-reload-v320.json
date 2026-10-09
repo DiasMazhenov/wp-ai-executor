@@ -1,0 +1,103 @@
+{
+  "descriptor": {
+    "accepted_contract_hash": "b043ca0884fadcb9b794667afda1b693be04beb58dcb4f6a2945e1c62c4d6a62",
+    "accepted_contract_id": "contract-b043ca0884fadcb9b794667a",
+    "action": "undo_creation",
+    "brief_hash": "8e23ef8c79c9504620522325bb966920966618ca78788b37285fc4ce838cd398",
+    "composition_evidence": {
+      "accepted": {
+        "catalog_id": "wpae-compositions-v1",
+        "catalog_identity": "078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18",
+        "record_hash": "b720ea8b934345ff1596ee893bf4cbce9500745a1a8a69f69d1f7dc6ea799f38",
+        "record_id": "faq.native",
+        "record_version": 1,
+        "selection_policy": "wpae-composition-selection-v2",
+        "selection_reasons": [
+          "only_compatible_record"
+        ],
+        "source": "content_ranked_catalog",
+        "visual_profile": ""
+      },
+      "generation": {
+        "provider_call_count_source": "canonical_intake_and_design_pipeline",
+        "provider_calls": 1,
+        "route": "provider_typed_intake_then_local_deterministic",
+        "transaction_write_count": 1,
+        "transaction_write_count_source": "successful_transaction_and_readback"
+      },
+      "hashes": {
+        "brief_sha256": "8e23ef8c79c9504620522325bb966920966618ca78788b37285fc4ce838cd398",
+        "plan_sha256": "6508dfd9aa7a4b109da3f938fd373c7e6f65f3b314ffe183a992c2d1e97bc0c7"
+      },
+      "native": {
+        "saved_native_fingerprint": "8b79bb89147f03f6ac1e924ab6151543032d6eb28880fddb0b25a5d67b702201",
+        "saved_root_ids": [
+          "d304cd6"
+        ]
+      },
+      "operation": {
+        "accepted_contract_id": "contract-b043ca0884fadcb9b794667a",
+        "accepted_contract_sha256": "b043ca0884fadcb9b794667afda1b693be04beb58dcb4f6a2945e1c62c4d6a62",
+        "operation_id": "wpae-7780549fdb1b84d9",
+        "operation_identity": "b8d3f2b1-c7bb-4e8b-8172-4edb8a345259",
+        "post_id": 5214,
+        "revision": 6,
+        "root_ids": [
+          "d304cd6"
+        ],
+        "saved_document_sha256": "d4b26b46e533b0693a76594a22025f997bdf3cceba400b0f148800c57dc4b9f4"
+      },
+      "request": {
+        "brief_composition": null,
+        "brief_media_side": null,
+        "mode": "automatic",
+        "record_id": null,
+        "record_version": null,
+        "visual_profile": null,
+        "visual_profile_source": "not_requested"
+      },
+      "schema": "wpae-composition-evidence-v1",
+      "status": "complete",
+      "surface": {
+        "accent_reference": {
+          "confirmed": false,
+          "source": "elementor_system_color_stock_default:accent",
+          "value": "#61ce70"
+        },
+        "opaque_underlay": "#ffffff",
+        "profile": "",
+        "resolved_value": "#61ce7033",
+        "section_surface": {
+          "accent_confirmed": false,
+          "accent_source": "elementor_system_color_stock_default:accent",
+          "opacity": 0.2,
+          "palette_role": "accent",
+          "source": "documented_default",
+          "token": "color.section_bg",
+          "transparency": 0.8
+        },
+        "value_source": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent"
+      }
+    },
+    "expires_at": 1791625577,
+    "operation_id": "wpae-7780549fdb1b84d9",
+    "operation_identity": "b8d3f2b1-c7bb-4e8b-8172-4edb8a345259",
+    "plan_hash": "6508dfd9aa7a4b109da3f938fd373c7e6f65f3b314ffe183a992c2d1e97bc0c7",
+    "post_id": 5214,
+    "revision": 6,
+    "root_ids": [
+      "d304cd6"
+    ],
+    "saved_hash": "d4b26b46e533b0693a76594a22025f997bdf3cceba400b0f148800c57dc4b9f4",
+    "status": "available"
+  },
+  "documentState": {
+    "html_bytes": 705,
+    "html_hash": "2693b5550b7cee719ff0d5fa0e9eb39e4b763de2788d68ed6b7efcd4f99ec1bf",
+    "intentional_empty_consistent": false,
+    "json_status": "valid_array",
+    "main_id": 5214
+  },
+  "frontendBuild": "typed-lifecycle-v6",
+  "pluginVersion": "v02.11.320"
+}

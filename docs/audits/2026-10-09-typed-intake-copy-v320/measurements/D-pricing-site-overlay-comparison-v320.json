@@ -1,0 +1,95 @@
+{
+  "before_dismissal": {
+    "viewport": {
+      "devicePixelRatio": 1,
+      "innerHeight": 844,
+      "innerWidth": 390
+    },
+    "window_scroll_width": 375,
+    "greeting": {
+      "height": 48.4,
+      "width": 320,
+      "x": 31,
+      "y": 699.6
+    },
+    "cta_project": {
+      "height": 39,
+      "width": 165.1,
+      "x": 33,
+      "y": 713.3
+    },
+    "overlap": {
+      "horizontal": true,
+      "vertical": true,
+      "description": "greeting bubble intersects the second card CTA at initial viewport; SITE_OVERLAP before dismissal"
+    }
+  },
+  "after_native_close": {
+    "buttons": [
+      {
+        "href": "#start",
+        "rect": {
+          "height": 39,
+          "width": 154.3,
+          "x": 33,
+          "y": 425.3
+        },
+        "text": "Выбрать Старт"
+      },
+      {
+        "href": "#project",
+        "rect": {
+          "height": 39,
+          "width": 165.1,
+          "x": 33,
+          "y": 713.3
+        },
+        "text": "Выбрать Проект"
+      },
+      {
+        "href": "#support",
+        "rect": {
+          "height": 39,
+          "width": 229.1,
+          "x": 33,
+          "y": 1001.2
+        },
+        "text": "Выбрать Сопровождение"
+      }
+    ],
+    "greeting": {
+      "display": "none",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "launcher": {
+      "expanded": "false",
+      "rect": {
+        "height": 60,
+        "width": 60,
+        "x": 306,
+        "y": 760
+      }
+    },
+    "panel": {
+      "display": "none",
+      "hidden": true
+    },
+    "viewport": {
+      "documentClientWidth": 390,
+      "documentScrollWidth": 390,
+      "innerHeight": 844,
+      "innerWidth": 390
+    }
+  },
+  "interaction": "Clicked site-owned greeting bubble to open panel, then site-owned chat toggle to close; no global option or CSS changed.",
+  "screenshots": {
+    "before": "screenshots/D-pricing-public-mobile-v320.png",
+    "after_viewport": "screenshots/D-pricing-public-mobile-after-chat-close-v320.png",
+    "after_full": "screenshots/D-pricing-public-mobile-full-after-chat-close-v320.png"
+  }
+}

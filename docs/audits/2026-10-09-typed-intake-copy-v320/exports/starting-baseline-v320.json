@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-10-09T09:45:06.358Z",
+  "editor": {
+    "document_state": {
+      "html_bytes": 0,
+      "html_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "intentional_empty_consistent": true,
+      "json_status": "valid_array",
+      "main_id": 5214
+    },
+    "publish_disabled": true,
+    "root_ids": [],
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor"
+  },
+  "frontend_build": "typed-lifecycle-v6",
+  "historical_v301_hero_operation": {
+    "accepted_contract_hash": "470b59aec0e66e4a0d1feb5e1793fc5c4454037274e6eacf25de439dfed53732",
+    "accepted_contract_id": "contract-470b59aec0e66e4a0d1feb5e",
+    "brief_hash": "95d94c4ce19e87d71561cd1d9f23cb947458759f00f802c246559b2d65778a31",
+    "composition_evidence": {
+      "reason": "contract_missing",
+      "schema": "wpae-composition-evidence-v1",
+      "status": "unavailable"
+    },
+    "operation_id": "wpae-2c4cd41e1ae6c757",
+    "operation_identity": "2557eca5-59ba-4302-b22e-29935a61df96",
+    "plan_hash": "9fdf55ccdf01e2380fa1166722468e98db3e4b0ed8588b3dc9f06f4b7bdbdd66",
+    "post_id": 5214,
+    "reason": "contract_missing",
+    "revision": 6,
+    "root_ids": [
+      "620e60e"
+    ],
+    "saved_hash": "c16baba8890be7feddf6f53fcd10f14b84c9bfdaa93315c94faceadd8af6f022",
+    "status": "unavailable"
+  },
+  "post_id": 5214,
+  "prior_typed_operations": [
+    {
+      "operation_id": "wpae-6b23f64a0c7c25c8",
+      "revision": 6,
+      "root_ids": [
+        "5e2450f"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "operation_id": "wpae-78fd4d88c11c961d",
+      "revision": 7,
+      "root_ids": [
+        "f197063"
+      ],
+      "status": "already_undone"
+    }
+  ],
+  "source_version": "v02.11.320",
+  "public": {
+    "client_width": 1232,
+    "root_ids": [],
+    "scroll_width": 1232,
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport_css": {
+      "height": 923,
+      "width": 1232
+    }
+  }
+}

@@ -1,0 +1,1439 @@
+{
+  "buttons": [
+    {
+      "ancestorContainers": [
+        {
+          "id": "9630049",
+          "rect": {
+            "height": 39,
+            "width": 314,
+            "x": 71,
+            "y": 455.2
+          },
+          "style": {
+            "align": "normal",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "39px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "nowrap"
+          },
+          "text": "Выбрать Старт"
+        },
+        {
+          "id": "eafe05c",
+          "rect": {
+            "height": 295.6,
+            "width": 364,
+            "x": 46,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgb(255, 255, 255)",
+            "borderRadius": "8px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "295.602px",
+            "justify": "space-between",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "24px",
+            "wrap": "nowrap"
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+        },
+        {
+          "id": "5340613",
+          "rect": {
+            "height": 295.6,
+            "width": 1140,
+            "x": 46,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "row",
+            "display": "flex",
+            "gap": "24px",
+            "height": "295.602px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "wrap"
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸"
+        }
+      ],
+      "href": "#start",
+      "rect": {
+        "height": 39,
+        "width": 154.3,
+        "x": 71,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgb(0, 0, 0)",
+        "borderRadius": "3px",
+        "direction": "row",
+        "display": "inline-block",
+        "gap": "normal",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Старт"
+    },
+    {
+      "ancestorContainers": [
+        {
+          "id": "bdc3bc3",
+          "rect": {
+            "height": 39,
+            "width": 314,
+            "x": 459,
+            "y": 455.2
+          },
+          "style": {
+            "align": "normal",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "39px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "nowrap"
+          },
+          "text": "Выбрать Проект"
+        },
+        {
+          "id": "ac4fad5",
+          "rect": {
+            "height": 295.6,
+            "width": 364,
+            "x": 434,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgb(255, 255, 255)",
+            "borderRadius": "8px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "295.602px",
+            "justify": "space-between",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "24px",
+            "wrap": "nowrap"
+          },
+          "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+        },
+        {
+          "id": "5340613",
+          "rect": {
+            "height": 295.6,
+            "width": 1140,
+            "x": 46,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "row",
+            "display": "flex",
+            "gap": "24px",
+            "height": "295.602px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "wrap"
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸"
+        }
+      ],
+      "href": "#project",
+      "rect": {
+        "height": 39,
+        "width": 165.1,
+        "x": 459,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgb(0, 0, 0)",
+        "borderRadius": "3px",
+        "direction": "row",
+        "display": "inline-block",
+        "gap": "normal",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Проект"
+    },
+    {
+      "ancestorContainers": [
+        {
+          "id": "7cf077c",
+          "rect": {
+            "height": 39,
+            "width": 314,
+            "x": 847,
+            "y": 455.2
+          },
+          "style": {
+            "align": "normal",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "39px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "nowrap"
+          },
+          "text": "Выбрать Сопровождение"
+        },
+        {
+          "id": "0bf26ba",
+          "rect": {
+            "height": 295.6,
+            "width": 364,
+            "x": 822,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgb(255, 255, 255)",
+            "borderRadius": "8px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "height": "295.602px",
+            "justify": "space-between",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "24px",
+            "wrap": "nowrap"
+          },
+          "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение"
+        },
+        {
+          "id": "5340613",
+          "rect": {
+            "height": 295.6,
+            "width": 1140,
+            "x": 46,
+            "y": 223.6
+          },
+          "style": {
+            "align": "stretch",
+            "bg": "rgba(0, 0, 0, 0)",
+            "borderRadius": "0px",
+            "direction": "row",
+            "display": "flex",
+            "gap": "24px",
+            "height": "295.602px",
+            "justify": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "wrap": "wrap"
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸"
+        }
+      ],
+      "href": "#support",
+      "rect": {
+        "height": 39,
+        "width": 229.1,
+        "x": 847,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgb(0, 0, 0)",
+        "borderRadius": "3px",
+        "direction": "row",
+        "display": "inline-block",
+        "gap": "normal",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Сопровождение"
+    }
+  ],
+  "containers": [
+    {
+      "cls": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-49f75d9 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "49f75d9",
+      "rect": {
+        "height": 559.2,
+        "width": 1232,
+        "x": 0,
+        "y": 32
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "normal",
+        "height": "559.203px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 32px",
+        "wrap": "nowrap"
+      },
+      "text": "Тарифы\nВыберите подходящий вариант развития вашего проекта.\nСтарт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸\n/год\nКонт"
+    },
+    {
+      "cls": "elementor-element elementor-element-4631ec8 e-con-full e-flex e-con e-child",
+      "id": "4631ec8",
+      "rect": {
+        "height": 87.6,
+        "width": 1140,
+        "x": 46,
+        "y": 104
+      },
+      "style": {
+        "align": "flex-start",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "height": "87.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Тарифы\nВыберите подходящий вариант развития вашего проекта."
+    },
+    {
+      "cls": "elementor-element elementor-element-62a877d e-con-full e-flex e-con e-child",
+      "id": "62a877d",
+      "rect": {
+        "height": 87.6,
+        "width": 608,
+        "x": 46,
+        "y": 104
+      },
+      "style": {
+        "align": "flex-start",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "height": "87.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Тарифы\nВыберите подходящий вариант развития вашего проекта."
+    },
+    {
+      "cls": "elementor-element elementor-element-5340613 e-con-full e-flex e-con e-child",
+      "id": "5340613",
+      "rect": {
+        "height": 295.6,
+        "width": 1140,
+        "x": 46,
+        "y": 223.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "24px",
+        "height": "295.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект\nСопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение"
+    },
+    {
+      "cls": "elementor-element elementor-element-eafe05c e-con-full e-flex e-con e-child",
+      "id": "eafe05c",
+      "rect": {
+        "height": 295.6,
+        "width": 364,
+        "x": 46,
+        "y": 223.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "295.602px",
+        "justify": "space-between",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+    },
+    {
+      "cls": "elementor-element elementor-element-71af0ae e-con-full e-flex e-con e-child",
+      "id": "71af0ae",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 71,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан"
+    },
+    {
+      "cls": "elementor-element elementor-element-05eb976 e-con-full e-flex e-con e-child",
+      "id": "05eb976",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 71,
+        "y": 248.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан"
+    },
+    {
+      "cls": "elementor-element elementor-element-3d084b0 e-con-full e-flex e-con e-child",
+      "id": "3d084b0",
+      "rect": {
+        "height": 38.4,
+        "width": 314,
+        "x": 71,
+        "y": 284
+      },
+      "style": {
+        "align": "center",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "text": "50 000 ₸\n/мес"
+    },
+    {
+      "cls": "elementor-element elementor-element-9630049 e-con-full e-flex e-con e-child",
+      "id": "9630049",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 71,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Старт"
+    },
+    {
+      "cls": "elementor-element elementor-element-ac4fad5 e-con-full e-flex e-con e-child",
+      "id": "ac4fad5",
+      "rect": {
+        "height": 295.6,
+        "width": 364,
+        "x": 434,
+        "y": 223.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "295.602px",
+        "justify": "space-between",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+    },
+    {
+      "cls": "elementor-element elementor-element-a0c738a e-con-full e-flex e-con e-child",
+      "id": "a0c738a",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 459,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка"
+    },
+    {
+      "cls": "elementor-element elementor-element-1e162e6 e-con-full e-flex e-con e-child",
+      "id": "1e162e6",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 459,
+        "y": 248.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка"
+    },
+    {
+      "cls": "elementor-element elementor-element-b7321a9 e-con-full e-flex e-con e-child",
+      "id": "b7321a9",
+      "rect": {
+        "height": 38.4,
+        "width": 314,
+        "x": 459,
+        "y": 284
+      },
+      "style": {
+        "align": "center",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "text": "150 000 ₸\n/год"
+    },
+    {
+      "cls": "elementor-element elementor-element-bdc3bc3 e-con-full e-flex e-con e-child",
+      "id": "bdc3bc3",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 459,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Проект"
+    },
+    {
+      "cls": "elementor-element elementor-element-0bf26ba e-con-full e-flex e-con e-child",
+      "id": "0bf26ba",
+      "rect": {
+        "height": 295.6,
+        "width": 364,
+        "x": 822,
+        "y": 223.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "295.602px",
+        "justify": "space-between",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт\nВыбрать Сопровождение"
+    },
+    {
+      "cls": "elementor-element elementor-element-34e6d23 e-con-full e-flex e-con e-child",
+      "id": "34e6d23",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 847,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт"
+    },
+    {
+      "cls": "elementor-element elementor-element-b84470d e-con-full e-flex e-con e-child",
+      "id": "b84470d",
+      "rect": {
+        "height": 186.6,
+        "width": 314,
+        "x": 847,
+        "y": 248.6
+      },
+      "style": {
+        "align": "stretch",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "186.602px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение\n210 000 ₸\n/год\nКонтроль реализации\nВыезды\nОтчёт"
+    },
+    {
+      "cls": "elementor-element elementor-element-eac5fb1 e-con-full e-flex e-con e-child",
+      "id": "eac5fb1",
+      "rect": {
+        "height": 38.4,
+        "width": 314,
+        "x": 847,
+        "y": 284
+      },
+      "style": {
+        "align": "center",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "text": "210 000 ₸\n/год"
+    },
+    {
+      "cls": "elementor-element elementor-element-7cf077c e-con-full e-flex e-con e-child",
+      "id": "7cf077c",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 847,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Сопровождение"
+    }
+  ],
+  "document": {
+    "clientWidth": 1232,
+    "scrollWidth": 1232
+  },
+  "images": [],
+  "root": {
+    "id": "49f75d9",
+    "rect": {
+      "height": 559.2,
+      "width": 1232,
+      "x": 0,
+      "y": 32
+    },
+    "style": {
+      "align": "normal",
+      "bg": "rgba(97, 206, 112, 0.2)",
+      "borderRadius": "0px",
+      "direction": "column",
+      "display": "flex",
+      "gap": "normal",
+      "height": "559.203px",
+      "justify": "normal",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "wrap": "nowrap"
+    }
+  },
+  "viewport": {
+    "height": 923,
+    "width": 1232
+  },
+  "widgets": [
+    {
+      "id": "41f63e2",
+      "rect": {
+        "height": 46,
+        "width": 161,
+        "x": 46,
+        "y": 104
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "0px",
+        "height": "46px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Тарифы",
+      "widget": "heading.default"
+    },
+    {
+      "id": "7021d6f",
+      "rect": {
+        "height": 41.6,
+        "width": 443.7,
+        "x": 46,
+        "y": 150
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "0px",
+        "height": "41.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выберите подходящий вариант развития вашего проекта.",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "6989327",
+      "rect": {
+        "height": 23.4,
+        "width": 314,
+        "x": 71,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "23.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Старт",
+      "widget": "heading.default"
+    },
+    {
+      "id": "14ac468",
+      "rect": {
+        "height": 38.4,
+        "width": 124.6,
+        "x": 71,
+        "y": 284
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "50 000 ₸",
+      "widget": "heading.default"
+    },
+    {
+      "id": "22e82ce",
+      "rect": {
+        "height": 25.6,
+        "width": 32,
+        "x": 199.6,
+        "y": 290.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "/мес",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "556fdac",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 71,
+        "y": 334.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Малый проект",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "2836988",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 71,
+        "y": 372
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Аудит",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "245aaa9",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 71,
+        "y": 409.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "План",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "e19d034",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 71,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Старт",
+      "widget": "button.default"
+    },
+    {
+      "id": "1e0aefa",
+      "rect": {
+        "height": 23.4,
+        "width": 314,
+        "x": 459,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "23.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Проект",
+      "widget": "heading.default"
+    },
+    {
+      "id": "16f8cd2",
+      "rect": {
+        "height": 38.4,
+        "width": 142.4,
+        "x": 459,
+        "y": 284
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "150 000 ₸",
+      "widget": "heading.default"
+    },
+    {
+      "id": "14dc516",
+      "rect": {
+        "height": 25.6,
+        "width": 29.5,
+        "x": 605.4,
+        "y": 290.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "/год",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "13404dc",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 459,
+        "y": 334.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Полный проект",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "776f461",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 459,
+        "y": 372
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Дизайн",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "dcdd10b",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 459,
+        "y": 409.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Разработка",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "a0738d1",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 459,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Проект",
+      "widget": "button.default"
+    },
+    {
+      "id": "4fcec86",
+      "rect": {
+        "height": 23.4,
+        "width": 314,
+        "x": 847,
+        "y": 248.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "23.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение",
+      "widget": "heading.default"
+    },
+    {
+      "id": "25833a5",
+      "rect": {
+        "height": 38.4,
+        "width": 142.4,
+        "x": 847,
+        "y": 284
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "38.3984px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "210 000 ₸",
+      "widget": "heading.default"
+    },
+    {
+      "id": "4338002",
+      "rect": {
+        "height": 25.6,
+        "width": 29.5,
+        "x": 993.3,
+        "y": 290.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "4px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "/год",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "2196a90",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 847,
+        "y": 334.4
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Контроль реализации",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "5518758",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 847,
+        "y": 372
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выезды",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "c28007d",
+      "rect": {
+        "height": 25.6,
+        "width": 314,
+        "x": 847,
+        "y": 409.6
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "12px",
+        "height": "25.6016px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Отчёт",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "39b7187",
+      "rect": {
+        "height": 39,
+        "width": 314,
+        "x": 847,
+        "y": 455.2
+      },
+      "style": {
+        "align": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Выбрать Сопровождение",
+      "widget": "button.default"
+    }
+  ]
+}

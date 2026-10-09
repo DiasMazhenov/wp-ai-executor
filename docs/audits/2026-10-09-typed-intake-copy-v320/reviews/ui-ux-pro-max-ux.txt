@@ -1,0 +1,36 @@
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** accessible accordion mobile responsive content width CTA
+**Source:** ux-guidelines.csv | **Found:** 3 results
+
+### Result 1
+- **Category:** Layout
+- **Issue:** Container Width
+- **Platform:** Web
+- **Description:** Content too wide is hard to read
+- **Do:** Limit max-width for text content (65-75ch)
+- **Don't:** Let text span full viewport width
+- **Code Example Good:** max-w-prose or max-w-3xl
+- **Code Example Bad:** Full width paragraphs
+- **Severity:** Medium
+
+### Result 2
+- **Category:** Responsive
+- **Issue:** Mobile First
+- **Platform:** Web
+- **Description:** Design for mobile then enhance for larger
+- **Do:** Start with mobile styles then add breakpoints
+- **Don't:** Desktop-first causing mobile issues
+- **Code Example Good:** Default mobile + md: lg: xl:
+- **Code Example Bad:** Desktop default + max-width queries
+- **Severity:** Medium
+
+### Result 3
+- **Category:** Responsive
+- **Issue:** Viewport Meta
+- **Platform:** Web
+- **Description:** Set viewport for mobile devices
+- **Do:** Use width=device-width initial-scale=1
+- **Don't:** Missing or incorrect viewport
+- **Code Example Good:** <meta name='viewport'...>
+- **Code Example Bad:** No viewport meta tag
+- **Severity:** High
