@@ -501,17 +501,17 @@ function wpae_accepted_lifecycle_request( array $context ) {
         return new WP_REST_Response( [ 'ok' => true, 'write_count' => 0, 'operation' => $descriptor ], 200 );
     }
     if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (int) ( $context['accepted_revision'] ?? 0 ) !== (int) $operation['revision'] || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] || ! wpae_accepted_lifecycle_scope_matches( $operation, $context ) ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция/revision и её root/contract scope не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }
-    $loaded = wpae_accepted_contract_get( $operation );
-    if ( empty( $loaded['ok'] ) ) { return new WP_Error( 'wpae_typed_contract_unavailable', $loaded['reason'], [ 'status' => 409, 'write_count' => 0 ] ); }
-    $data = wpae_get_elementor_data_for_post( $post_id );
-    if ( ! is_array( $data ) ) { return new WP_Error( 'wpae_typed_readback_unavailable', 'Текущая native-модель недоступна.', [ 'status' => 409, 'write_count' => 0 ] ); }
-    $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
-    if ( $eligibility['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned-модель операции недоступна для lifecycle-действия.', [ 'status' => 409, 'write_count' => 0, 'eligibility' => $eligibility ] ); }
-    $contract = $loaded['contract'];
-    $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
-    $action = $context['lifecycle_action'] ?? '';
+	$loaded = wpae_accepted_contract_get( $operation );
+	if ( empty( $loaded['ok'] ) ) { return new WP_Error( 'wpae_typed_contract_unavailable', $loaded['reason'], [ 'status' => 409, 'write_count' => 0 ] ); }
+	$data = wpae_get_elementor_data_for_post( $post_id );
+	if ( ! is_array( $data ) ) { return new WP_Error( 'wpae_typed_readback_unavailable', 'Текущая native-модель недоступна.', [ 'status' => 409, 'write_count' => 0 ] ); }
+	$eligibility = wpae_accepted_contract_eligibility( $operation, $data );
+	$contract = $loaded['contract'];
+	$owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
+	$action = $context['lifecycle_action'] ?? '';
 	if ( $action === 'check_document_model' ) {
-		// Read-only fresh native comparison protects foreign/local edits before Undo reload.
+		// Read-only full-document comparison remains available on an ineligible target;
+		// exact post/revision/identity/contract/root scope was already checked above.
 		$model = $context['editor_document_model'] ?? null;
 		$mismatch = null;
 		$projection_changes = [];
@@ -523,9 +523,19 @@ function wpae_accepted_lifecycle_request( array $context ) {
 		$proof_matches = ( $required_proof === null && $submitted_proof === null ) || ( $required_proof !== null && wpae_accepted_native_roundtrip_proof_matches( $submitted_proof, $required_proof ) );
 		$matches = $matches && $proof_matches;
 		if ( ! $proof_matches && $mismatch === null ) { $mismatch = [ 'reason' => 'native_roundtrip_proof_mismatch' ]; }
-		return new WP_REST_Response( [ 'mismatch' => $mismatch, 'native_roundtrip_recovery' => $required_proof, 'ok' => $matches, 'code' => $matches ? 'typed_document_model_matches' : 'typed_document_model_mismatch', 'operation_id' => $operation['operation_id'], 'root_ids' => array_column( $data, 'id' ), 'write_count' => 0 ], $matches ? 200 : 409 );
-    }
-    if ( $action === 'resync' ) {
+		return new WP_REST_Response( [ 'mismatch' => $mismatch, 'eligibility' => array_intersect_key( $eligibility, array_flip( [ 'status', 'reason', 'mismatch' ] ) ), 'native_roundtrip_recovery' => $required_proof, 'ok' => $matches, 'code' => $matches ? 'typed_document_model_matches' : 'typed_document_model_mismatch', 'operation_id' => $operation['operation_id'], 'root_ids' => array_column( $data, 'id' ), 'write_count' => 0 ], $matches ? 200 : 409 );
+	}
+	if ( $action === 'check_model' ) {
+		// Compare the browser's owned root to the frozen accepted contract even when
+		// saved read-back is ineligible; diagnostics never authorize Undo or Save.
+		$model = $context['editor_owned_model'] ?? null;
+		$mismatch = null;
+		$projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], $model, null, $mismatch, wpae_accepted_native_roundtrip_context( $contract ) ) : null;
+		$matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) );
+		return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'eligibility' => array_intersect_key( $eligibility, array_flip( [ 'status', 'reason', 'mismatch' ] ) ), 'mismatch' => $mismatch, 'write_count' => 0 ], $matches ? 200 : 409 );
+	}
+    if ( $eligibility['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned-модель операции недоступна для lifecycle-действия.', [ 'status' => 409, 'write_count' => 0, 'eligibility' => $eligibility ] ); }
+	if ( $action === 'resync' ) {
         $model = $context['editor_owned_model'] ?? null;
         if ( ! is_array( $model ) ) { return new WP_Error( 'wpae_typed_resync_model_missing', 'Нужно текущее owned model.', [ 'status' => 409 ] ); }
         $current_model = $model;
@@ -534,13 +544,6 @@ function wpae_accepted_lifecycle_request( array $context ) {
 		$matches_after = wpae_accepted_owned_matches( $contract['after_owned'], $current_model, $roundtrip_context );
         if ( ! $matches_before && ! $matches_after ) { return new WP_Error( 'wpae_typed_resync_local_conflict', 'Owned local changes не перезаписаны.', [ 'status' => 409 ] ); }
         return new WP_REST_Response( [ 'ok' => true, 'editor_sync' => [ 'elements' => $owned, 'mode' => $model ? 'replace' : 'insert', 'replace_element_id' => $contract['owned_root_ids'][0], 'operation_owned_root_ids' => $contract['owned_root_ids'], 'after_top_level_ids' => array_column( $data, 'id' ) ], 'write_count' => 0 ], 200 );
-    }
-    if ( $action === 'check_model' ) {
-        $model = $context['editor_owned_model'] ?? null;
-        $mismatch = null;
-		$projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], $model, null, $mismatch, wpae_accepted_native_roundtrip_context( $contract ) ) : null;
-        $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) );
-        return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'mismatch' => $mismatch, 'write_count' => 0 ], $matches ? 200 : 409 );
     }
     if ( $action !== 'repair' ) { return new WP_Error( 'wpae_typed_action_unsupported', 'Неизвестное lifecycle действие.', [ 'status' => 422, 'write_count' => 0 ] ); }
     $report = function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( sanitize_text_field( (string) ( $context['accepted_vision_report_id'] ?? '' ) ) ) : null;

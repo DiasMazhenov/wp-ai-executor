@@ -1877,8 +1877,9 @@
             body: JSON.stringify({ message: 'Проверка typed lifecycle', context: context })
         }).then(function (response) { return response.json().then(function (body) {
             var eligibility = body.data && body.data.eligibility ? body.data.eligibility : null;
-            var detail = eligibility ? eligibility.status + (eligibility.reason ? ':' + eligibility.reason : '') + (eligibility.mismatch ? ' ' + JSON.stringify(eligibility.mismatch) : '') : '';
-            if (!response.ok || !body.ok) throw new Error((body.message || body.error || body.code || 'Typed lifecycle refusal') + (detail ? ' [' + detail + ']' : '') + (body.mismatch ? ' ' + JSON.stringify(body.mismatch) : ''));
+            var detail = eligibility ? eligibility.status + (eligibility.reason ? ':' + eligibility.reason : '') + formatTypedEligibilityMismatch(eligibility) : '';
+            var mismatch = body.data && body.data.mismatch ? formatTypedEligibilityMismatch({ mismatch: body.data.mismatch }) : formatTypedEligibilityMismatch({ mismatch: body.mismatch });
+            if (!response.ok || !body.ok) throw new Error((body.message || body.error || body.code || 'Typed lifecycle refusal') + (detail ? ' [' + detail + ']' : '') + mismatch);
             return body;
         }); });
     }
@@ -1985,6 +1986,33 @@
         });
         messages.appendChild(button);
     }
+    function addTypedReadOnlyCheckControl(descriptor, action, label) {
+        var check = document.createElement('button'); check.type = 'button'; check.className = 'wpae-llm-icon-button';
+        check.textContent = label;
+        check.title = 'Read-only: проверяет текущую editor-модель, не изменяет страницу и operation';
+        check.addEventListener('click', function () {
+            if (requestInFlight) return;
+            if (!editorPublishIsClean()) { addMessage('assistant', 'Read-only check остановлен: редактор помечен как несохранённый. Запись не выполнялась.'); return; }
+            if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') { addMessage('assistant', 'Read-only check недоступен: editor model не загружена. Запись не выполнялась.'); return; }
+            check.disabled = true;
+            var before = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+            describeTypedOperation(descriptor).then(function () {
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились после read-only descriptor; проверка прекращена.');
+                var context = typedOperationContext(descriptor, action);
+                if (action === 'check_model') context.editor_owned_model = before.filter(function (node) { return descriptor.root_ids.indexOf(String(node.id || '')) >= 0; });
+                else context.editor_document_model = before;
+                return typedLifecyclePost(context);
+            }).then(function () {
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились во время read-only check.');
+                addMessage('assistant', label + ': проверка завершена, write_count=0.');
+            }).catch(function (error) {
+                addMessage('assistant', label + ': ' + error.message + ' Запись не выполнялась.');
+            }).finally(function () { check.disabled = false; });
+        });
+        return check;
+    }
     function addTypedUndoControl(descriptor) {
         var row = document.createElement('div'); row.className = 'wpae-llm-action-row';
         var button = document.createElement('button'); button.type = 'button';
@@ -2040,6 +2068,9 @@
                 }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });
             });
             row.appendChild(verify);
+        } else if (descriptor.accepted_contract_id) {
+            row.appendChild(addTypedReadOnlyCheckControl(descriptor, 'check_model', 'Проверить owned модель перед Save'));
+            row.appendChild(addTypedReadOnlyCheckControl(descriptor, 'check_document_model', 'Сравнить полный editor/server документ'));
         }
         messages.appendChild(row);
     }

@@ -86,6 +86,27 @@ test('read-only descriptor shows only the server-approved native mismatch fields
  assert.ok(errors[0].includes('node_id'));assert.ok(errors[0].includes('padding'));assert.ok(errors[0].includes('extra_nondefault_control'));assert.ok(!errors[0].includes('must-not-be-exposed'));assert.ok(errors[0].includes('write_count=0'));
 });
 
+test('ineligible operation exposes full-document and owned read-only checks but never enables Undo',async()=>{
+ const {env,posts,errors}=harness();
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);const c=p.context||{};if(c.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',accepted_contract_hash:'hash',root_ids:['owned'],revision:9,eligibility:{status:'changed_target',reason:'owned_fingerprint_changed',mismatch:{node_id:'owned',control:'editor',reason:'authored_control_changed'}}}})};if(c.lifecycle_action==='check_model')return {ok:false,json:async()=>({ok:false,code:'typed_editor_model_mismatch',data:{write_count:0,mismatch:{node_id:'owned',control:'editor',reason:'authored_control_changed',value:'must-not-be-exposed'}}})};return {ok:true,json:async()=>({ok:true,write_count:0})};};
+ const op={status:'changed_target',reason:'owned_fingerprint_changed',operation_id:'child',operation_identity:'identity',revision:5,accepted_contract_id:'contract',accepted_contract_hash:'hash',root_ids:['owned']};
+ env.addTypedUndoControl(op);const row=env.messages.children[0];assert.equal(row.children[0].disabled,true);assert.equal(row.children[2].textContent,'Проверить owned модель перед Save');assert.equal(row.children[3].textContent,'Сравнить полный editor/server документ');
+ row.children[2].listeners.click();await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(p=>p.context.lifecycle_action),['describe_operation','check_model']);assert.equal(posts[1].context.accepted_revision,9);assert.deepEqual(posts[1].context.editor_owned_model,[{id:'owned',elType:'container',widgetType:'',isInner:false,settings:{},elements:[]}]);assert.ok(errors.at(-1).includes('node_id'));assert.ok(errors.at(-1).includes('editor'));assert.ok(errors.at(-1).includes('authored_control_changed'));assert.ok(!errors.at(-1).includes('must-not-be-exposed'));assert.equal(row.children[0].disabled,true);assert.ok(!env.reload);
+ row.children[3].listeners.click();await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(p=>p.context.lifecycle_action),['describe_operation','check_model','describe_operation','check_document_model']);assert.equal(posts[3].context.accepted_revision,9);assert.equal(posts[3].context.editor_document_model.length,1);assert.equal(posts[3].context.editor_document_model[0].id,'owned');assert.ok(errors.at(-1).includes('write_count=0'));assert.equal(row.children[0].disabled,true);assert.ok(!env.reload);
+});
+
+test('ineligible read-only check stops when the local editor model changes after descriptor refresh',async()=>{
+ const {env,posts,errors}=harness();let resolveDescriptor;
+ env.fetch=(url,o)=>{posts.push(JSON.parse(o.body));return new Promise(resolve=>{resolveDescriptor=resolve;});};
+ const op={status:'changed_target',operation_id:'child',operation_identity:'identity',revision:5,accepted_contract_id:'contract',root_ids:['owned']};
+ env.addTypedUndoControl(op);const check=env.messages.children[0].children[2];check.listeners.click();
+ env.getEditorModelChildren=model=>model.id?[]:[{id:'owned',elType:'container',settings:{user_edit:'preserve'}}];
+ resolveDescriptor({ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'changed_target',reason:'owned_fingerprint_changed'}}})});
+ await new Promise(r=>setImmediate(r));assert.deepEqual(posts.map(p=>p.context.lifecycle_action),['describe_operation']);assert.ok(errors.at(-1).includes('Локальная модель или dirty-state изменились'));assert.ok(!env.reload);
+});
+
 test('descriptor scope mismatch stops before owned check and mutation',async()=>{
  const {env,posts,errors}=harness();
  env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);return {ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'child',operation_identity:'foreign-identity',accepted_contract_id:'contract',root_ids:['owned'],revision:5,eligibility:{status:'available'}}})};};
