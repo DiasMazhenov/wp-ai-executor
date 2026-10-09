@@ -1,0 +1,9 @@
+{
+  "schema": "wpae-screenshot-manifest-v1",
+  "audit": "2026-10-09-universal-section-header-v326",
+  "post_id": 5214,
+  "source_version": "v02.11.326",
+  "items": [],
+  "status": "NO_GENERATED_ROOTS",
+  "reason": "All five unique plugin-chat requests refused before transaction/write. No generated design existed to screenshot; therefore there are no PNG paths, dimensions, or inline images for this audit."
+}
