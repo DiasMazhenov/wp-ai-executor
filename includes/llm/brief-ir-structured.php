@@ -789,8 +789,19 @@ function wpae_brief_ir_approved_facts( array $brief, string $source_text ): arra
 		if ( ! is_array( $item ) || ( $item['copy_status'] ?? '' ) !== 'explicit' || in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2', 'pricing_cta', 'faq_question', 'testimonial_quote', 'testimonial_author', 'portfolio_project_action_label' ], true ) ) { continue; }
 		$append( (string) ( $item['exact_text'] ?? '' ), (array) ( $item['source_span'] ?? [] ), 'explicit_content' );
 	}
-	if ( preg_match_all( '/(?:^|\R)\s*(?:факты|подтверждённые\s+факты|подтвержденные\s+факты|данные|facts|approved\s+facts|verified\s+facts)\s*[:：]\s*([^\r\n]+)/iu', $source_text, $matches, PREG_OFFSET_CAPTURE ) ) {
-		foreach ( $matches[1] as [ $line, $offset ] ) {
+	$fact_label_pattern = '/(?<![\p{L}\p{N}_])(?:подтверждённые\s+факты|подтвержденные\s+факты|approved\s+facts|verified\s+facts|факты|данные|facts)\s*[:：]\s*/iu';
+	if ( preg_match_all( $fact_label_pattern, $source_text, $matches, PREG_OFFSET_CAPTURE ) ) {
+		foreach ( $matches[0] as [ $label, $label_offset ] ) {
+			$value_offset = (int) $label_offset + strlen( (string) $label );
+			$line_end = strpos( $source_text, "\n", $value_offset );
+			$line = substr( $source_text, $value_offset, $line_end === false ? null : $line_end - $value_offset );
+			// Inline fact labels may follow an exact FAQ question or a Benefits
+			// request on the same line. Stop before the next sentence so later
+			// generation/prohibition instructions cannot become approved facts.
+			$sentence_break = [];
+			if ( preg_match( '/\.\s+(?=[\p{Lu}])/u', $line, $sentence_break, PREG_OFFSET_CAPTURE ) ) {
+				$line = substr( $line, 0, (int) $sentence_break[0][1] );
+			}
 			foreach ( preg_split( '/\s*[;|]\s*/u', (string) $line ) ?: [] as $part ) {
 				$part = trim( (string) $part, " \t\r\n\"'«»“”.," );
 				if ( $part === '' ) { continue; }
