@@ -150,7 +150,10 @@ Public mobile CSS 390×844, PNG 390×844:
 | Plugins PHP plugin version | v320 |
 | Reloaded editor inline version | v320 |
 | Final live root set | `[]` |
-| Current docs/evidence commit | Фиксируется отдельно от runtime commit в handoff после scoped commit |
-| Current docs/evidence push | Отдельно от runtime push; подтверждается remote HEAD check |
+| Initial docs/evidence commit | `62eb4b808719db633ccb52f9520593370a18673f` |
+| Docs/evidence push | Успешен; независимый `git ls-remote origin refs/heads/main` вернул `62eb4b808719db633ccb52f9520593370a18673f` |
 
 Это фактический промежуточный результат, а не закрытие задачи: Benefits остаётся внешне заблокирован, и принятых A–E всего четыре.
+
+
+Отчёт и текущий evidence set впервые закоммичены и отправлены как `62eb4b808719db633ccb52f9520593370a18673f`; независимая проверка после push подтвердила этот SHA в `origin/main`. Дополнение с публикационным статусом сохранено отдельным последующим scoped documentation commit.

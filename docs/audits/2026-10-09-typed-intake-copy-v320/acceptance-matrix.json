@@ -403,7 +403,7 @@
     "git_diff_check_source_release": "PASS",
     "runtime_changed_after_checks": false
   },
-  "report_commit": "scoped documentation/evidence commit; SHA provided in final response",
-  "report_push": "origin/main independently checked after push; SHA provided in final response",
+  "report_commit": "62eb4b808719db633ccb52f9520593370a18673f",
+  "report_push": "push succeeded; independent origin/main ls-remote matched 62eb4b808719db633ccb52f9520593370a18673f; later publication note is a separate scoped docs commit",
   "task_closed": false
 }
