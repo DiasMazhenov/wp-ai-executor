@@ -619,6 +619,7 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 		$node['visual_policy']['item_surface_scope'] = $is_surface_owner ? 'owner' : ( $inside_surface_owner ? 'interior' : 'outside' );
 	}
 	if ( ( ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) || $role === 'portfolio_project_row' ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
+	if ( $role === 'testimonial_photo' ) { $node['visual_policy']['avatar_alignment'] = (string) ( $policy['cards']['avatar_alignment'] ?? 'start' ); }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
 		$node['visual_policy']['collection_item_alignment'] = $policy['collection']['surface_alignment'];
@@ -2096,6 +2097,14 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['image_size'] = 'full';
 		$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+		if ( $role === 'testimonial_photo' ) {
+			// The image widget's center default detached the portrait from the
+			// quote's left axis. Freeze the semantic start alignment through Plan
+			// and compile it to native image controls at every breakpoint.
+			$avatar_alignment = (string) ( $node['visual_policy']['avatar_alignment'] ?? 'start' );
+			$settings['align'] = [ 'start' => 'left' ][ $avatar_alignment ] ?? 'left';
+			$settings['align_tablet'] = $settings['align_mobile'] = $settings['align'];
+		}
 		if ( $has_render_policy ) {
 			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
 				foreach ( [ 'width', 'height' ] as $dimension_name ) {
