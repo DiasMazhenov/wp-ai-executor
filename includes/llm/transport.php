@@ -589,6 +589,20 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
     return $diagnostics;
 }
 
+/** Remove only the unsupported OpenRouter wire keyword; the canonical validator still enforces uniqueness. */
+function wpae_llm_openrouter_typed_wire_schema( array $schema ): array {
+    foreach ( array_keys( $schema ) as $key ) {
+        if ( $key === 'uniqueItems' ) {
+            unset( $schema[ $key ] );
+            continue;
+        }
+        if ( is_array( $schema[ $key ] ) ) {
+            $schema[ $key ] = wpae_llm_openrouter_typed_wire_schema( $schema[ $key ] );
+        }
+    }
+    return $schema;
+}
+
 function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider, array $policy = [] ): array {
 	$strict_typed_contract = ( $policy['contract'] ?? '' ) === 'typed_intake_strict';
     if ( $provider === 'openrouter' ) {
@@ -597,6 +611,10 @@ function wpae_llm_prepare_provider_request_body( array $request_body, bool $acti
         if ( isset( $request_body['max_completion_tokens'] ) ) {
             $request_body['max_tokens'] = (int) $request_body['max_completion_tokens'];
             unset( $request_body['max_completion_tokens'] );
+        }
+        if ( $strict_typed_contract && is_array( $request_body['response_format']['json_schema']['schema'] ?? null ) ) {
+            // OpenRouter's compatible endpoint rejected uniqueItems. Duplicate fact_refs remain rejected by the full server validator.
+            $request_body['response_format']['json_schema']['schema'] = wpae_llm_openrouter_typed_wire_schema( $request_body['response_format']['json_schema']['schema'] );
         }
         return $request_body;
     }
@@ -624,8 +642,13 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
             return new WP_Error( 'wpae_llm_provider_budget_exhausted', 'Общее время ожидания LLM исчерпано.' );
         }
         $remote_args['timeout'] = min( (float) ( $remote_args['timeout'] ?? 45 ), $remaining );
+        $canonical_schema = is_array( $request_body['response_format']['json_schema']['schema'] ?? null ) ? $request_body['response_format']['json_schema']['schema'] : null;
+        $canonical_schema_json = $canonical_schema === null ? '' : (string) wp_json_encode( $canonical_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+        $canonical_schema_sha256 = $canonical_schema_json !== '' ? hash( 'sha256', $canonical_schema_json ) : null;
+        $canonical_schema_bytes = $canonical_schema_json !== '' ? strlen( $canonical_schema_json ) : null;
+        $wire_schema_adapter = $strict_typed_contract && $provider === 'openrouter' ? 'openrouter_typed_omit_uniqueItems_v1' : null;
 		$request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider, $policy );
-		$append_attempt = static function ( $attempt_response, $attempt_error, array $attempt_body, string $retry_reason = '' ) use ( &$attempt_meta, $url, $provider, $deadline ): void {
+		$append_attempt = static function ( $attempt_response, $attempt_error, array $attempt_body, string $retry_reason = '' ) use ( &$attempt_meta, $url, $provider, $deadline, $strict_typed_contract, $canonical_schema_sha256, $canonical_schema_bytes, $wire_schema_adapter ): void {
 			$status = ! is_wp_error( $attempt_response ) && ! is_wp_error( $attempt_error ) ? wpae_llm_diagnostic_http_status( wp_remote_retrieve_response_code( $attempt_response ) ) : null;
 			$response_body = null;
 			if ( ! is_wp_error( $attempt_response ) && ! is_wp_error( $attempt_error ) ) {
@@ -650,6 +673,11 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 				'require_parameters' => array_key_exists( 'require_parameters', (array) ( $attempt_body['provider'] ?? [] ) ) ? (bool) $attempt_body['provider']['require_parameters'] : null,
 				'schema_sha256' => $encoded_schema !== '' ? hash( 'sha256', $encoded_schema ) : null,
 				'schema_bytes' => $encoded_schema !== '' ? strlen( $encoded_schema ) : null,
+				'canonical_schema_sha256' => $strict_typed_contract ? $canonical_schema_sha256 : null,
+				'canonical_schema_bytes' => $strict_typed_contract ? $canonical_schema_bytes : null,
+				'wire_schema_sha256' => $encoded_schema !== '' ? hash( 'sha256', $encoded_schema ) : null,
+				'wire_schema_bytes' => $encoded_schema !== '' ? strlen( $encoded_schema ) : null,
+				'wire_schema_adapter' => $wire_schema_adapter,
 				'http_status' => $status,
 				'error_code' => $details['error_code'] ?? null,
 				'provider_error_envelope' => ! empty( $details['has_error_envelope'] ),

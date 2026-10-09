@@ -115,6 +115,8 @@ assert.match(transport, /structured_route_rejected/);
 assert.match(transport, /unset\( \$request_body\['response_format'\], \$request_body\['provider'\] \)/);
 assert.match(transport, /function wpae_llm_provider_request/);
 assert.match(transport, /function wpae_llm_prepare_provider_request_body/);
+assert.match(transport, /function wpae_llm_openrouter_typed_wire_schema/);
+assert.match(transport, /openrouter_typed_omit_uniqueItems_v1/);
 assert.match(transport, /unset\( \$request_body\['max_completion_tokens'\] \)/);
 assert.match(transport, /Gemini's OpenAI-compatible endpoint/);
 assert.match(transport, /\$provider === 'openrouter'/);
@@ -396,7 +398,8 @@ assert.match(js, /diagnostics\.write && typeof diagnostics\.write === 'object'/)
 assert.match(js, /Array\.isArray\(writeDiagnostics\.steps\)/);
 assert.match(js, /requestError\.diagnostics = providerDiagnostics \|\| \(diagnostics && typeof diagnostics === 'object'/);
 assert.match(js, /wpae-intake-failure-diagnostics-v1/);
-assert.match(js, /\['source', 'provider', 'model', 'requested_model'.*'actual_http_calls'.*'provider_message'.*'schema_bytes'.*'write_count'\]/);
+assert.match(js, /\['source', 'provider', 'model', 'requested_model'.*'actual_http_calls'.*'provider_message'.*'canonical_schema_sha256'.*'write_count'\]/);
+assert.match(js, /'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter'/);
 assert.match(js, /rawValidation\.errors\.slice\(0, 20\)/);
 assert.match(js, /requestError\.diagnostics = providerDiagnostics \|\|[\s\S]+\|\| intakeFailureDiagnostics/);
 assert.match(js, /formatStep/);
