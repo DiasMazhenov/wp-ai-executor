@@ -1,0 +1,307 @@
+{
+  "schema": "wpae-live-screenshot-manifest-v1",
+  "plugin_version": "v02.11.325",
+  "post_id": 5214,
+  "screenshots": [
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/A-hero-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/A-hero-v325-public-desktop.png",
+      "sha256": "1a13440c03365ef597cd3cbf661d15f873e5c5181a0ad5b9ac0a3cd4738daae9",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/A-hero-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/A-hero-v325-public-mobile-390x844.png",
+      "sha256": "3890ca3e2135a4ec692367eb9b14ef3d5ed97ef101857285dcff635c34658742",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-desktop.png",
+      "sha256": "90f1821d4c55dd60edb494033da4d133de3792ddb96dd2a9075109af7927deac",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-390x844.png",
+      "sha256": "f6a73d921562eb17b2e659d80aca8e2e77ca396580a4fcdaac8fda41e07ce05f",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-actions-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-actions-390x844.png",
+      "sha256": "b6b0382a434dc5f42110f4882674a7cee49978e7a8145d9b725f32db4bae2e0e",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-collapsed-top-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/D-pricing-v325-public-mobile-collapsed-top-390x844.png",
+      "sha256": "547e6439ce6cb392b7f71bcbddf2b24208b0bad9a3ba66203b2d95063650550c",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/G-team-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/G-team-v325-public-desktop.png",
+      "sha256": "69c29ed7edba0b87ce27b1f3490d757ba12afeb4aa7c8ce3b9fe1fe7e973d8df",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1265,
+        "height": 712
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/G-team-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/G-team-v325-public-mobile-390x844.png",
+      "sha256": "2b8481acc442e3ed763f48c961e4921fe46a68009a4fd1b8d277dd4654e62cfc",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-desktop.png",
+      "sha256": "cbab57497275aa1e59eb5954bdb78372497f9a0fba7d215172045bb8d639adf2",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1265,
+        "height": 712
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-390x844.png",
+      "sha256": "206442da6ce67a59cd66d6e7df78e580ca638d71209d008527ffaf3ab41dc4fc",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-lower-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-lower-390x844.png",
+      "sha256": "fb68349e58161bc4a2c020567495200a972ab1008590638a6e370b379346da7c",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-lower-greeting-collapsed-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/H-testimonials-v325-public-mobile-lower-greeting-collapsed-390x844.png",
+      "sha256": "b2d5f3ed1ee55a0505c1124160259581686709b7a960217ac10a5ee0fa1624b8",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-desktop-lower.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-desktop-lower.png",
+      "sha256": "7116dded1596768becda9d419875b2efe13a2a447afd0c2220943f1155deb039",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1265,
+        "height": 712
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-desktop.png",
+      "sha256": "fe422626ea89b129d47a02e24b73100a8773fa89165d5422016d4e610f430dea",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1265,
+        "height": 712
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-390x844.png",
+      "sha256": "165e5ea41fff370344757aa5e4881aa2fc5f562e64e96fb6fe1e3dfbeba746e7",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-lower-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-lower-390x844.png",
+      "sha256": "a7f7118cee2cb96ba2cef7c7da703e68a567633fb6e025328521e9c2eaaa90f0",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-lower-greeting-collapsed-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/I-team-rows-v325-public-mobile-lower-greeting-collapsed-390x844.png",
+      "sha256": "a43c095838d23640b22bf270ba4cdb86a9be3b1c204f98b1396354fe05c42335",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-desktop.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-desktop.png",
+      "sha256": "39c8233965aa04799c06bc93474b8f6538ef00a2a2176e5489082f778577ff63",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "png_dimensions": {
+        "width": 1265,
+        "height": 712
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-mobile-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-mobile-390x844.png",
+      "sha256": "7b7c1b963be51e1dfcd6929441933fd7096c1901662bd29cb7e4a794450b15b0",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    },
+    {
+      "file": "docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-mobile-lower-390x844.png",
+      "absolute_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-09-typed-intake-live-v325/screenshots/J-about-v325-public-mobile-lower-390x844.png",
+      "sha256": "f0760f3fd65ab927690ec37a493cfb5156c797c76d40efa2ba417eb16e50b6db",
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png_dimensions": {
+        "width": 375,
+        "height": 812
+      }
+    }
+  ]
+}

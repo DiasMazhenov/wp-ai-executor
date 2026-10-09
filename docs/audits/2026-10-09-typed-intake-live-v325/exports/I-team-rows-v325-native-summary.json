@@ -1,0 +1,86 @@
+{
+  "root": "b441243",
+  "css": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team",
+  "direction": "column",
+  "required": [
+    {
+      "text": "ДЕМО-КОМАНДА",
+      "present": true
+    },
+    {
+      "text": "Роли в проекте",
+      "present": true
+    },
+    {
+      "text": "Нейтральные синтетические сведения помогают проверить связь между фотографиями, текстом и строками команды.",
+      "present": true
+    },
+    {
+      "text": "Участник 1",
+      "present": true
+    },
+    {
+      "text": "Исследователь пользовательских сценариев",
+      "present": true
+    },
+    {
+      "text": "Собирает вопросы и помогает уточнить задачу.",
+      "present": true
+    },
+    {
+      "text": "Участник 2",
+      "present": true
+    },
+    {
+      "text": "Координатор взаимодействия с проектной командой",
+      "present": true
+    },
+    {
+      "text": "Сопоставляет решения с контекстом проекта, фиксирует договорённости и помогает команде последовательно передавать работу между этапами. Сведения вымышлены и используются только для проверки длинной строки в редакционном списке.",
+      "present": true
+    },
+    {
+      "text": "Участник 3",
+      "present": true
+    },
+    {
+      "text": "Специалист по подготовке макетов",
+      "present": true
+    },
+    {
+      "text": "Проверяет, что детали интерфейса остаются согласованными.",
+      "present": true
+    }
+  ],
+  "images": [
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "altKeys": []
+    },
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "altKeys": []
+    },
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "altKeys": []
+    }
+  ],
+  "widgets": [
+    "heading",
+    "heading",
+    "text-editor",
+    "image",
+    "heading",
+    "text-editor",
+    "text-editor",
+    "image",
+    "heading",
+    "text-editor",
+    "text-editor",
+    "image",
+    "heading",
+    "text-editor",
+    "text-editor"
+  ]
+}

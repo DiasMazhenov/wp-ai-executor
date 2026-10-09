@@ -1,0 +1,74 @@
+{
+  "root": "34b5567",
+  "rootClass": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-testimonials",
+  "settings": {
+    "direction": "column",
+    "columns": 3,
+    "mobileColumns": 1
+  },
+  "entityText": [
+    {
+      "text": "ДЕМО-ЦИТАТЫ",
+      "present": true
+    },
+    {
+      "text": "Примеры коротких отзывов",
+      "present": true
+    },
+    {
+      "text": "Все персонажи и цитаты вымышлены и не относятся к реальным клиентам.",
+      "present": true
+    },
+    {
+      "text": "Макет помогает быстро понять структуру обсуждения.",
+      "present": true
+    },
+    {
+      "text": "Ирина Лескова",
+      "present": true
+    },
+    {
+      "text": "Вымышленный участник теста",
+      "present": true
+    },
+    {
+      "text": "Стало проще увидеть, какие решения уже приняты, где ещё нужны вопросы и как перейти от общего впечатления к конкретным деталям.",
+      "present": true
+    },
+    {
+      "text": "Марат Кенжебаев",
+      "present": true
+    },
+    {
+      "text": "В демонстрационной версии хорошо читается связь между пояснением и следующим действием. При длинном тексте проверяется, что карточка продолжает расти по содержимому: без обрезания цитаты, искусственного растяжения строки и потери связи с вымышленным автором.",
+      "present": true
+    },
+    {
+      "text": "София Мухина",
+      "present": true
+    }
+  ],
+  "imageWidgets": [
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "id": null,
+      "alt": null
+    },
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "id": null,
+      "alt": null
+    },
+    {
+      "url": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "id": null,
+      "alt": null
+    }
+  ],
+  "widgetTypes": [
+    "container",
+    "heading",
+    "text-editor",
+    "image"
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "schema": "wpae-typed-live-acceptance-matrix-v1",
+  "date": "2026-10-09",
+  "post_id": 5214,
+  "source": {
+    "version": "v02.11.325",
+    "commit": "c3b41d64a64f2e76f809d7db76c72084653f8943",
+    "pushed_remote_head_pre_docs": "c3b41d64a64f2e76f809d7db76c72084653f8943",
+    "installed_plugins_version": "v02.11.325",
+    "reloaded_editor_inline_version": "v02.11.325"
+  },
+  "initial_and_final_root_set": [],
+  "fixture_sha256": {
+    "A-hero-generated.txt": "387237de2ea9c9e44b7658776a80a576da3d8c378b6e370fd36c77d54ba679df",
+    "About-authored-split-supplement.txt": "399d25ab10b36ad2c8468eab6b11d81e02ee55dc7ccaf1d683801c11edd6a06a",
+    "B-about-hybrid.txt": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+    "C-benefits-grid-generated.txt": "9b0ba44cf186c15b36593c143dbdce2708b22fbb0b9df15f91b4deb2746c5e72",
+    "D-pricing-two-tiers-generated-intro.txt": "7e2ce704b94dd5b429e635a7626614b3df978a549ee7e113902ca12424a2d4a2",
+    "E-cta-centered-generated-copy.txt": "78ee35d12a4d28235eb15e61d46d7e4b4f93f537ad6ec0249ae9fb6e0759d594",
+    "Team-editorial-rows-supplement.txt": "6ffaaffbca86f7ce923e4ca9bfc1b3368459410fb09eda663cad61a3ea5b8db3",
+    "Team-grid-failure-supplement.txt": "90c530ee7c6acffa360cf3326b91bc1ce473c095aac315292b39f25ee913ff77",
+    "Testimonials-editorial-rows-supplement.txt": "a64825f23e316ac775bacd1815e4cfccae3097120002b8ff25317d6a3569bbe9"
+  },
+  "core_scenarios": {
+    "A": {
+      "family": "hero",
+      "fixture": "A-hero-generated.txt",
+      "status": "ACCEPTED",
+      "root": "b0d0fc3",
+      "operation_id": "wpae-14af1036fffe6a37",
+      "identity": "1715dfe8-ad6d-4334-a4ad-1d4b0c0828ff",
+      "generation_revision": 4,
+      "descriptor_revision": 5,
+      "record": "hero.text_only@1",
+      "brief_sha256": "0d2e9916d1e7b3330303eb8c2a2ae935e5c0562e20189629c4e75591ac810fe8",
+      "plan_sha256": "067131f24d1064a44cce356c90544068ef86e076744f8c808d40ce41d153bf87",
+      "write_count": 1,
+      "content": "generated title/body from permitted facts; exact CTA #contact; zero media",
+      "screenshots": [
+        "A-hero-v325-public-desktop.png",
+        "A-hero-v325-public-mobile-390x844.png"
+      ],
+      "undo": "passed; final baseline []"
+    },
+    "B": {
+      "family": "about",
+      "fixture": "B-about-hybrid.txt",
+      "status": "BLOCKED_NO_WRITE",
+      "diagnostic_version": "v02.11.322",
+      "http_status": 400,
+      "provider_name": "Novita",
+      "upstream_model_in_error": "apodex/apodex-1.1-mini",
+      "provider_message": "Model does not support json_schema; supported format json_object",
+      "write_count": 0,
+      "reason": "selected upstream route capability; strict typed contract preserved"
+    },
+    "C": {
+      "family": "benefits",
+      "fixture": "C-benefits-grid-generated.txt",
+      "status": "FAIL_NO_WRITE",
+      "provider_calls": 2,
+      "actual_http_calls": 1,
+      "retry_count": 1,
+      "finish_reason": "length",
+      "token_limit": 3200,
+      "requested_model": "openrouter/free",
+      "returned_model": "dots-studio/dots-3-note-preview:free",
+      "provider_name": "AtlasCloud",
+      "schema_sha256": "6b7229f9b2ae01a829ad290e6dac90dc07d503bad2bb4dda93b0d3350b3d3bab",
+      "schema_bytes": 1709,
+      "write_count": 0,
+      "reason": "response truncated after bounded retry; no operation/root"
+    },
+    "D": {
+      "family": "pricing",
+      "fixture": "D-pricing-two-tiers-generated-intro.txt",
+      "status": "ACCEPTED",
+      "root": "f071f32",
+      "operation_id": "wpae-5ba97f5fb65fd4fc",
+      "identity": "fc3b4459-e0d4-4a58-a4cb-cc13127c1c4f",
+      "generation_revision": 4,
+      "descriptor_revision": 5,
+      "record": "pricing.tiers@1",
+      "brief_sha256": "b95f2a501526994c699d821897027d9de34e5d04fa8d38af8bf237afd16218fb",
+      "plan_sha256": "96a4f8160fb4932c1e49387bc4afef3e8ecc09e00fcd868a6b218af357528c52",
+      "write_count": 1,
+      "content": "two exact tiers, prices, features and CTA hrefs; no third card",
+      "screenshots": [
+        "D-pricing-v325-public-desktop.png",
+        "D-pricing-v325-public-mobile-collapsed-top-390x844.png",
+        "D-pricing-v325-public-mobile-actions-390x844.png"
+      ],
+      "undo": "passed; final baseline []"
+    },
+    "E": {
+      "family": "cta",
+      "fixture": "E-cta-centered-generated-copy.txt",
+      "status": "REFUSED_NO_WRITE",
+      "operation_identity": "ce620369-8f05-422c-ab7f-aae937ddab1a",
+      "provider_calls": 2,
+      "actual_http_calls": 1,
+      "retry_count": 1,
+      "generated_slot_count": 1,
+      "semantic_validation_result": "accepted",
+      "plan_error": "cta_description_required",
+      "write_count": 0,
+      "reason": "frozen Plan refused missing body; no root/operation"
+    }
+  },
+  "supplemental_scenarios": {
+    "Testimonials": {
+      "fixture": "Testimonials-editorial-rows-supplement.txt",
+      "status": "ACCEPTED",
+      "root": "34b5567",
+      "operation_id": "wpae-a3fe0270f937ba49",
+      "identity": "650a2e4c-3a44-455f-aefc-e853a341e5c4",
+      "descriptor_revision": 6,
+      "record": "testimonials.editorial_rows@1",
+      "profile": "editorial_light",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "fixture_sha256": "a64825f23e316ac775bacd1815e4cfccae3097120002b8ff25317d6a3569bbe9",
+      "screenshots": [
+        "H-testimonials-v325-public-desktop.png",
+        "H-testimonials-v325-public-mobile-390x844.png",
+        "H-testimonials-v325-public-mobile-lower-greeting-collapsed-390x844.png"
+      ],
+      "undo": "passed; baseline []"
+    },
+    "Team_rows": {
+      "fixture": "Team-editorial-rows-supplement.txt",
+      "status": "ACCEPTED_WITH_VISUAL_NOTE",
+      "root": "b441243",
+      "operation_id": "wpae-be7ecdc2342ad7a9",
+      "identity": "bb216c65-c8ef-40c8-b861-1d1e1b1385f9",
+      "descriptor_revision": 6,
+      "record": "team.editorial_rows@1",
+      "profile": "editorial_light",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "brief_sha256": "8395a224919a98c7981c88ec4e4dfff67051c42eec5a917c109828eeee3628fe",
+      "plan_sha256": "fc00860bd0f1e2befbb3d02033a99c397a52bc87754ff93b1d6cfafa213624c4",
+      "fixture_sha256": "6ffaaffbca86f7ce923e4ca9bfc1b3368459410fb09eda663cad61a3ea5b8db3",
+      "note": "desktop whitespace; names/roles under portrait while biography sits in adjacent column",
+      "screenshots": [
+        "I-team-rows-v325-public-desktop.png",
+        "I-team-rows-v325-public-mobile-390x844.png",
+        "I-team-rows-v325-public-mobile-lower-greeting-collapsed-390x844.png"
+      ],
+      "undo": "passed; baseline []"
+    },
+    "About_authored": {
+      "fixture": "About-authored-split-supplement.txt",
+      "status": "ACCEPTED_SUPPLEMENTARY_NOT_B",
+      "root": "37f832a",
+      "operation_id": "wpae-9d1688c9836fa0bb",
+      "identity": "9b7f8ea7-05b8-4b92-8a7d-94dbda0cdc54",
+      "descriptor_revision": 5,
+      "record": "about.split_40_60.left@1",
+      "profile": "editorial_light",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "brief_sha256": "4acb0ea1ec1e61269ed9d76a2112db6891c3de251218b6a215382696ccd7feb1",
+      "plan_sha256": "0fcfb1e511208c6be6b71b1d1d3cd6a0c3b3313f653ebaf3c34053286af67f8a",
+      "fixture_sha256": "399d25ab10b36ad2c8468eab6b11d81e02ee55dc7ccaf1d683801c11edd6a06a",
+      "note": "authored copy; not the generated-copy About B fixture",
+      "screenshots": [
+        "J-about-v325-public-desktop.png",
+        "J-about-v325-public-mobile-390x844.png",
+        "J-about-v325-public-mobile-lower-390x844.png"
+      ],
+      "undo": "already_undone confirmed; editor/public reloaded to []"
+    }
+  },
+  "nonaccepted_written_probe": {
+    "Team_grid": {
+      "fixture": "Team-grid-failure-supplement.txt",
+      "status": "FAIL_COMPOSITION_MISMATCH",
+      "root": "b9817ba",
+      "operation_id": "wpae-2bf1b75af0612a91",
+      "identity": "4b24b2db-bc1f-4533-a744-9da6637889da",
+      "record": "team.editorial_rows@1",
+      "reason": "request sought team.grid; automatic composition selected editorial_rows",
+      "screenshots": [
+        "G-team-v325-public-desktop.png",
+        "G-team-v325-public-mobile-390x844.png"
+      ],
+      "undo": "passed; baseline []"
+    }
+  },
+  "counts": {
+    "written_generation_cycles_with_full_publish_reload_native_dom_visual_mobile_screenshot_and_scoped_undo": 5,
+    "distinct_family_cycles_counted": [
+      "hero",
+      "pricing",
+      "testimonials",
+      "team editorial rows",
+      "about authored split"
+    ],
+    "core_A_to_E_accepted": 2,
+    "core_A_to_E_total": 5,
+    "prewrite_refusals_or_failures_not_counted": 3,
+    "team_grid_written_but_not_counted": 1
+  },
+  "final_state": {
+    "editor_roots": [],
+    "public_roots": [],
+    "post_id": 5214,
+    "baseline_restored": true
+  },
+  "task_status": "OPEN: the five full cycles include supplementary cases; required exact A-E matrix has only A and D accepted, while B is an upstream capability refusal, C truncates, and E is refused by Plan."
+}

@@ -1,0 +1,65 @@
+{
+  "body": "небольшая студия\nпроектирует жилые и общественные пространства\nОбсудить проект",
+  "images": 0,
+  "items": [
+    {
+      "href": null,
+      "rect": {
+        "h": 57.2,
+        "w": 487.4,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "align": "start",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "font": "52px",
+        "line": "57.2px",
+        "overflow": "visible"
+      },
+      "tag": "H1",
+      "text": "небольшая студия"
+    },
+    {
+      "href": "#contact",
+      "rect": {
+        "h": 39,
+        "w": 168.1,
+        "x": 70,
+        "y": 237.3
+      },
+      "style": {
+        "align": "center",
+        "bg": "rgb(0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "font": "15px",
+        "line": "15px",
+        "overflow": "visible"
+      },
+      "tag": "A",
+      "text": "Обсудить проект"
+    }
+  ],
+  "root": {
+    "bg": "rgba(97, 206, 112, 0.2)",
+    "id": "b0d0fc3",
+    "layout": "flex/column",
+    "maxHeight": "none",
+    "minHeight": "0px",
+    "overflow": "visible",
+    "padding": "0px 32px",
+    "rect": {
+      "h": 324.25,
+      "w": 1280,
+      "x": 0,
+      "y": 32
+    }
+  },
+  "viewport": {
+    "clientWidth": 1280,
+    "innerHeight": 720,
+    "innerWidth": 1280,
+    "scrollWidth": 1280
+  }
+}

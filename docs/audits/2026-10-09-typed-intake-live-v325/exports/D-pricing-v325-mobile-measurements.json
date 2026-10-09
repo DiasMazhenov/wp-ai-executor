@@ -1,0 +1,361 @@
+{
+  "items": [
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(97, 206, 112, 0.2)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "normal",
+        "height": "853.461px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "radius": "0px"
+      },
+      "id": "f071f32",
+      "rect": {
+        "h": 853.5,
+        "w": 375,
+        "x": 0,
+        "y": -9.5
+      },
+      "tag": "DIV",
+      "text": "Цены на проектирование жилых и общественных пространств\nНебольшая архитектурная студия проектирует жилые и общ",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "0px",
+        "height": "272.82px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "e0aef6e",
+      "rect": {
+        "h": 272.8,
+        "w": 343,
+        "x": 16,
+        "y": 22.5
+      },
+      "tag": "DIV",
+      "text": "Цены на проектирование жилых и общественных пространств\nНебольшая архитектурная студия проектирует жилые и общ",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "0px",
+        "height": "272.82px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "523c03d",
+      "rect": {
+        "h": 272.8,
+        "w": 343,
+        "x": 16,
+        "y": 22.5
+      },
+      "tag": "DIV",
+      "text": "Цены на проектирование жилых и общественных пространств\nНебольшая архитектурная студия проектирует жилые и общ",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "0px",
+        "height": "128.812px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "aca7c90",
+      "rect": {
+        "h": 128.8,
+        "w": 343,
+        "x": 16,
+        "y": 22.5
+      },
+      "tag": "DIV",
+      "text": "Цены на проектирование жилых и общественных пространств",
+      "type": "heading.default"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "0px",
+        "height": "144.008px",
+        "justify": "normal",
+        "line": "25.6px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "54bdebb",
+      "rect": {
+        "h": 144,
+        "w": 343,
+        "x": 16,
+        "y": 151.3
+      },
+      "tag": "DIV",
+      "text": "Небольшая архитектурная студия проектирует жилые и общественные пространства. На первой встрече обсуждаются за",
+      "type": "text-editor.default"
+    },
+    {
+      "css": {
+        "align": "stretch",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "16px",
+        "height": "484.641px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "7ec65b1",
+      "rect": {
+        "h": 484.6,
+        "w": 343,
+        "x": 16,
+        "y": 327.3
+      },
+      "tag": "DIV",
+      "text": "Старт\n50 000 ₸\n/мес\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nДизайн\nРазработка\nВыбрать Проект",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "20px",
+        "height": "234.32px",
+        "justify": "flex-start",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "radius": "8px"
+      },
+      "id": "e62efcb",
+      "rect": {
+        "h": 234.3,
+        "w": 343,
+        "x": 16,
+        "y": 327.3
+      },
+      "tag": "DIV",
+      "text": "Старт\n50 000 ₸\n/мес\nАудит\nПлан\nВыбрать Старт",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "12px",
+        "height": "23.3984px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "44bf3d5",
+      "rect": {
+        "h": 23.4,
+        "w": 309,
+        "x": 33,
+        "y": 344.3
+      },
+      "tag": "DIV",
+      "text": "Старт",
+      "type": "heading.default"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "c60659a",
+      "rect": {
+        "h": 39,
+        "w": 309,
+        "x": 33,
+        "y": 505.6
+      },
+      "tag": "DIV",
+      "text": "Выбрать Старт",
+      "type": "button.default"
+    },
+    {
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "font": "16px",
+        "gap": "20px",
+        "height": "234.32px",
+        "justify": "flex-start",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "radius": "8px"
+      },
+      "id": "900c290",
+      "rect": {
+        "h": 234.3,
+        "w": 343,
+        "x": 16,
+        "y": 577.6
+      },
+      "tag": "DIV",
+      "text": "Проект\n150 000 ₸\n/год\nДизайн\nРазработка\nВыбрать Проект",
+      "type": null
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "12px",
+        "height": "23.3984px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "b516074",
+      "rect": {
+        "h": 23.4,
+        "w": 309,
+        "x": 33,
+        "y": 594.6
+      },
+      "tag": "DIV",
+      "text": "Проект",
+      "type": "heading.default"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "font": "16px",
+        "gap": "20px",
+        "height": "39px",
+        "justify": "normal",
+        "line": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "radius": "0px"
+      },
+      "id": "97d1450",
+      "rect": {
+        "h": 39,
+        "w": 309,
+        "x": 33,
+        "y": 756
+      },
+      "tag": "DIV",
+      "text": "Выбрать Проект",
+      "type": "button.default"
+    }
+  ],
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scrollHeight": 899,
+    "scrollWidth": 375,
+    "scrollY": 55.5
+  }
+}

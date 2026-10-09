@@ -1,0 +1,517 @@
+{
+  "post_id": 5214,
+  "root_id": "b9817ba",
+  "root_type": "container",
+  "root_css_classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team",
+  "root_flex_direction": "column",
+  "root_child_count": 2,
+  "node_count": 40,
+  "container_count": 25,
+  "widget_count": 15,
+  "nodes": [
+    {
+      "id": "b9817ba",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 0,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "cf31a7c",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 1,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "e4921c1",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "a4eee96",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 3,
+      "flex_direction": "row",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "d48600b",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 4,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "СИНТЕТИЧЕСКАЯ КОМАНДА"
+      }
+    },
+    {
+      "id": "ae3afb5",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 3,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "Люди и роли"
+      }
+    },
+    {
+      "id": "6f6421a",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 3,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Вымышленные данные для проверки карточек разной длины"
+      }
+    },
+    {
+      "id": "fa6fdff",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 1,
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "73b77bc",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "a853a1c",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 3,
+      "flex_direction": "row",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "b84b68d",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "1dd6468",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "Участник Альфа"
+      }
+    },
+    {
+      "id": "b14c684",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Дизайнер"
+      }
+    },
+    {
+      "id": "1664f47",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "f543d27",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 5,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "178ad66",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Проверяет макеты."
+      }
+    },
+    {
+      "id": "5e239a1",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "1d77518",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 3,
+      "flex_direction": "row",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "a4fa4d6",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "d50b1e0",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "Участник Бета"
+      }
+    },
+    {
+      "id": "b0ecbbc",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Исследователь"
+      }
+    },
+    {
+      "id": "a4a2089",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "c35dcd2",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 5,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "cbc57b1",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Синтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку."
+      }
+    },
+    {
+      "id": "fec0ae3",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "7f55296",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 3,
+      "flex_direction": "row",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "9c5ec7a",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "422643b",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "Участник Гамма"
+      }
+    },
+    {
+      "id": "8d95198",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Разработчик"
+      }
+    },
+    {
+      "id": "97bf49f",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "155f9f1",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 5,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "dd1faa2",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Собирает интерфейс."
+      }
+    },
+    {
+      "id": "38182a7",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 2,
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "0726011",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 3,
+      "flex_direction": "row",
+      "flex_wrap": "nowrap",
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "b9aceb9",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "8961361",
+      "elType": "widget",
+      "widgetType": "heading",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "title": "Участник Дельта"
+      }
+    },
+    {
+      "id": "71a9947",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 5,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Редактор"
+      }
+    },
+    {
+      "id": "4044062",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 4,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "7847c96",
+      "elType": "container",
+      "widgetType": null,
+      "depth": 5,
+      "flex_direction": "column",
+      "flex_wrap": null,
+      "grid_columns_grid": 3,
+      "grid_columns_mobile": 1,
+      "text": {}
+    },
+    {
+      "id": "7586618",
+      "elType": "widget",
+      "widgetType": "text-editor",
+      "depth": 6,
+      "flex_direction": null,
+      "flex_wrap": null,
+      "grid_columns_grid": null,
+      "grid_columns_mobile": null,
+      "text": {
+        "editor": "Синтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку."
+      }
+    }
+  ],
+  "exactFixtureTexts": [
+    {
+      "text": "Участник Альфа",
+      "present": true
+    },
+    {
+      "text": "Проверяет макеты.",
+      "present": true
+    },
+    {
+      "text": "Участник Бета",
+      "present": true
+    },
+    {
+      "text": "Синтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.",
+      "present": true
+    },
+    {
+      "text": "Участник Гамма",
+      "present": true
+    },
+    {
+      "text": "Собирает интерфейс.",
+      "present": true
+    },
+    {
+      "text": "Участник Дельта",
+      "present": true
+    },
+    {
+      "text": "Синтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.",
+      "present": true
+    }
+  ]
+}

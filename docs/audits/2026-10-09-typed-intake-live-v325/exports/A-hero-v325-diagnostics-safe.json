@@ -1,0 +1,437 @@
+{
+  "action_path": "pipeline",
+  "brief": {
+    "ambiguity_count": 0,
+    "archetype": "hero",
+    "content_count": 3,
+    "hash": "0d2e9916d1e7b3330303eb8c2a2ae935e5c0562e20189629c4e75591ac810fe8",
+    "intake_source": "provider_typed_intake",
+    "locale": "ru",
+    "validation": {
+      "errors": [],
+      "ok": true,
+      "services": []
+    },
+    "warnings": []
+  },
+  "intake": {
+    "actual_http_calls": 1,
+    "api_endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "canonical_schema_bytes": 864,
+    "canonical_schema_sha256": "428cecc033882e18120505b091ab6db003f11bd4555c372bf5712082e9ad2a48",
+    "error_code": null,
+    "family": "hero",
+    "finish_reason": "stop",
+    "first_finish_reason": "",
+    "generated_slot_count": 2,
+    "http_failure": false,
+    "instruction_hash": "bbe91c3f86032256c8c916493053532ff9e6d9bb6ab73e62cbaf1dad81c423fd",
+    "latency_ms": 26575,
+    "model": "openrouter/free",
+    "provider": "openrouter",
+    "provider_calls": 1,
+    "provider_error_code": null,
+    "provider_error_envelope": false,
+    "provider_error_param": null,
+    "provider_error_path": null,
+    "provider_error_type": null,
+    "provider_name": "Nvidia",
+    "request_hash": "035823546a8e77da55cb5d7693f13c71f504c0a8a9a3e59eeea0b3f8d1fc66f0",
+    "requested_model": "openrouter/free",
+    "response_format": "json_schema",
+    "retry_count": 0,
+    "retry_reason": "",
+    "returned_model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "schema_bytes": 864,
+    "schema_sha256": "428cecc033882e18120505b091ab6db003f11bd4555c372bf5712082e9ad2a48",
+    "semantic_validation_result": "accepted",
+    "source": "provider_typed_intake",
+    "token_limit": 3200,
+    "wire_schema_adapter": "openrouter_typed_omit_uniqueItems_v1",
+    "write_count": 0
+  },
+  "layout": {
+    "breakpoints": [
+      {
+        "breakpoint": "desktop",
+        "container_width": 1376,
+        "mobile_stack_result": "text_only_single_column",
+        "used_width": 1376
+      },
+      {
+        "breakpoint": "laptop",
+        "container_width": 960,
+        "mobile_stack_result": "text_only_single_column",
+        "used_width": 960
+      },
+      {
+        "breakpoint": "tablet",
+        "container_width": 704,
+        "mobile_stack_result": "text_only_single_column",
+        "used_width": 704
+      },
+      {
+        "breakpoint": "mobile",
+        "container_width": 358,
+        "mobile_stack_result": "text_only_single_column",
+        "used_width": 358
+      }
+    ],
+    "ok": true,
+    "violations": []
+  },
+  "operation": {
+    "accepted_contract_hash": "eef0959c43d7ea5fcf60dd3c6cf53b852e4a93dc902f28c2565e262a2586e411",
+    "accepted_contract_id": "contract-eef0959c43d7ea5fcf60dd3c",
+    "brief_hash": "0d2e9916d1e7b3330303eb8c2a2ae935e5c0562e20189629c4e75591ac810fe8",
+    "compiled_hash": "525c4da43ed4dc27cec8f4cb829915e357e234e6052c3d2280318959e480a339",
+    "current_state": "written",
+    "fallback_used": false,
+    "latency_ms": 0,
+    "model": "openrouter/free",
+    "operation_id": "wpae-14af1036fffe6a37",
+    "operation_identity": "1715dfe8-ad6d-4334-a4ad-1d4b0c0828ff",
+    "operation_type": "design",
+    "plan_hash": "067131f24d1064a44cce356c90544068ef86e076744f8c808d40ce41d153bf87",
+    "post_id": 5214,
+    "provider": "openrouter",
+    "retry_count": 0,
+    "revision": 4,
+    "root_ids": [
+      "b0d0fc3"
+    ],
+    "saved_hash": "7042e93c7382006944a91b6a91919a431a6560bdeee4f5cbc874979ecc118420",
+    "selected_scope": "page",
+    "target_fingerprint": "c3e2e0fe26a516d3cb307d64d8c1ef6eac04bfb907a32981f84dbb076e697e96"
+  },
+  "plan": {
+    "archetype": "hero",
+    "brief_hash": "0d2e9916d1e7b3330303eb8c2a2ae935e5c0562e20189629c4e75591ac810fe8",
+    "composition": {
+      "identity": "hero.stacked_left",
+      "policy": {
+        "composition": "stacked_left",
+        "desktop": "stacked_left",
+        "mobile": "stack",
+        "tablet": "stack"
+      },
+      "record_hash": "0bacf04dfe1a8635ddae8dda8313a0e295ec1627bfafa72af3b2b4bb3a6a1e03",
+      "record_id": "hero.text_only",
+      "record_version": 1,
+      "request_selection": {
+        "brief_composition": null,
+        "brief_media_side": null,
+        "mode": "automatic",
+        "record_id": null,
+        "record_version": null,
+        "visual_profile": null,
+        "visual_profile_source": "not_requested"
+      },
+      "selection_reasons": [
+        "no_owned_media"
+      ]
+    },
+    "hash": "067131f24d1064a44cce356c90544068ef86e076744f8c808d40ce41d153bf87",
+    "section_count": 1,
+    "validation": {
+      "capabilities": {
+        "available": [
+          "container",
+          "heading",
+          "text-editor",
+          "button"
+        ],
+        "downgrades": [],
+        "failures": [],
+        "ok": true,
+        "requested": [
+          "container",
+          "heading",
+          "text-editor",
+          "button"
+        ],
+        "resolved": [
+          {
+            "downgraded": false,
+            "from": "container",
+            "runtime_result": "structural",
+            "to": "container"
+          },
+          {
+            "downgraded": false,
+            "from": "heading",
+            "runtime_result": "present",
+            "to": "heading"
+          },
+          {
+            "downgraded": false,
+            "from": "text-editor",
+            "runtime_result": "present",
+            "to": "text-editor"
+          },
+          {
+            "downgraded": false,
+            "from": "button",
+            "runtime_result": "present",
+            "to": "button"
+          }
+        ],
+        "schema": "wpae-widget-capability-v1",
+        "unavailable": [],
+        "unknown": []
+      },
+      "contrast": {
+        "errors": [],
+        "ok": true,
+        "pairs": [
+          {
+            "background": "color.page_bg",
+            "effective_background": "#ffffff",
+            "effective_foreground": "#333333",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.text",
+            "large_text": false,
+            "minimum": 4.5,
+            "ratio": 12.63465434445799,
+            "ui_object": false
+          },
+          {
+            "background": "color.page_bg",
+            "effective_background": "#ffffff",
+            "effective_foreground": "#333333",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.muted",
+            "large_text": false,
+            "minimum": 4.5,
+            "ratio": 12.63465434445799,
+            "ui_object": false
+          },
+          {
+            "background": "color.primary",
+            "effective_background": "#000000",
+            "effective_foreground": "#ffffff",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.surface",
+            "large_text": false,
+            "minimum": 3,
+            "ratio": 21,
+            "ui_object": true
+          },
+          {
+            "background": "color.hover",
+            "effective_background": "#000000",
+            "effective_foreground": "#ffffff",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.surface",
+            "large_text": false,
+            "minimum": 3,
+            "ratio": 21,
+            "ui_object": true
+          },
+          {
+            "background": "color.page_bg",
+            "effective_background": "#ffffff",
+            "effective_foreground": "#000000",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.focus",
+            "large_text": false,
+            "minimum": 3,
+            "ratio": 21,
+            "ui_object": true
+          },
+          {
+            "background": "color.section_bg",
+            "effective_background": "#dff5e2",
+            "effective_foreground": "#333333",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.text",
+            "large_text": false,
+            "minimum": 4.5,
+            "ratio": 11.008246766747993,
+            "ui_object": false
+          },
+          {
+            "background": "color.section_bg",
+            "effective_background": "#dff5e2",
+            "effective_foreground": "#333333",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.muted",
+            "large_text": false,
+            "minimum": 4.5,
+            "ratio": 11.008246766747993,
+            "ui_object": false
+          },
+          {
+            "background": "color.section_bg",
+            "effective_background": "#dff5e2",
+            "effective_foreground": "#000000",
+            "font_size_px": 16,
+            "font_weight": 400,
+            "foreground": "color.focus",
+            "large_text": false,
+            "minimum": 3,
+            "ratio": 18.296755558105843,
+            "ui_object": true
+          }
+        ]
+      },
+      "errors": [],
+      "ok": true,
+      "tokens": {
+        "collisions": [],
+        "fallbacks": [],
+        "missing": [],
+        "ok": true,
+        "resolved": [
+          {
+            "source": "resolved_plan",
+            "token": "color.page_bg",
+            "value": "#ffffff"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.surface",
+            "value": "#ffffff"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.text",
+            "value": "#333333"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.muted",
+            "value": "#333333"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.primary",
+            "value": "#000000"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.border",
+            "value": "transparent"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.focus",
+            "value": "#000000"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.hover",
+            "value": "#000000"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "type.display",
+            "value": {
+              "desktop": "3.25rem",
+              "font_family": "inherit",
+              "line_height": "1.1",
+              "line_height_mobile": "1.1",
+              "line_height_tablet": "1.1",
+              "mobile": "2rem",
+              "tablet": "2.5rem",
+              "weight": "700"
+            }
+          },
+          {
+            "source": "resolved_plan",
+            "token": "type.section_title",
+            "value": {
+              "desktop": "2.5rem",
+              "font_family": "inherit",
+              "line_height": "1.15",
+              "line_height_mobile": "1.15",
+              "line_height_tablet": "1.15",
+              "mobile": "1.75rem",
+              "tablet": "2rem",
+              "weight": "700"
+            }
+          },
+          {
+            "source": "resolved_plan",
+            "token": "type.body",
+            "value": {
+              "desktop": "1.0625rem",
+              "font_family": "inherit",
+              "line_height": "1.65",
+              "line_height_mobile": "1.65",
+              "line_height_tablet": "1.65",
+              "mobile": "1rem",
+              "tablet": "1rem",
+              "weight": "400"
+            }
+          },
+          {
+            "source": "resolved_plan",
+            "token": "space.section",
+            "value": "5rem"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "space.component",
+            "value": "1.25rem"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "radius.card",
+            "value": "0.25rem"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "radius.pill",
+            "value": "999px"
+          },
+          {
+            "source": "resolved_plan",
+            "token": "color.section_bg",
+            "value": "#61ce7033"
+          }
+        ]
+      }
+    },
+    "visual": {
+      "policy_version": 1,
+      "profile": null,
+      "section_surface": {
+        "accent_confirmed": false,
+        "accent_source": "elementor_system_color_stock_default:accent",
+        "opacity": 0.2,
+        "palette_role": "accent",
+        "source": "documented_default",
+        "token": "color.section_bg",
+        "transparency": 0.8
+      }
+    }
+  },
+  "preflight": {
+    "model": "openrouter/free",
+    "nodes_to_change": 6,
+    "provider": "openrouter",
+    "provider_calls": 1,
+    "roots_to_add": 1,
+    "route": "provider_typed_intake_then_local_deterministic",
+    "selected_scope": "page",
+    "warnings": [
+      "media_unspecified_no_asset_text_only"
+    ],
+    "widgets": [
+      "container",
+      "heading",
+      "text-editor",
+      "button"
+    ]
+  },
+  "route": "provider_typed_intake_then_local_deterministic",
+  "write_count": 1
+}

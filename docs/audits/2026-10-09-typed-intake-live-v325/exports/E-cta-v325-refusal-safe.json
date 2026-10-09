@@ -1,0 +1,43 @@
+{
+  "brief": {},
+  "briefKeys": [
+    "ok",
+    "errors",
+    "services"
+  ],
+  "intake": {
+    "actual_http_calls": 1,
+    "family": "cta",
+    "finish_reason": "stop",
+    "generated_slot_count": 1,
+    "latency_ms": 71475,
+    "provider": "openrouter",
+    "provider_calls": 2,
+    "provider_name": "Nvidia",
+    "requested_model": "openrouter/free",
+    "response_format": "json_schema",
+    "retry_count": 1,
+    "retry_reason": "finish_reason_length",
+    "returned_model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "semantic_validation_result": "accepted",
+    "source": "provider_typed_intake",
+    "token_limit": 3200,
+    "wire_schema_adapter": "openrouter_typed_omit_uniqueItems_v1",
+    "write_count": 0
+  },
+  "top": {
+    "operation_identity": "ce620369-8f05-422c-ab7f-aae937ddab1a",
+    "plan_errors": [
+      "cta_description_required"
+    ],
+    "post_id": 5214,
+    "write_count": 0
+  },
+  "usage": {
+    "input_tokens": 1005,
+    "known": true,
+    "output_tokens": 803,
+    "reasoning_tokens": 755,
+    "total_tokens": 1808
+  }
+}
