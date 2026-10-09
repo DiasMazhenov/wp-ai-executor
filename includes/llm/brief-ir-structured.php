@@ -558,6 +558,9 @@ function wpae_brief_ir_generated_copy_slots( array $brief, string $source_text )
 	$slots = [];
 	$add = static function ( string $slot_id, string $role, string $instruction, string $group_id = '', bool $requires_fact = false, array $copy_limits = [] ) use ( &$slots, $source_text, $copy_request, $has_approved_facts, $family ): void {
 		$role = sanitize_key( $role );
+		if ( $role === 'title' ) {
+			$instruction = trim( $instruction . ' Write an informative natural sentence-case heading that names the section subject or offering. When approved facts describe what the organization does, do not use only its size, type or a generic label as the entire headline. Keep the heading distinct from the body and do not invent claims.' );
+		}
 		$binding = [
 			'hero' => [ 'title' => 'section_intro.title', 'body' => 'section_intro.body' ],
 			'about' => [ 'title' => 'section_intro.title', 'body' => 'section_intro.body' ],

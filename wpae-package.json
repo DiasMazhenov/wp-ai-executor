@@ -236,7 +236,7 @@
     "includes/guide/guide.php": "d4ea713d153a7434f82fbb28b13dc9b9b2d22b4b4f973208d51b8b7dc3bfd56d",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/brief-ir-structured.php": "760feef5676bae76a12b5cf300161b6c479744e6b4cb38e10496b9af21bcd042",
+    "includes/llm/brief-ir-structured.php": "1dd177279ccbe978f4be0c8cfe1f5f3d1e796d47bd42c79cc15f7f1dce8455fe",
     "includes/llm/brief-ir.php": "1b9e2ea9b12ee769624abffbdc6f9be6e811e66509835257030161d2a2a86be9",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
     "includes/llm/design-plan.php": "9fe57532dff41dabfadc808d5a305a9a02d3e728fb957e34c7ac68360a4aa1ae",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "36e3bb640b161cbf9b3e5820fc6bd5c5acc7fd5735ca1f81e5ad00ab30a9631b"
+    "wp-ai-executor.php": "6777a694b9945ef0db37ae058a662d1871f420685f44a2dccfb1f99823d78f7f"
   }
 }
