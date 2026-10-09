@@ -1180,6 +1180,32 @@ function wpae_elementor_ir_setting_value( string $token, array $tokens, array &$
 	return function_exists( 'wpae_design_token_value' ) ? wpae_design_token_value( $token, $tokens, $token_report ) : null;
 }
 
+/**
+ * Preserve explicit paragraph boundaries in plain text-editor copy.
+ * Elementor's text-editor collapses raw newlines in normal HTML whitespace,
+ * so authored paragraphs must be emitted as native rich-text paragraphs.
+ */
+function wpae_elementor_ir_text_editor_content( string $text ): string {
+	$normalized = str_replace( [ "\r\n", "\r" ], "\n", $text );
+	if ( preg_match( '/<\s*\/?\s*[a-z][^>]*>/i', $normalized ) ) {
+		return $text;
+	}
+	$paragraphs = preg_split( '/\n[ \t]*\n+/u', trim( $normalized ), -1, PREG_SPLIT_NO_EMPTY );
+	if ( ! is_array( $paragraphs ) || count( $paragraphs ) < 2 ) {
+		return $text;
+	}
+	$rendered = [];
+	foreach ( $paragraphs as $paragraph ) {
+		$paragraph = trim( (string) $paragraph );
+		if ( $paragraph === '' ) {
+			continue;
+		}
+		$escaped = htmlspecialchars( $paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' );
+		$rendered[] = '<p>' . nl2br( $escaped, false ) . '</p>';
+	}
+	return count( $rendered ) > 1 ? implode( "\n", $rendered ) : $text;
+}
+
 function wpae_elementor_ir_missing_cta_urls( array $elements, array $brief ): array {
 	$expected = [];
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
@@ -1987,7 +2013,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$heading_color = $role === 'brand' ? 'color.muted' : ( $role === 'eyebrow' ? 'color.primary' : 'color.text' );
 			$settings['text_color'] = (string) ( $token_values[ $heading_color ] ?? '#111827' );
 		} else {
-			$settings['editor'] = $text;
+			$settings['editor'] = wpae_elementor_ir_text_editor_content( $text );
 			$settings['text_color'] = (string) ( $token_values[ $role === 'testimonial_quote' ? 'color.text' : 'color.muted' ] ?? '#6b7280' );
 			$text_alignment = sanitize_key( (string) ( $node['layout_constraints']['text_align'] ?? '' ) );
 			if ( in_array( $text_alignment, [ 'left', 'center', 'right' ], true ) ) {

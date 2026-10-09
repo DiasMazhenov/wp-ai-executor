@@ -2424,4 +2424,19 @@ foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact
   $check($pricing_surface_ok,'Pricing tiers keep the accepted surface on each whole pricing_card while body/details remain transparent and unboxed');
  }
 }
+$paragraph_copy = "Первый абзац.\n\nВторой & <текст> с точной фразой.";
+$paragraph_brief = [ 'content' => [ [ 'id' => 'paragraph-copy', 'role' => 'body', 'exact_text' => $paragraph_copy ] ] ];
+$paragraph_ir = [
+	'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
+	'archetype' => 'generic',
+	'nodes' => [
+		wpae_elementor_ir_node( 'paragraph-root', 'section', 'container', [], [], [ wpae_elementor_ir_node( 'paragraph-body', 'body', 'text-editor', [ 'paragraph-copy' ] ) ] ),
+	],
+];
+$paragraph_compiled = wpae_elementor_ir_compile( $paragraph_ir, $paragraph_brief, [], [ 'id_seed' => 'paragraph-copy-render' ] );
+$paragraph_flat = $walk_elements( (array) ( $paragraph_compiled['elementor_data'] ?? [] ) );
+$paragraph_widget = array_values( array_filter( $paragraph_flat, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) )[0] ?? [];
+$check( ! empty( $paragraph_compiled['ok'] ) && ( $paragraph_widget['settings']['editor'] ?? '' ) === '<p>Первый абзац.</p>' . "\n" . '<p>Второй &amp; &lt;текст&gt; с точной фразой.</p>', 'native text-editor compiler preserves explicit plain-text paragraph boundaries and escapes generated markup' );
+$check( wpae_elementor_ir_text_editor_content( 'Короткая совместимая строка.' ) === 'Короткая совместимая строка.' && wpae_elementor_ir_text_editor_content( '<p>Уже размеченный текст.</p>' ) === '<p>Уже размеченный текст.</p>', 'plain single-line and preformatted legacy text-editor copy keep their historical representation' );
+
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );
