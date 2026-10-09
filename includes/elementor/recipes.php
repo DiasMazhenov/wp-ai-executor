@@ -75,7 +75,7 @@ function wpae_el_widget( string $id, string $widget_type, array $settings = [] )
     ];
 }
 
-/** Shared typed recipe default; only supplied eyebrow content receives a badge. */
+/** Shared typed section default: every new section receives a native pill eyebrow. */
 function wpae_elementor_recipe_eyebrow_presentation(): string {
     return 'pill';
 }

@@ -311,6 +311,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 			continue;
 		}
 		$section_children = [];
+		$section_header = is_array( $section['section_header'] ?? null ) ? $section['section_header'] : [];
 		$badge_ref = sanitize_key( (string) ( $section['badge_content_ref'] ?? '' ) );
 		$badge_is_in_intro = (bool) array_filter( (array) ( $section['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && in_array( (string) ( $child['role'] ?? '' ), [ 'copy_group', 'cta_copy_group' ], true ) && in_array( $badge_ref, array_map( 'sanitize_key', (array) ( $child['content_refs'] ?? [] ) ), true ) );
 		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'process' && $badge_ref !== '' && ! $badge_is_in_intro && isset( $content_map[ $badge_ref ] ) ) {
@@ -350,7 +351,15 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 						}
 					} elseif ( $item_role === 'label' ) {
-						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
+							$is_services_recipe = str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' );
+							$badge_label_role = $is_services_recipe ? 'services_badge_label' : 'eyebrow_badge_label';
+							$badge_role = $is_services_recipe ? 'services_badge' : ( ( $section['role'] ?? '' ) === 'pricing' ? 'pricing_badge' : 'hero_badge' );
+							$badge_label = wpae_elementor_ir_node( $child_id . '-label-badge-label', $badge_label_role, 'heading', [ $content_ref ], [ 'color.text', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-label-badge', $badge_role, 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100, 'container_align' => $copy_container_alignment ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						} else {
+							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						}
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
 						$body_role = $role === 'cta_copy_group' ? 'cta_description' : 'body';
 						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', $body_role, 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
@@ -359,6 +368,21 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$button_key = 'cta_' . $cta_count;
 						$button_role = $cta_count === 0 ? 'cta_primary' : 'cta_secondary';
 						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, $button_role, 'button', [ $content_ref ], [ 'color.primary', 'color.text', 'color.surface', 'color.hover', 'color.focus' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
+					}
+				}
+				if ( (int) ( $section_header['version'] ?? 0 ) === 1 && (int) ( $child['layout_constraints']['section_header_contract_version'] ?? 0 ) === 1 ) {
+					$header_eyebrow = (array) ( $section_header['eyebrow'] ?? [] );
+					if ( empty( $widgets['eyebrow'] ) && trim( (string) ( $header_eyebrow['text'] ?? '' ) ) !== '' ) {
+						$is_services_recipe = str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' );
+						$badge_label_role = $is_services_recipe ? 'services_badge_label' : 'eyebrow_badge_label';
+						$badge_role = $is_services_recipe ? 'services_badge' : ( ( $section['role'] ?? '' ) === 'pricing' ? 'pricing_badge' : 'hero_badge' );
+						$badge_label = wpae_elementor_ir_node( $child_id . '-default-eyebrow-label', $badge_label_role, 'heading', [], [ 'color.text', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100, 'literal_text' => (string) $header_eyebrow['text'] ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [] ] );
+						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-default-eyebrow-badge', $badge_role, 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100, 'container_align' => $copy_container_alignment ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [] ] );
+					}
+					$header_title = (array) ( $section_header['title'] ?? [] );
+					if ( empty( $widgets['title'] ) && trim( (string) ( $header_title['text'] ?? '' ) ) !== '' ) {
+						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : ( str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' ) ? 'services_section_title' : 'title' );
+						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-default-title', $title_role, 'heading', [], [ 'color.text', 'type.display', 'type.section_title', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100, 'literal_text' => (string) $header_title['text'], 'heading_level' => (string) ( $section_header['heading_level'] ?? ( ( $section['role'] ?? '' ) === 'hero' ? 'h1' : 'h2' ) ) ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [] ] );
 					}
 				}
 					$ordered_widgets = [];
@@ -1970,17 +1994,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['_flex_shrink'] = 0;
 			$settings['margin'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
 		} elseif ( $role === 'eyebrow_badge_label' || ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) ) {
-			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
-			if ( empty( $node['visual_policy'] ) ) {
-			$settings['background_background'] = 'classic';
-			$settings['background_color'] = $accent;
-			$settings['title_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
-			$settings['border_border'] = 'solid';
-			$settings['border_color'] = $accent;
-			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
-			$settings['_padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
-			}
+			// The native badge container owns fill, border, radius, and padding.
+			// Keep only the label foreground and typography here.
 			$settings['title_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 			$settings['align_self'] = 'flex-start';
 			$settings['align_self_tablet'] = 'flex-start';
@@ -2008,7 +2023,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		$text = implode( "\n", $values );
 	if ( $requested_widget_type === 'heading' && $text !== '' ) {
-			$tag = [ 'brand' => 'h6', 'eyebrow' => 'h6', 'services_section_title' => 'h2', 'services_recipe_title' => 'h3' ][ $role ] ?? 'h1';
+			$semantic_heading = sanitize_key( (string) ( $node['layout_constraints']['heading_level'] ?? '' ) );
+			$tag = in_array( $semantic_heading, [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], true )
+				? $semantic_heading
+				: ( [ 'brand' => 'h6', 'eyebrow' => 'h6', 'eyebrow_badge_label' => 'h6', 'services_badge_label' => 'h6', 'process_badge_label' => 'h6', 'pricing_badge_label' => 'h6', 'services_section_title' => 'h2', 'services_recipe_title' => 'h3', 'cta_section_title' => 'h2', 'team_name' => 'h3', 'testimonial_author' => 'h3', 'feature_title' => 'h3', 'pricing_label' => 'h4' ][ $role ] ?? 'h3' );
 			$settings['editor'] = '<' . $tag . '>' . nl2br( htmlspecialchars( $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ), false ) . '</' . $tag . '>';
 			$heading_color = $role === 'brand' ? 'color.muted' : ( $role === 'eyebrow' ? 'color.primary' : 'color.text' );
 			$settings['text_color'] = (string) ( $token_values[ $heading_color ] ?? '#111827' );

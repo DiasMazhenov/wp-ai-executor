@@ -56,7 +56,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "3020071626a0fd8314c71a4f0e58fb874585fe2d60f2e9fc795272d0898477f3",
-    "includes/elementor/elementor-ir.php": "ff665fc11cf6caf8c140ea9ddd33d9cef68eed70dddf73b9c316fc717b2024bf",
+    "includes/elementor/elementor-ir.php": "b9a76f56996374fe701b9a296adbf93ace12c26ab06ae488376db891e154cb24",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -222,7 +222,7 @@
     "includes/elementor/normalize.php": "f147d2fd8b5c0cbac34f510fa1470d835d34ebda92e8171c564443d71e6f8ee9",
     "includes/elementor/operation-ledger.php": "5ae2d93fc7ffc252ffb008772078c7b750fcefa465a4471d232bd283365cb7d1",
     "includes/elementor/page-update.php": "730de82233388b142b2ee901f93e6b2b39e8682a9aa923c90296a465e7d342b2",
-    "includes/elementor/recipes.php": "3aa5969576de70d5776f0000a11754133d949259c971dbe9809e3309386316c6",
+    "includes/elementor/recipes.php": "56af0f294568d5e50c48a670aaaf5ff8c0baa0adde485b4c496239e6f6ae023d",
     "includes/elementor/reference-set.php": "7d2d2f391e544f707b36c0d8cfe0d2331fc25bf769f9d6d20f31db110b61226c",
     "includes/elementor/templates.php": "81d54937d106e0cb542e00b1e1a91e708076d5ac64792c0012e15970035ed3a2",
     "includes/elementor/token-map.php": "75b5ee2f6d18b79d66df911db4b32e9aaf2009a30ad77b6e7db17b63c4323e37",
@@ -239,7 +239,7 @@
     "includes/llm/brief-ir-structured.php": "ec72b2852ee1d95a08480210e11ac07d13bfb6ee05bd1b4f6a42d9b0332fafe4",
     "includes/llm/brief-ir.php": "1b9e2ea9b12ee769624abffbdc6f9be6e811e66509835257030161d2a2a86be9",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "bcb4310075bd09dcd9edb61a991efab2fd64124c6ce2e21666fd7c20003389eb",
+    "includes/llm/design-plan.php": "95f9e41d67ae895a96c9fd898d850465444e257f03522237e06907d0f6f21af8",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/llm.php": "d46e875210935ff29c7a74d8125abd064ebac194b3679867b494c658af1bb34c",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "2bbb09b985bf7bc17b46f3047e401b8ee6fd2d399e8d36b66dc57f1857776799"
+    "wp-ai-executor.php": "47c1ecb5a11cb7c48c3a1e644e115fb913929549ac1c9009e0ec126a25d4378b"
   }
 }

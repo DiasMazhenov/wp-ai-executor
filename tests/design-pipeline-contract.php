@@ -315,7 +315,7 @@ class Widgets_Manager {
 \Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 $check( $wpae_no_elementor_probe['state'] === 'unavailable' && $wpae_no_elementor_probe['reason'] === 'elementor_runtime_missing', 'absent Elementor runtime is reported as unavailable before test double registration' );
 
-$hero_prompt = "hero\nНадзаголовок обычным текстом.\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nImage: https://example.com/contract.png\nFAQ\nО нас\n7 шагов";
+$hero_prompt = "hero\nНадзаголовок в pill-бейдже.\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nImage: https://example.com/contract.png\nFAQ\nО нас\n7 шагов";
 $hero = wpae_brief_ir_parse( $hero_prompt );
 $check( $hero['schema'] === 'wpae-brief-v1', 'BriefIR schema' );
 $check( wpae_brief_ir_validate( $hero )['ok'], 'BriefIR validates' );
@@ -368,7 +368,7 @@ $check( wpae_design_plan_constraint_value( $contradictory, 'media_intent' ) === 
 $forbidden_with_asset = wpae_brief_ir_parse( 'Create a hero with no image, but keep this supplied image URL: https://example.com/hero.jpg' );
 $check( wpae_design_plan_constraint_value( $forbidden_with_asset, 'media_intent' ) === 'conflict', 'explicit prohibition and an image asset URL are treated as a visible conflict' );
 
-$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Надзаголовок обычным текстом. Текст слева занимает 40%, визуальная часть справа — 60%. Изображение: https://example.com/hero.png' );
+$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Надзаголовок покажи pill-бейджем. Текст слева занимает 40%, визуальная часть справа — 60%. Изображение: https://example.com/hero.png' );
 $semantic_plan = wpae_design_plan_from_brief( $semantic_hero );
 $check( ( $semantic_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60' && ( $semantic_plan['media_intent'] ?? '' ) === 'required', 'explicit image URL is treated as a required media reference and preserves copy/media composition' );
 $semantic_layout = wpae_layout_report_for_plan( $semantic_plan );
@@ -378,9 +378,9 @@ $semantic_compiled = wpae_elementor_ir_compile( $semantic_ir, $semantic_hero, [ 
 $semantic_root = $semantic_compiled['elementor_data'][0] ?? [];
 $semantic_copy = $semantic_root['elements'][0] ?? [];
 $semantic_media = $semantic_root['elements'][1] ?? [];
-$semantic_copy_roles = array_column( (array) ( $semantic_copy['elements'] ?? [] ), 'widgetType' );
+$semantic_copy_roles = array_map( static fn( array $node ): string => (string) ( $node['widgetType'] ?? $node['elType'] ?? '' ), (array) ( $semantic_copy['elements'] ?? [] ) );
 $check( (float) ( $semantic_copy['settings']['width']['size'] ?? 0 ) === 40.0 && (float) ( $semantic_media['settings']['width']['size'] ?? 0 ) === 60.0 && ! isset( $semantic_copy['settings']['flex_basis'] ) && ! isset( $semantic_media['settings']['flex_basis'] ), 'semantic hero compiler preserves native 40/60 width contract' );
-$check( $semantic_copy_roles === [ 'heading', 'heading', 'heading', 'text-editor', 'button', 'button' ], 'copy widgets keep brand, eyebrow, title order and both CTAs: ' . wp_json_encode( $semantic_copy_roles ) );
+$check( $semantic_copy_roles === [ 'heading', 'container', 'heading', 'text-editor', 'button', 'button' ], 'copy widgets keep brand, native pill, title order and both CTAs: ' . wp_json_encode( $semantic_copy_roles ) );
 $semantic_title = $semantic_copy['elements'][2]['settings'] ?? [];
 $semantic_body = $semantic_copy['elements'][3]['settings'] ?? [];
 $semantic_primary = $semantic_copy['elements'][4]['settings'] ?? [];
@@ -408,6 +408,31 @@ $live_buttons = array_values( array_filter( $live_nodes, static fn( array $node 
 $check( ! empty( $live_compiled['ok'] ) && count( $live_buttons ) === 2 && ( $live_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $live_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'live BriefIR CTA links survive DesignPlan, ElementorIR, and native compilation' );
 $check( str_contains( $live_json, 'wpae-generated-badge' ) && str_contains( $live_json, 'АРХИТЕКТУРА' ) && str_contains( $live_json, 'widgetType":"heading' ), 'explicit hero pill compiles as a native editable badge containing exact eyebrow copy' );
 $check( ( $live_root['settings']['background_color'] ?? '' ) === '#f6f0e6' && ( $live_compiled['report']['tokens']['resolved'][0]['source'] ?? '' ) === 'safe_default', 'built-in paper fallback remains allowed and its provenance is not mislabeled as project input' );
+$no_eyebrow_brief = wpae_brief_ir_parse( 'Create a hero with title: "Room for ideas".' );
+$no_eyebrow_plan = wpae_design_plan_from_brief( $no_eyebrow_brief );
+$no_eyebrow_compiled = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $no_eyebrow_plan, $no_eyebrow_brief ), $no_eyebrow_brief, [], [ 'id_seed' => 'default-section-header' ] );
+$no_eyebrow_json = wp_json_encode( $no_eyebrow_compiled['elementor_data'] ?? [], JSON_UNESCAPED_UNICODE );
+$no_eyebrow_header = (array) ( $no_eyebrow_plan['section_header'] ?? [] );
+$check( ( $no_eyebrow_header['eyebrow']['source'] ?? '' ) === 'family_default' && ( $no_eyebrow_header['title']['source'] ?? '' ) === 'brief' && ( $no_eyebrow_header['presentation'] ?? '' ) === 'pill' && ( $no_eyebrow_header['heading_level'] ?? '' ) === 'h1', 'DesignPlan freezes a documented pill default and semantic H1 while preserving an exact supplied title' );
+$check( ! empty( $no_eyebrow_compiled['ok'] ) && str_contains( $no_eyebrow_json, 'wpae-generated-badge' ) && str_contains( $no_eyebrow_json, 'OVERVIEW' ) && str_contains( $no_eyebrow_json, 'Room for ideas' ), 'native compiler emits the missing family pill without replacing the supplied heading' );
+$no_eyebrow_brief_title = array_values( array_filter( (array) ( $no_eyebrow_brief['content'] ?? [] ), static fn( $item ): bool => ( $item['role'] ?? '' ) === 'title' ) )[0] ?? [];
+$check( ( $no_eyebrow_header['title']['ref'] ?? '' ) === ( $no_eyebrow_brief_title['id'] ?? '' ) && ( $no_eyebrow_header['title']['source_span'] ?? [] ) === ( $no_eyebrow_brief_title['source_span'] ?? [] ), 'accepted section heading preserves the exact Brief slot and source span' );
+$header_contract_families = [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'services', 'process', 'team', 'testimonials', 'portfolio', 'cta' ];
+$header_contract_families_ok = true;
+foreach ( $header_contract_families as $header_family ) {
+	$header_stub = [ 'schema' => WPAE_DESIGN_PLAN_SCHEMA, 'archetype' => $header_family, 'composition_decision' => [ 'slot_bindings' => [] ], 'sections' => [ [ 'id' => $header_family, 'role' => $header_family, 'composition' => 'linear', 'children' => [ [ 'role' => 'fixture_collection', 'allowed_widgets' => [], 'content_refs' => [] ] ] ] ] ];
+	$header_stub = wpae_design_plan_apply_section_header_contract( $header_stub, [ 'locale' => 'ru', 'content' => [] ] );
+	$family_header = (array) ( $header_stub['sections'][0]['section_header'] ?? [] );
+	$family_intro = array_values( array_filter( (array) ( $header_stub['sections'][0]['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && in_array( (string) ( $child['role'] ?? '' ), [ 'copy_group', 'cta_copy_group' ], true ) && ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) );
+	$header_contract_families_ok = $header_contract_families_ok && ( $family_header['eyebrow']['text'] ?? '' ) !== '' && ( $family_header['title']['text'] ?? '' ) !== '' && count( $family_intro ) === 1 && ( $family_header['heading_level'] ?? '' ) === ( $header_family === 'hero' ? 'h1' : 'h2' );
+}
+$check( $header_contract_families_ok, 'all eleven generated block families freeze both a section pill and semantic heading into DesignPlan' );
+$grouped_title_brief = [ 'locale' => 'ru', 'content' => [ [ 'id' => 'team_1_name', 'role' => 'title', 'exact_text' => 'Имя участника', 'group_id' => 'team_1', 'source_span' => [ 0, 15 ] ] ] ];
+$grouped_title_plan = wpae_design_plan_apply_section_header_contract( [ 'archetype' => 'team', 'sections' => [ [ 'id' => 'team', 'role' => 'team', 'composition' => 'linear', 'children' => [] ] ] ], $grouped_title_brief );
+$check( ( $grouped_title_plan['section_header']['title']['source'] ?? '' ) === 'family_default' && ( $grouped_title_plan['section_header']['title']['text'] ?? '' ) === 'Участники команды', 'member-level title never becomes the section heading when the Brief has no top-level title' );
+$plain_eyebrow_brief = [ 'locale' => 'ru', 'layout_constraints' => [ [ 'kind' => 'eyebrow_presentation', 'value' => 'plain' ] ], 'content' => [] ];
+$plain_eyebrow_plan = wpae_design_plan_apply_section_header_contract( [ 'archetype' => 'hero', 'sections' => [ [ 'id' => 'hero', 'role' => 'hero', 'composition' => 'linear', 'children' => [] ] ] ], $plain_eyebrow_brief );
+$check( ! empty( $plain_eyebrow_plan['section_header']['conflicts_with_explicit_brief'] ), 'an explicit plain-text-only eyebrow is recorded as a conflict with the universal mandatory pill rule' );
 $separated_ctas = wpae_brief_ir_parse( 'hero primary button «One» → #one; secondary button «Two» → https://example.com/two' );
 $separated_links = array_values( array_filter( $separated_ctas['content'], static fn( array $item ): bool => str_starts_with( (string) $item['role'], 'cta' ) ) );
 $multiline_ctas = wpae_brief_ir_parse( "hero\nbutton: «First» → #first\nsecondary button: «Second» → https://example.com/second" );
@@ -433,7 +458,8 @@ $pill_walk = static function ( array $nodes ) use ( &$pill_walk, &$pill_widgets 
 };
 $pill_walk( [ $live_root ] );
 $pill_label = array_values( array_filter( $pill_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' && ( $node['settings']['title'] ?? '' ) === 'АРХИТЕКТУРА' ) )[0] ?? [];
-$check( ! empty( $pill_label ) && ( $pill_label['settings']['title_color'] ?? '' ) === '#ffffff' && ( $pill_label['settings']['border_radius']['size'] ?? 0 ) >= 999 && ( $pill_label['settings']['_element_width'] ?? '' ) === 'initial' && ( $pill_label['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge-label', 'hero pill label stays editable, content-width and high-contrast in native Elementor settings' );
+$pill_box = array_values( array_filter( $pill_widgets, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' && ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) )[0] ?? [];
+$check( ! empty( $pill_label ) && ( $pill_label['settings']['title_color'] ?? '' ) === '#ffffff' && ( $pill_label['settings']['_element_width'] ?? '' ) === 'initial' && ( $pill_label['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge-label' && ! isset( $pill_label['settings']['background_color'], $pill_label['settings']['border_radius'], $pill_label['settings']['_padding'] ) && ( $pill_box['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pill_box['settings']['border_radius']['size'] ?? 0 ) >= 999 && isset( $pill_box['settings']['padding'] ), 'hero pill box owns fill/radius/padding while its editable label owns only text and typography' );
 $default_tokens = [ 'design_prohibitions' => [], 'button_style' => [], 'palette' => [ 'paper' => '#f6f0e6' ] ];
 $default_report = [];
 wpae_design_token_value( 'color.page_bg', $default_tokens, $default_report );
@@ -456,7 +482,7 @@ $check( ! empty( $ambiguous['ambiguities'] ), 'ambiguous quote is visible' );
 $plan = wpae_design_plan_from_brief( $hero );
 $plan_validation = wpae_design_plan_validate( $plan );
 $check( $plan['schema'] === 'wpae-design-plan-v1' && $plan_validation['ok'], 'hero DesignPlan validates' );
-$check( $plan['sections'][0]['children'][0]['allowed_widgets'] === [ 'heading', 'text-editor', 'button' ], 'plain hero plan restricts widgets' );
+$check( $plan['sections'][0]['children'][0]['allowed_widgets'] === [ 'heading', 'text-editor', 'button', 'container' ], 'hero Plan permits the native container required for the mandatory pill' );
 $layout = wpae_layout_report_for_plan( $plan );
 $check( $layout['schema'] === 'wpae-layout-report-v1' && count( $layout['breakpoints'] ) === 4 && $layout['ok'], 'hero LayoutReport covers four breakpoints' );
 $check( array_column( $layout['breakpoints'], 'layout_axis' ) === [ 'row', 'row', 'row', 'column' ] && (float) ( $layout['breakpoints'][3]['basis_percent']['copy_group'] ?? 0 ) === 100.0 && (float) ( $layout['breakpoints'][3]['basis_percent']['media'] ?? 0 ) === 100.0, 'split hero report agrees with compiled desktop/tablet row and mobile 100% stack assumptions' );
@@ -522,7 +548,8 @@ $check( ( $qa_process_plan['sections'][0]['badge_content_ref'] ?? '' ) === 'text
 $check( array_map( static fn( array $step ): string => $qa_process_brief['content'][ array_search( $step['label_ref'], array_column( $qa_process_brief['content'], 'id' ), true ) ]['exact_text'], $qa_steps ) === [ '01. Заявка', '02. Уточнение', '03. Старт' ], 'process step headings remain exact source text' );
 $qa_process_compiled = wpae_elementor_ir_compile( $qa_process_ir, $qa_process_brief, [], [ 'id_seed' => 'process-reference-contract' ] );
 $qa_process_root = $qa_process_compiled['elementor_data'][0] ?? [];
-$qa_badge = $qa_process_root['elements'][0] ?? [];
+$qa_intro = $qa_process_root['elements'][0] ?? [];
+$qa_badge = array_values( array_filter( (array) ( $qa_intro['elements'] ?? [] ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) )[0] ?? [];
 $qa_items = $qa_process_root['elements'][1] ?? [];
 $qa_cards = (array) ( $qa_items['elements'] ?? [] );
 $reference_card = $process_reference['card'] ?? [];
@@ -548,9 +575,9 @@ $check( $pricing_plan['archetype'] === 'pricing' && wpae_design_plan_validate( $
 $pricing_brief = wpae_brief_ir_parse( 'pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». «Проект» — «от 150 000 ₸» — «Для комплексной работы». «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач».' );
 $pricing_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $pricing_brief ), $pricing_brief );
 $pricing_compiled = wpae_elementor_ir_compile( $pricing_ir, $pricing_brief, [], [ 'id_seed' => 'pricing-contract' ] );
-$pricing_cards = $pricing_compiled['elementor_data'][0]['elements'][0] ?? [];
+$pricing_cards = $pricing_compiled['elementor_data'][0]['elements'][1] ?? [];
 $pricing_card_nodes = (array) ( $pricing_cards['elements'] ?? [] );
-$check( (float) ( $pricing_compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing group is full-width when section has one child' );
+$check( count( $pricing_compiled['elementor_data'][0]['elements'] ?? [] ) === 2 && (float) ( $pricing_compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_compiled['elementor_data'][0]['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing section header and card group are separate full-width native children' );
 $check( ( $pricing_cards['settings']['flex_direction'] ?? '' ) === 'row' && count( $pricing_card_nodes ) === 3, 'pricing compiler emits a desktop card row' );
 $check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 30 && (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) < 32 && (float) ( $pricing_card_nodes[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'pricing cards reserve native gaps on desktop and stack on mobile' );
 $pricing_card_settings = (array) ( $pricing_card_nodes[0]['settings'] ?? [] );
@@ -627,7 +654,7 @@ $focus_unknown_brief = wpae_brief_ir_parse( "Hero\nИзображение: {$foc
 $focus_english_brief = wpae_brief_ir_parse( "Hero\nImage: {$focus_test_url}\nFocal point: bottom right\nAlt: «Synthetic test image»\nLicense: «Unsplash License»" );
 $check( ( $focus_unknown_brief['media_references'][0]['focal_point'] ?? null ) === null && empty( $focus_unknown_brief['media_references'][0]['focal_point_provenance'] ) && ( $focus_english_brief['media_references'][0]['focal_point'] ?? [] ) === [ 'x' => 0.9, 'y' => 0.9 ] && substr( $focus_english_brief['source_text'], (int) ( $focus_english_brief['media_references'][0]['focal_point_provenance']['source_span'][0] ?? 0 ), strlen( 'bottom right' ) ) === 'bottom right', 'Unsupported focal prose stays unresolved while an explicit English native direction maps to the supported grid' );
 $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
-$check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
+$check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' && ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label inside a native editable pill heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ '<p>Сначала согласуем задачу, затем соберём страницу.</p>', '<p>Да, каждый текст остаётся редактируемым.</p>' ], 'Accordion freezes exact plain answers in the Elementor WYSIWYG native paragraph representation' );
 $faq_roundtrip = $faq_compiled['report']['native_roundtrip'] ?? [];
 $faq_roundtrip_twice = wpae_native_roundtrip_compile_tree( $faq_compiled['elementor_data'] );
@@ -653,7 +680,9 @@ $benefits_group = $benefits_compiled['elementor_data'][0]['elements'][1] ?? [];
 $benefits_cards = (array) ( $benefits_group['elements'] ?? [] );
 $check( $benefits_brief['intent']['archetype'] === 'benefits' && wpae_design_plan_validate( $benefits_plan )['ok'] && ! empty( $benefits_compiled['ok'] ), 'feature-card brief passes typed plan and native compiler validation' );
 $check( count( $benefits_cards ) === 3 && array_column( array_map( static fn( array $card ): array => [ 'title' => $card['elements'][1]['settings']['title'] ?? '' ], $benefits_cards ), 'title' ) === [ 'Прозрачные этапы', 'Удобное редактирование', 'Адаптация под экран' ], 'feature grid keeps explicit content pairs in order' );
-$benefits_cta = $benefits_compiled['elementor_data'][0]['elements'][0]['elements'][1] ?? [];
+$benefits_intro_widgets = (array) ( $benefits_compiled['elementor_data'][0]['elements'][0]['elements'] ?? [] );
+$benefits_cta_widgets = array_values( array_filter( $benefits_intro_widgets, static fn( $widget ): bool => is_array( $widget ) && ( $widget['widgetType'] ?? '' ) === 'button' ) );
+$benefits_cta = $benefits_cta_widgets[0] ?? [];
 $check( ( $benefits_cta['widgetType'] ?? '' ) === 'button' && ( $benefits_cta['settings']['text'] ?? '' ) === 'Узнать больше' && ( $benefits_cta['settings']['link']['url'] ?? '' ) === '#details', 'feature grid keeps an optional explicit CTA and URL' );
 $check( ( $benefits_cards[0]['elements'][0]['widgetType'] ?? '' ) === 'icon' && ( $benefits_cards[0]['elements'][0]['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-check-circle' && ( $benefits_cards[0]['settings']['border_border'] ?? '' ) === 'solid', 'feature cards use native Icon widgets and token-backed bordered surfaces' );
 $check( ( $benefits_group['settings']['background_color'] ?? 'transparent' ) === 'transparent' && ( $benefits_cards[0]['settings']['background_color'] ?? '' ) === '#ffffff', 'benefits gap stays transparent while each card keeps its own white surface' );
@@ -873,7 +902,9 @@ $fallback_walk = static function ( array $nodes ) use ( &$fallback_walk, &$fallb
 };
 $fallback_walk( (array) ( $fallback_compiled['elementor_data'] ?? [] ) );
 $fallback_heading_node = array_values( array_filter( $fallback_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' && str_contains( (string) ( $node['settings']['editor'] ?? '' ), '<h1>' ) ) );
+$fallback_badge_node = array_values( array_filter( $fallback_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' && str_contains( (string) ( $node['settings']['editor'] ?? '' ), '<h6>Запуск без лишних шагов</h6>' ) ) );
 $check( ! empty( $fallback_compiled['ok'] ) && ! empty( $fallback_heading_node ) && str_contains( $fallback_heading_node[0]['settings']['editor'], 'Соберите сильную страницу' ), 'heading fallback keeps semantic heading markup and exact copy in the native text editor' );
+$check( ! empty( $fallback_badge_node ), 'missing Heading widget keeps the pill label at a non-heading h6 level instead of promoting it to H1' );
 $check( ( $fallback_compiled['report']['downgrades'][0]['from'] ?? '' ) === 'heading' && ( $fallback_compiled['report']['downgrades'][0]['widget_type'] ?? '' ) === 'text-editor' && ( $fallback_compiled['report']['downgrades'][0]['trace'][0]['runtime_result'] ?? '' ) === 'missing', 'compile diagnostics identify source, runtime result and selected fallback' );
 \Elementor\Plugin::$types = [ 'button', 'image' ];
 $missing_fallback = wpae_widget_capability_resolve( 'heading' );
@@ -1302,7 +1333,8 @@ $natural_services_prompt = "Услуги:\nСтратегия проекта —
 [ $natural_services_brief, $natural_services_plan, $natural_services_validation, $natural_services_compiled, $natural_services_nodes ] = $compile_prompt( $natural_services_prompt, 'services-natural-pairs' );
 $natural_services_cards = (array) ( array_values( array_filter( $natural_services_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-service_cards' ) )[0]['elements'] ?? [] );
 $natural_services_copy = array_map( $service_content_for, $natural_services_cards );
-$check( $natural_services_brief['intent']['archetype'] === 'services' && count( $natural_services_plan['sections'][0]['children'][0]['items'] ?? [] ) === 3 && $natural_services_validation['ok'] && ! empty( $natural_services_compiled['ok'] ), 'plain multiline Services title/body pairs pass BriefIR, DesignPlan and native compiler without numbered field labels' );
+$natural_services_collection = array_values( array_filter( (array) ( $natural_services_plan['sections'][0]['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && count( (array) ( $child['items'] ?? [] ) ) > 0 ) )[0] ?? [];
+$check( $natural_services_brief['intent']['archetype'] === 'services' && count( $natural_services_collection['items'] ?? [] ) === 3 && $natural_services_validation['ok'] && ! empty( $natural_services_compiled['ok'] ), 'plain multiline Services title/body pairs pass BriefIR, DesignPlan and native compiler without numbered field labels' );
 $check( array_map( static fn( array $panel ): array => [ (string) ( $panel['elements'][0]['settings']['title'] ?? '' ), trim( (string) ( $panel['elements'][1]['settings']['editor'] ?? '' ) ) ], $natural_services_copy ) === [ [ 'Стратегия проекта', 'Формулируем задачу и согласуем план работ' ], [ 'Архитектура и дизайн', 'Разрабатываем решение под заданный контекст' ], [ 'Сопровождение', 'Проверяем соответствие согласованному проекту' ] ], 'plain Services pairs preserve exact labels and descriptions in order' );
 foreach ( [ 2, 3, 4 ] as $service_count ) {
 	$service_prompt = "Блок услуг\nЗаголовок: «Услуги студии»\n";

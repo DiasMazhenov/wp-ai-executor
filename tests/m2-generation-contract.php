@@ -206,8 +206,9 @@ $native[0]['settings']['flex_direction_mobile'] = 'column-reverse';
 $changed_policy = wpae_llm_execute_action( [ 'action' => 'insert_elements', 'post_id' => 42, 'elements' => $native ], 42, 'hero', -1, $m2_prompt, true, [ 'frozen_decisions' => true, 'accepted_signature' => $accepted_signature, 'deterministic_ids' => true ] );
 check( empty( $changed_policy['ok'] ) && $changed_policy['error'] === 'frozen_accepted_policy_mismatch' && $GLOBALS['page_data'] === $before && $GLOBALS['writes'] === $writes_before, 'M2 execute rejects altered accepted mobile policy after freeze, before write' );
 $faq_native = $m2_results['faq.native']['preview']['elementor_data']; $signature = wpae_llm_decision_signature( $faq_native );
-check( ( $faq_native[0]['elements'][0]['elements'][0]['widgetType'] ?? '' ) === 'accordion', 'M2 FAQ signature regression targets real Accordion' );
-$faq_native[0]['elements'][0]['elements'][0]['settings']['tabs'][0]['tab_content'] = 'Foreign answer';
+$faq_native_accordion = $faq_native[0]['elements'][1]['elements'][0] ?? [];
+check( ( $faq_native_accordion['widgetType'] ?? '' ) === 'accordion', 'M2 FAQ signature regression targets real Accordion after the mandatory intro' );
+$faq_native[0]['elements'][1]['elements'][0]['settings']['tabs'][0]['tab_content'] = 'Foreign answer';
 check( $signature !== wpae_llm_decision_signature( $faq_native ), 'M2 dropping Accordion repeater IDs never drops exact FAQ answer fidelity' );
 
 foreach ( [ 'hero.text_only', 'hero.split_60_40.right', 'about.split_50_50.right', 'benefits.grid', 'benefits.editorial_list', 'pricing.tiers', 'faq.native' ] as $m2_case ) {
@@ -474,15 +475,15 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
  $legacy_changed = 0; wpae_llm_normalize_bento_grids_recursive( $legacy_candidate, $legacy_changed, 'benefits' );
  $legacy_changed = 0; $legacy_candidate = wpae_llm_enforce_flex_layout_contract( $legacy_candidate, 'benefits', $legacy_changed );
  check( wpae_llm_decision_signature( $legacy_candidate ) === wpae_llm_decision_signature( $direct_data ), 'Legacy visual/bento/flex normalizers leave accepted typed geometry unchanged ' . $profile );
- $rows = $case['written']['elements'][0]['elements'] ?? [];
  $written_list = $find_list( [ $case['written'] ] );
+ $rows = (array) ( $written_list['elements'] ?? [] );
  $production_copy = wpae_llm_collect_action_content( [ $case['written'] ] );
  $compiled_copy = wpae_llm_collect_action_content( $direct_data );
  check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && ( $written_list['settings']['flex_direction'] ?? '' ) === 'column' && ( $written_list['settings']['width']['unit'] ?? '' ) === '%' && (float) ( $written_list['settings']['width']['size'] ?? 0 ) === 100.0 && ( $written_list['settings']['width_tablet']['unit'] ?? '' ) === '%' && (float) ( $written_list['settings']['width_tablet']['size'] ?? 0 ) === 100.0 && ( $written_list['settings']['width_mobile']['unit'] ?? '' ) === '%' && (float) ( $written_list['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ! str_contains( (string) ( $written_list['settings']['_css_classes'] ?? '' ), 'wpae-bento-grid' ) && $production_copy === $compiled_copy, 'Production chat write/readback preserves the full-width linear collection, separate item measure and exact authored content ' . $profile );
 }
 
 // Pricing collection responsive controls translate the accepted stack policy.
-$m2_two_pricing = $m2_results['pricing.tiers']['result']['written']['elements'][0];
+$m2_two_pricing = $m2_results['pricing.tiers']['result']['written']['elements'][1] ?? [];
 $m2_two_tiers = $m2_two_pricing['elements'];
 check( $m2_two_pricing['settings']['container_type'] === 'flex' && $m2_two_pricing['settings']['flex_direction'] === 'row' && $m2_two_pricing['settings']['flex_wrap'] === 'wrap' && $m2_two_pricing['settings']['flex_direction_tablet'] === 'column' && $m2_two_pricing['settings']['flex_direction_mobile'] === 'column' && $m2_two_pricing['elements'][0]['settings']['_element_custom_width']['size'] === 'calc((100% - 1.5rem) / 2)' && ! isset( $m2_two_pricing['settings']['grid_columns_grid'] ), 'Pricing native Flex owns equal gap-aware columns and follows Plan tablet/mobile stack' );
 check( $m2_two_tiers[0]['settings']['width_mobile']['size'] === 100 && $m2_two_tiers[1]['settings']['width_mobile']['size'] === 100, 'Two Pricing tiers retain full-width mobile stack' );
@@ -496,12 +497,16 @@ check(count($pricing_ctas) === 2 && ($m2_two_tiers[0]['settings']['flex_justify_
 foreach ( [ 'pill-бейдж' => 'pill', 'надзаголовок обычным текстом' => 'plain', 'без бейджа, надзаголовок оставь' => 'plain', 'без бейджа, надзаголовок обычным текстом, без pill-бейджа' => 'plain' ] as $instruction => $presentation ) {
  $prompt = "Создай Hero без фото\nНадзаголовок: «ТОЧНЫЙ НАДЗАГОЛОВОК»\nЗаголовок: «Коротко»\nОписание: «Точный текст.»\n" . $instruction;
  $case = $run_services_route( $prompt, [], [], 'visual-badge-' . $presentation . strlen($instruction), false, 'active', 'active', [ 'composition_record' => 'hero.text_only', 'visual_profile' => 'editorial_light' ] );
- check( ! empty( $case['response']['ok'] ) && $case['writes'] === 1 && $case['calls'] === 0, 'Badge intake presentation ordinary path ' . $instruction );
+ if ( $presentation === 'plain' ) {
+  check( ! empty( $case['error'] ) && $case['writes'] === 0 && $case['calls'] === 0, 'Plain-only badge request safely refuses before provider/write because every generated section requires a pill: ' . $instruction );
+  continue;
+ }
+ check( ! empty( $case['response']['ok'] ) && $case['writes'] === 1 && $case['calls'] === 0, 'Mandatory pill badge follows the ordinary typed path ' . $instruction );
  $native = $case['written']; $nodes = $visual_policy_nodes( [ $native ] );
  $labels = array_values( array_filter( $nodes, static fn( array $n ): bool => ( $n['settings']['title'] ?? '' ) === 'ТОЧНЫЙ НАДЗАГОЛОВОК' ) );
  check( count($labels) === 1 && ! isset($labels[0]['settings']['_padding']) && ! isset($labels[0]['settings']['border_border']) && ! isset($labels[0]['settings']['background_color']), 'Eyebrow exact text and single box owner ' . $presentation );
  $badges = array_values( array_filter( $nodes, static fn( array $n ): bool => ( $n['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) );
- check( count($badges) === ($presentation === 'pill' ? 1 : 0), 'Plain instructions preserve text without badge container ' . $instruction );
+ check( count($badges) === 1, 'Every accepted generated section has one native pill container ' . $instruction );
  $brief = wpae_brief_ir_parse($prompt);
  $constraint = array_values(array_filter($brief['layout_constraints'], static fn(array $c):bool=>($c['kind']??'')==='eyebrow_presentation'))[0];
  check( substr($prompt,$constraint['source_span'][0],$constraint['source_span'][1]-$constraint['source_span'][0]) !== '' && $constraint['provenance']['source_span'] === $constraint['source_span'], 'Badge source span and provenance retained ' . $instruction );
@@ -525,7 +530,7 @@ foreach ( [2,3,4,6] as $count ) {
  check(count(array_filter($visual_policy_nodes([$root]),static fn(array $n):bool=>($n['widgetType']??'')==='image'))===0,'Benefits photo prohibition '.$count);
 }
 
-$pricing_intro_prompt="Создай Pricing\nНадзаголовок: «ТАРИФЫ»\nЗаголовок: «Выберите формат»\nНадзаголовок обычным текстом.\n" . file_get_contents(__DIR__.'/../docs/audits/2026-10-04-typed-lifecycle-v247/I-exact-request.txt');
+$pricing_intro_prompt="Создай Pricing\nНадзаголовок: «ТАРИФЫ»\nЗаголовок: «Выберите формат»\n" . file_get_contents(__DIR__.'/../docs/audits/2026-10-04-typed-lifecycle-v247/I-exact-request.txt');
 $pricing_intro=$run_services_route($pricing_intro_prompt,[],[],'visual-pricing-intro',false,'active','active',['composition_record'=>'pricing.tiers']);
 $pricing_titles=array_values(array_filter($visual_policy_nodes([$pricing_intro['written']??[]]),static fn(array $n):bool=>($n['settings']['title']??'')==='Выберите формат'));
 check(!empty($pricing_intro['response']['ok']) && count($pricing_titles)===1 && $pricing_titles[0]['settings']['header_size']==='h2','Pricing intro semantic H2 independently of display typography');

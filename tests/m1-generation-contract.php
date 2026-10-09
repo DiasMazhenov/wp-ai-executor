@@ -74,9 +74,10 @@ check( ( $m1_unknown_result['error']['code'] ?? '' ) === 'wpae_client_brief_not_
 $m1_pair_brief = wpae_brief_ir_parse( $m1_cases['benefits_grid'][0] );
 $m1_pair_brief['canonical_create'] = true;
 $m1_pair_plan = wpae_design_plan_from_brief( $m1_pair_brief, [ 'canonical_create' => true ] );
-$m1_pair_plan['sections'][0]['children'][0]['items'][0]['body_ref'] = $m1_pair_plan['sections'][0]['children'][0]['items'][1]['body_ref'];
+$m1_pair_collection_index = array_key_first( array_filter( (array) $m1_pair_plan['sections'][0]['children'], static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'feature_cards' ) );
+$m1_pair_plan['sections'][0]['children'][ $m1_pair_collection_index ]['items'][0]['body_ref'] = $m1_pair_plan['sections'][0]['children'][ $m1_pair_collection_index ]['items'][1]['body_ref'];
 check( in_array( 'cross_group_binding', wpae_design_plan_validate( $m1_pair_plan, $m1_pair_brief )['errors'], true ), 'M1 Plan rejects cross-group Benefits binding' );
-$m1_pair_plan['sections'][0]['children'][0]['items'][0]['body_ref'] = 'missing_ref';
+$m1_pair_plan['sections'][0]['children'][ $m1_pair_collection_index ]['items'][0]['body_ref'] = 'missing_ref';
 check( in_array( 'unknown_content_ref:missing_ref', wpae_design_plan_validate( $m1_pair_plan, $m1_pair_brief )['errors'], true ), 'M1 Plan rejects unknown content reference' );
 $m1_capability_types = \Elementor\Plugin::$types;
 \Elementor\Plugin::$types = array_values( array_diff( $m1_capability_types, [ 'accordion' ] ) );
