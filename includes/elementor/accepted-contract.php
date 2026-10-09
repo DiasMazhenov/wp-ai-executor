@@ -5,7 +5,10 @@ require_once dirname( __DIR__ ) . '/vision/report-store.php';
 require_once __DIR__ . '/native-roundtrip.php';
 const WPAE_ACCEPTED_CONTRACT_OPTION = 'wp_ai_executor_accepted_contracts';
 const WPAE_ACCEPTED_CONTRACT_SCHEMA = 'wpae-accepted-contract-v1';
-const WPAE_ACCEPTED_CONTRACT_TTL = 7200;
+// Keep the bounded frozen contract available across a full visual acceptance
+// cycle; short two-hour expiry can make an unchanged operation impossible to
+// guarded-Undo after desktop/mobile review and screenshot inspection.
+const WPAE_ACCEPTED_CONTRACT_TTL = 86400;
 const WPAE_ACCEPTED_CONTRACT_LIMIT = 20;
 const WPAE_ACCEPTED_CONTRACT_BYTES = 262144;
 

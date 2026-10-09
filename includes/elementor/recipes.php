@@ -739,9 +739,12 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 			$spread = (int) $metrics['entity_length_spread']; $body = (int) $metrics['max_body_chars']; $count = (int) $metrics['item_count'];
 			switch ( $family ) {
 				case 'benefits':
-					$compact = $count === 2 && (int) $metrics['max_title_chars'] <= 48 && $body <= 84 && (int) $metrics['max_entity_chars'] <= 120;
+					// The grid supports two through six items. Keep compact copy in the
+					// card topology at every supported count; an editorial list is for
+					// genuinely long/uneven descriptions, not merely for count > 2.
+					$compact = $count >= 2 && $count <= 6 && (int) $metrics['max_title_chars'] <= 48 && $body <= 84 && (int) $metrics['max_entity_chars'] <= 120;
 					$want = $compact ? 'benefits.grid' : 'benefits.editorial_list';
-					if ( $id === $want ) { $score += 300; $reasons[] = $compact ? 'compact_copy_favors_cards' : 'long_copy_favors_editorial_list'; }
+					if ( $id === $want ) { $score += 300; $reasons[] = $compact ? 'compact_copy_favors_cards' : 'long_or_uneven_copy_favors_editorial_list'; }
 					break;
 				case 'services':
 					$want = ( (int) $metrics['max_body_chars'] >= 210 || $spread >= 170 ) ? 'services.text_icon_list' : 'services.icon_cards';

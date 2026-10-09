@@ -672,7 +672,10 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 	$instruction_hash = hash( 'sha256', $system );
 	$request_hash = hash( 'sha256', (string) wp_json_encode( $input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 	$context_hash = hash( 'sha256', (string) wp_json_encode( [ 'family_options' => $family_options, 'slots' => $slots, 'fact_ids' => $approved_fact_ids ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
-	$request_body = [ 'model' => $model, 'messages' => [ [ 'role' => 'system', 'content' => $system ], [ 'role' => 'user', 'content' => wp_json_encode( $input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ] ], 'temperature' => 0.2, 'max_completion_tokens' => 1400, 'response_format' => [ 'type' => 'json_object' ] ];
+	// Reserve enough output room for the complete typed schema and every
+	// authorized slot. The smaller 1,400-token cap caused truncation on a
+	// normal hybrid About response before the bounded schema retry could help.
+	$request_body = [ 'model' => $model, 'messages' => [ [ 'role' => 'system', 'content' => $system ], [ 'role' => 'user', 'content' => wp_json_encode( $input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ] ], 'temperature' => 0.2, 'max_completion_tokens' => 2400, 'response_format' => [ 'type' => 'json_object' ] ];
 	if ( $provider === 'openrouter' ) { $request_body['provider'] = [ 'require_parameters' => true ]; }
 	$timeout = defined( 'WPAE_LLM_ACTION_TIMEOUT_SECONDS' ) ? max( 10, min( 90, WPAE_LLM_ACTION_TIMEOUT_SECONDS ) ) : 90;
 	$remote_args = [ 'timeout' => $timeout, 'redirection' => 2, 'limit_response_size' => min( WPAE_LLM_MAX_RESPONSE_BYTES, 65536 ), 'headers' => $headers, 'body' => wp_json_encode( $request_body ) ];
@@ -713,8 +716,9 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 		$slot_id = sanitize_key( (string) $generated['slot_id'] );
 		$slot = $slot_map[ $slot_id ] ?? null;
 		$text = is_string( $generated['text'] ) ? trim( sanitize_textarea_field( $generated['text'] ) ) : '';
-		$fact_refs = is_array( $generated['fact_refs'] ) ? array_values( array_unique( array_map( 'sanitize_key', $generated['fact_refs'] ) ) ) : null;
+		$fact_refs = is_array( $generated['fact_refs'] ) ? array_values( array_map( 'sanitize_key', $generated['fact_refs'] ) ) : null;
 		if ( ! is_array( $slot ) || isset( $seen[ $slot_id ] ) || $fact_refs === null || ! wpae_brief_ir_generated_text_is_safe( $text ) ) { return [ 'ok' => false, 'error' => 'intake_generated_copy_rejected', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'slot_duplicate_or_copy_guard' ] ]; }
+		if ( count( $fact_refs ) !== count( array_unique( $fact_refs ) ) ) { return [ 'ok' => false, 'error' => 'intake_fact_reference_invalid', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'duplicate_fact_ref' ] ]; }
 		foreach ( $fact_refs as $fact_ref ) { if ( ! isset( $fact_map[ $fact_ref ] ) ) { return [ 'ok' => false, 'error' => 'intake_fact_reference_invalid', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'unknown_fact_ref' ] ]; } }
 		if ( ! empty( $slot['requires_fact_ref'] ) && empty( $fact_refs ) ) { return [ 'ok' => false, 'error' => 'intake_fact_reference_required', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'required_fact_ref_missing' ] ]; }
 		$seen[ $slot_id ] = true;

@@ -19,6 +19,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $operation = $case['response']['diagnostics']['operation_ledger'];
     $loaded = wpae_accepted_contract_get( $operation );
     check( ! empty( $loaded['ok'] ) && $loaded['contract']['composition']['record_id'] === $record && $loaded['contract']['profile'] === $profile, 'Typed server contract reload record/profile ' . $record );
+    check( (int) ( $loaded['expires_at'] ?? 0 ) - time() >= 23 * 3600, 'Accepted contract remains available through a full same-day visual and guarded-Undo acceptance window ' . $record );
     check( count( $loaded['contract']['after_owned'] ) === 1 && $loaded['contract']['before_owned'] === [] && wpae_brief_ir_validate( $loaded['contract']['brief'] )['ok'], 'Bounded contract only owned subtree and canonical provenance ' . $record );
     $owned = $loaded['contract']['after_owned'];
     $context = [ 'post_id' => 42, 'accepted_operation_id' => $operation['operation_id'], 'accepted_identity' => $operation['operation_identity'], 'accepted_contract_id' => $operation['accepted_contract_id'], 'accepted_root_ids' => $operation['root_ids'], 'accepted_revision' => $operation['revision'], 'lifecycle_action' => 'check_model', 'editor_owned_model' => $owned ];
