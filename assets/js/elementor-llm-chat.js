@@ -2383,11 +2383,27 @@
                     if ((errorData.intake && typeof errorData.intake === 'object') || (errorData.validation && typeof errorData.validation === 'object')) {
                         var intakeTelemetry = errorData.intake && typeof errorData.intake === 'object' ? errorData.intake : {};
                         var safeIntakeTelemetry = {};
-                        ['source', 'provider', 'model', 'provider_calls', 'latency_ms', 'retry_count', 'retry_reason', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status'].forEach(function (key) {
+                        ['source', 'provider', 'model', 'requested_model', 'returned_model', 'provider_name', 'provider_calls', 'actual_http_calls', 'latency_ms', 'retry_count', 'retry_reason', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status', 'failure_class', 'provider_error_class', 'provider_error_envelope', 'http_failure', 'error_code', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'api_endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'prompt_bytes', 'token_limit', 'semantic_validation_result', 'write_count'].forEach(function (key) {
                             var value = intakeTelemetry[key];
-                            if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, 120);
+                            if (value === null) safeIntakeTelemetry[key] = null;
+                            else if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, key === 'provider_message' ? 300 : 240);
                             else if (typeof value === 'number' && Number.isFinite(value)) safeIntakeTelemetry[key] = value;
+                            else if (typeof value === 'boolean') safeIntakeTelemetry[key] = value;
                         });
+                        if (Array.isArray(intakeTelemetry.attempts)) {
+                            var attemptKeys = ['requested_model', 'returned_model', 'provider_name', 'endpoint_provider', 'api_endpoint', 'endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'http_status', 'error_code', 'provider_error_envelope', 'http_failure', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'transport_error_code', 'transport_error_message', 'finish_reason', 'token_limit', 'duration_ms', 'retry_reason', 'schema_validation_result', 'write_count'];
+                            safeIntakeTelemetry.attempts = intakeTelemetry.attempts.slice(0, 2).map(function (attempt) {
+                                var safeAttempt = {};
+                                attemptKeys.forEach(function (key) {
+                                    var value = attempt && attempt[key];
+                                    if (value === null) safeAttempt[key] = null;
+                                    else if (typeof value === 'string') safeAttempt[key] = value.slice(0, key.indexOf('message') >= 0 ? 300 : 240);
+                                    else if (typeof value === 'number' && Number.isFinite(value)) safeAttempt[key] = value;
+                                    else if (typeof value === 'boolean') safeAttempt[key] = value;
+                                });
+                                return safeAttempt;
+                            });
+                        }
                         var rawValidation = errorData.validation && typeof errorData.validation === 'object' ? errorData.validation : {};
                         var validationErrors = Array.isArray(rawValidation.errors) ? rawValidation.errors.slice(0, 20).map(function (value) {
                             return String(value || '').replace(/[^a-zA-Z0-9:_-]/g, '').slice(0, 120);

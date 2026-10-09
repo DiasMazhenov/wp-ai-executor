@@ -867,6 +867,20 @@ function wpae_brief_ir_intake_validation_result( array $result ): string {
 }
 
 /** One public intake submit allows one primary provider call and at most one schema-preserving retry. */
+function wpae_brief_ir_intake_failure_class( array $result ): string {
+    $telemetry = (array) ( $result['telemetry'] ?? [] );
+    if ( is_string( $telemetry['failure_class'] ?? null ) && $telemetry['failure_class'] !== '' ) { return $telemetry['failure_class']; }
+    $refusal = sanitize_key( (string) ( $telemetry['refusal'] ?? '' ) );
+    if ( in_array( $refusal, [ 'deadline_exhausted', 'provider_timeout', 'provider_transport_failure', 'transport_unavailable' ], true ) ) { return 'transport_failure'; }
+    if ( $refusal === 'no_compatible_structured_endpoint' ) { return 'no_compatible_structured_endpoint'; }
+    if ( $refusal === 'invalid_request_schema' ) { return 'request_schema_rejected'; }
+    if ( $refusal === 'provider_error_envelope' ) { return 'upstream_error_envelope'; }
+    if ( in_array( $refusal, [ 'malformed_json', 'response_truncated', 'unexpected_schema_fields', 'schema_mismatch', 'family_mismatch', 'generated_slots_shape_invalid', 'generated_slot_schema_invalid', 'paragraph_count_mismatch', 'paragraph_value_invalid', 'required_slot_not_generated', 'duplicate_generated_slot', 'unknown_generated_slot' ], true ) ) { return 'malformed_model_response'; }
+    if ( wpae_brief_ir_intake_validation_result( $result ) === 'semantic_provenance_failure' ) { return 'semantic_validation_refusal'; }
+    if ( $refusal === 'provider_http_failure' ) { return 'http_failure'; }
+    return 'UNKNOWN';
+}
+
 function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, array $runtime, array $context = [] ): array {
 	$timeout = defined( 'WPAE_LLM_ACTION_TIMEOUT_SECONDS' ) ? max( 10, min( 90, WPAE_LLM_ACTION_TIMEOUT_SECONDS ) ) : 90;
 	$deadline = microtime( true ) + $timeout;
@@ -883,6 +897,7 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 	}
 	if ( $first_attempts ) { $first_attempts[ count( $first_attempts ) - 1 ]['schema_validation_result'] = wpae_brief_ir_intake_validation_result( $first ); }
 	$first_telemetry['attempts'] = $first_attempts;
+	$first_telemetry['failure_class'] = (string) ( $first_telemetry['failure_class'] ?? wpae_brief_ir_intake_failure_class( $first ) );
 	$retry_context_frozen = sanitize_key( (string) ( $base_brief['intent']['archetype'] ?? 'unknown' ) ) !== 'unknown';
 	$retry_decision = wpae_brief_ir_intake_retry_decision( $first, max( 0, (int) round( ( $deadline - microtime( true ) ) * 1000 ) ), $retry_context_frozen );
 	$retry_reason = (string) ( $retry_decision['reason'] ?? '' );
@@ -899,6 +914,7 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 	$context['_wpae_intake_retry'] = [ 'reason' => $retry_reason ];
 	$second = wpae_brief_ir_intake_extract_attempt( $source_text, $base_brief, $runtime, $context );
 	$second_telemetry = (array) ( $second['telemetry'] ?? [] );
+	if ( empty( $second['ok'] ) ) { $second_telemetry['failure_class'] = (string) ( $second_telemetry['failure_class'] ?? wpae_brief_ir_intake_failure_class( $second ) ); }
 	$second_attempts = array_values( (array) ( $second_telemetry['attempts'] ?? [] ) );
 	if ( $first_attempts ) { $first_attempts[ count( $first_attempts ) - 1 ]['retry_reason'] = $retry_reason; }
 	if ( $second_attempts ) { $second_attempts[ count( $second_attempts ) - 1 ]['retry_reason'] = $retry_reason; }
@@ -1014,7 +1030,7 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 		$attempts[0]['prompt_bytes'] = $prompt_bytes;
 		$attempts[0]['semantic_request_hash'] = $request_hash;
 	}
-	$telemetry = [ 'source' => 'provider_typed_intake', 'provider' => $provider, 'requested_model' => $model, 'model' => $model, 'provider_calls' => $provider_call_count, 'latency_ms' => $latency_ms, 'retry_count' => $retry_count, 'retry_reason' => sanitize_key( (string) ( $provider_attempts['retry_reason'] ?? '' ) ), 'first_finish_reason' => sanitize_key( (string) ( $provider_attempts['first_finish_reason'] ?? '' ) ), 'finish_reason' => sanitize_key( (string) ( $provider_attempts['finish_reason'] ?? '' ) ), 'request_hash' => $request_hash, 'instruction_hash' => $instruction_hash, 'response_format' => 'json_schema', 'schema_sha256' => hash( 'sha256', $schema_json ), 'schema_bytes' => strlen( $schema_json ), 'prompt_bytes' => $prompt_bytes, 'token_limit' => WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS, 'attempts' => $attempts, 'write_count' => 0 ];
+	$telemetry = [ 'source' => 'provider_typed_intake', 'provider' => $provider, 'requested_model' => $model, 'model' => $model, 'provider_calls' => $provider_call_count, 'actual_http_calls' => $provider_call_count, 'latency_ms' => $latency_ms, 'retry_count' => $retry_count, 'retry_reason' => sanitize_key( (string) ( $provider_attempts['retry_reason'] ?? '' ) ), 'first_finish_reason' => sanitize_key( (string) ( $provider_attempts['first_finish_reason'] ?? '' ) ), 'finish_reason' => sanitize_key( (string) ( $provider_attempts['finish_reason'] ?? '' ) ), 'request_hash' => $request_hash, 'instruction_hash' => $instruction_hash, 'response_format' => 'json_schema', 'schema_sha256' => hash( 'sha256', $schema_json ), 'schema_bytes' => strlen( $schema_json ), 'prompt_bytes' => $prompt_bytes, 'token_limit' => WPAE_BRIEF_IR_INTAKE_MAX_COMPLETION_TOKENS, 'attempts' => $attempts, 'write_count' => 0 ];
 	if ( is_wp_error( $response ) ) {
 		$code = sanitize_key( (string) $response->get_error_code() );
 		$refusal = $code === 'wpae_llm_provider_budget_exhausted' ? 'deadline_exhausted' : ( in_array( $code, [ 'http_request_failed', 'curl_error', 'connect_timeout', 'timeout' ], true ) ? 'provider_timeout' : 'provider_transport_failure' );
@@ -1022,7 +1038,7 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 	}
 	$status = (int) wp_remote_retrieve_response_code( $response );
 	$provider_body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-	$response_details = wpae_llm_response_diagnostics( is_array( $provider_body ) ? $provider_body : [] );
+	$response_details = wpae_llm_response_diagnostics( is_array( $provider_body ) ? $provider_body : [], $request_body );
 	if ( $attempts ) {
 		$attempts[0]['returned_model'] = (string) ( $response_details['returned_model'] ?? '' ) !== '' ? $response_details['returned_model'] : null;
 		$attempts[0]['endpoint_provider'] = (string) ( $response_details['provider_name'] ?? '' ) !== '' ? $response_details['provider_name'] : null;
@@ -1032,13 +1048,32 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 		$telemetry['attempts'] = $attempts;
 	}
 	$telemetry['returned_model'] = (string) ( $response_details['returned_model'] ?? '' ) !== '' ? $response_details['returned_model'] : null;
+	$telemetry['provider_name'] = $response_details['provider_name'] ?? null;
+	$telemetry['provider_error_envelope'] = ! empty( $response_details['has_error_envelope'] );
+	$telemetry['error_code'] = $response_details['error_code'] ?? null;
+	$telemetry['http_failure'] = $status < 200 || $status >= 300;
+	$telemetry['provider_error_code'] = $response_details['provider_error_code'] ?? null;
+	$telemetry['provider_error_type'] = $response_details['provider_error_type'] ?? null;
+	$telemetry['provider_message'] = $response_details['provider_message'] ?? null;
+	$telemetry['provider_error_param'] = $response_details['provider_error_param'] ?? null;
+	$telemetry['provider_error_path'] = $response_details['provider_error_path'] ?? null;
+	$telemetry['api_endpoint'] = $attempts[0]['api_endpoint'] ?? null;
 	$telemetry['usage'] = (array) ( $response_details['usage'] ?? [] );
-	if ( $status < 200 || $status >= 300 ) {
+	$has_provider_error = ! empty( $response_details['has_error_envelope'] );
+	if ( $status < 200 || $status >= 300 || $has_provider_error ) {
 		$provider_message = strtolower( (string) ( $response_details['provider_message'] ?? '' ) );
-		$no_compatible = strpos( $provider_message, 'no endpoints found' ) !== false || strpos( $provider_message, 'requested parameters' ) !== false || strpos( $provider_message, 'structured output' ) !== false && strpos( $provider_message, 'support' ) !== false;
-		$invalid_request_schema = strpos( $provider_message, 'schema' ) !== false && ( strpos( $provider_message, 'invalid' ) !== false || strpos( $provider_message, 'unsupported' ) !== false );
-		$refusal = $no_compatible ? 'no_compatible_structured_endpoint' : ( $invalid_request_schema ? 'invalid_request_schema' : 'provider_http_failure' );
-		return [ 'ok' => false, 'error' => $no_compatible ? 'intake_no_compatible_structured_endpoint' : 'intake_provider_http_failure', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => $refusal ] ];
+		$provider_type = sanitize_key( (string) ( $response_details['provider_error_type'] ?? '' ) );
+		$provider_param = strtolower( (string) ( $response_details['provider_error_param'] ?? '' ) );
+		$provider_path = strtolower( (string) ( $response_details['provider_error_path'] ?? '' ) );
+		$no_compatible = strpos( $provider_message, 'no endpoints found' ) !== false || strpos( $provider_message, 'requested parameters' ) !== false || strpos( $provider_message, 'structured output' ) !== false && strpos( $provider_message, 'support' ) !== false || in_array( $provider_type, [ 'no_available_providers', 'no_compatible_endpoint', 'no_compatible_structured_endpoint' ], true );
+		$schema_evidence = strpos( $provider_message, 'schema' ) !== false || strpos( $provider_path, 'schema' ) !== false || strpos( $provider_param, 'response_format' ) !== false;
+		$invalid_request_schema = $schema_evidence && ( strpos( $provider_message, 'invalid' ) !== false || strpos( $provider_message, 'unsupported' ) !== false || strpos( $provider_message, 'reject' ) !== false || $provider_type === 'invalid_request' );
+		$request_failure_class = $no_compatible ? 'no_compatible_structured_endpoint' : ( $invalid_request_schema ? 'request_schema_rejected' : 'UNKNOWN' );
+		$refusal = $no_compatible ? 'no_compatible_structured_endpoint' : ( $invalid_request_schema ? 'invalid_request_schema' : ( $has_provider_error && $status >= 200 && $status < 300 ? 'provider_error_envelope' : 'provider_http_failure' ) );
+		$error_code = $has_provider_error && $status >= 200 && $status < 300 ? 'intake_provider_error_envelope' : ( $no_compatible ? 'intake_no_compatible_structured_endpoint' : 'intake_provider_http_failure' );
+		$telemetry['failure_class'] = $no_compatible ? 'no_compatible_structured_endpoint' : ( $invalid_request_schema ? 'request_schema_rejected' : ( $has_provider_error ? 'upstream_error_envelope' : 'http_failure' ) );
+		$telemetry['provider_error_class'] = $request_failure_class;
+		return [ 'ok' => false, 'error' => $error_code, 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => $refusal ] ];
 	}
 	if ( in_array( strtolower( (string) ( $response_details['finish_reason'] ?? '' ) ), [ 'length', 'max_tokens', 'token_limit' ], true ) ) {
 		return [ 'ok' => false, 'error' => 'intake_response_truncated', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'response_truncated' ] ];

@@ -303,76 +303,27 @@ function wpae_llm_provider_is_rate_limited( $body ): bool {
     return strpos( $haystack, 'rate-limited' ) !== false || strpos( $haystack, 'rate limit' ) !== false;
 }
 
-function wpae_llm_provider_error_message( $body ): string {
+function wpae_llm_provider_error_message( $body, array $request_body = [] ): string {
     if ( is_string( $body ) ) {
         $decoded = json_decode( $body, true );
-        if ( is_array( $decoded ) ) {
-            $body = $decoded;
-        } else {
-            return substr( sanitize_text_field( $body ), 0, 300 );
+        if ( ! is_array( $decoded ) ) {
+            return wpae_llm_diagnostic_text( $body, 300, $request_body );
         }
+        $body = $decoded;
     }
     if ( ! is_array( $body ) ) {
         return '';
     }
 
-    $extract = static function ( $value, int $depth = 0 ) use ( &$extract ): string {
-        if ( $depth > 3 ) {
-            return '';
-        }
-        if ( is_scalar( $value ) ) {
-            return substr( sanitize_text_field( (string) $value ), 0, 300 );
-        }
-        if ( ! is_array( $value ) ) {
-            return '';
-        }
-        foreach ( [ 'message', 'detail', 'description', 'reason', 'error', 'errors', 'code', 'status', 'title' ] as $key ) {
-            if ( array_key_exists( $key, $value ) ) {
-                $candidate = $extract( $value[ $key ], $depth + 1 );
-                if ( $candidate !== '' ) {
-                    return $candidate;
-                }
-            }
-        }
-        foreach ( $value as $nested_key => $nested ) {
-            if ( is_array( $nested ) ) {
-                $candidate = $extract( $nested, $depth + 1 );
-                if ( $candidate !== '' ) {
-                    return $candidate;
-                }
-            } elseif ( is_scalar( $nested ) && is_int( $nested_key ) ) {
-                $candidate = $extract( $nested, $depth + 1 );
-                if ( $candidate !== '' ) {
-                    return $candidate;
-                }
-            }
-        }
-        return '';
-    };
-
     $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
-    $message = $extract( $choice['error'] ?? null );
-    $message = $message ?: $extract( $body['error'] ?? null );
-    $message = $message ?: $extract( $body['message'] ?? null );
-    $message = $message ?: $extract( $body['detail'] ?? $body['details'] ?? null );
-    $message = $message ?: $extract( $body );
-
-    // OpenRouter hides the upstream reason inside error.metadata; surface a
-    // bounded sanitized excerpt so provider failures are diagnosable in the
-    // editor chat without exposing credentials or raw payloads.
-    $metadata = is_array( $body['error']['metadata'] ?? null ) ? $body['error']['metadata'] : [];
-    $raw = trim( (string) ( $metadata['raw'] ?? '' ) );
-    if ( $raw !== '' ) {
-        $provider_name = sanitize_text_field( (string) ( $metadata['provider_name'] ?? '' ) );
-        $raw_body = json_decode( $raw, true );
-        $excerpt = is_array( $raw_body ) ? $extract( $raw_body ) : '';
-        $excerpt = $excerpt !== '' ? $excerpt : substr( sanitize_text_field( $raw ), 0, 300 );
-        if ( $excerpt !== '' && strpos( $message, $excerpt ) === false ) {
-            $message = trim( $message . ' [' . ( $provider_name !== '' ? $provider_name . ': ' : '' ) . $excerpt . ']' );
+    $error = is_array( $body['error'] ?? null ) ? $body['error'] : ( is_array( $choice['error'] ?? null ) ? $choice['error'] : [] );
+    foreach ( [ 'message', 'detail', 'description' ] as $key ) {
+        $candidate = $error[ $key ] ?? null;
+        if ( is_scalar( $candidate ) && trim( (string) $candidate ) !== '' ) {
+            return wpae_llm_diagnostic_text( $candidate, 300, $request_body );
         }
     }
-
-    return $message;
+    return '';
 }
 
 function wpae_llm_provider_error_fallback( $body, int $status ): string {
@@ -389,7 +340,7 @@ function wpae_llm_provider_error_fallback( $body, int $status ): string {
     return 'HTTP ' . $status . '; провайдер не передал понятного сообщения' . ( ! empty( $keys ) ? ' (поля: ' . implode( ', ', $keys ) . ')' : '' ) . '.';
 }
 
-function wpae_llm_response_diagnostics( $body ): array {
+function wpae_llm_response_diagnostics( $body, array $request_body = [] ): array {
     $choices = is_array( $body['choices'] ?? null ) ? $body['choices'] : [];
     $choice = is_array( $choices[0] ?? null ) ? $choices[0] : [];
     $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
@@ -397,52 +348,145 @@ function wpae_llm_response_diagnostics( $body ): array {
     $finish_reason = is_scalar( $choice['finish_reason'] ?? null ) && trim( (string) $choice['finish_reason'] ) !== ''
         ? sanitize_key( (string) $choice['finish_reason'] )
         : null;
-	$content_text = is_string( $content ) ? $content : '';
-	$usage = is_array( $body['usage'] ?? null ) ? $body['usage'] : [];
-	$input_tokens = $usage['prompt_tokens'] ?? ( $usage['input_tokens'] ?? null );
-	$output_tokens = $usage['completion_tokens'] ?? ( $usage['output_tokens'] ?? null );
-	$total_tokens = $usage['total_tokens'] ?? null;
-	$completion_details = is_array( $usage['completion_tokens_details'] ?? null ) ? $usage['completion_tokens_details'] : [];
-	$reasoning_tokens = $usage['reasoning_tokens'] ?? ( $completion_details['reasoning_tokens'] ?? null );
-	$returned_model = $body['model'] ?? null;
-	$provider_name = $body['provider_name'] ?? ( $body['provider'] ?? null );
-	if ( ! is_scalar( $returned_model ) ) { $returned_model = null; }
-	if ( ! is_scalar( $provider_name ) ) { $provider_name = null; }
-	return [
+    $content_text = is_string( $content ) ? $content : '';
+    $usage = is_array( $body['usage'] ?? null ) ? $body['usage'] : [];
+    $input_tokens = $usage['prompt_tokens'] ?? ( $usage['input_tokens'] ?? null );
+    $output_tokens = $usage['completion_tokens'] ?? ( $usage['output_tokens'] ?? null );
+    $total_tokens = $usage['total_tokens'] ?? null;
+    $completion_details = is_array( $usage['completion_tokens_details'] ?? null ) ? $usage['completion_tokens_details'] : [];
+    $reasoning_tokens = $usage['reasoning_tokens'] ?? ( $completion_details['reasoning_tokens'] ?? null );
+    $returned_model = $body['model'] ?? null;
+    $provider_name = $body['provider_name'] ?? ( $body['provider'] ?? null );
+    $choice_error = is_array( $choice['error'] ?? null ) ? $choice['error'] : [];
+    $error = is_array( $body['error'] ?? null ) ? $body['error'] : $choice_error;
+    $error_metadata = is_array( $error['metadata'] ?? null ) ? $error['metadata'] : [];
+    $raw_error = [];
+    $raw_error_metadata = [];
+    $raw_provider_message = null;
+    $raw = $error_metadata['raw'] ?? null;
+    if ( is_string( $raw ) && strlen( $raw ) <= 8192 ) {
+        $decoded_raw = json_decode( $raw, true );
+        if ( is_array( $decoded_raw ) ) {
+            $raw_error = is_array( $decoded_raw['error'] ?? null ) ? $decoded_raw['error'] : $decoded_raw;
+            $raw_error_metadata = is_array( $raw_error['metadata'] ?? null ) ? $raw_error['metadata'] : [];
+            foreach ( [ 'message', 'detail', 'description' ] as $raw_message_key ) {
+                if ( is_scalar( $raw_error[ $raw_message_key ] ?? null ) && trim( (string) $raw_error[ $raw_message_key ] ) !== '' ) {
+                    $raw_provider_message = $raw_error[ $raw_message_key ];
+                    break;
+                }
+            }
+        }
+    }
+    $has_error_envelope = array_key_exists( 'error', $body ) || array_key_exists( 'error', $choice );
+    if ( ! is_scalar( $returned_model ) ) { $returned_model = null; }
+    if ( ! is_scalar( $provider_name ) ) { $provider_name = null; }
+    if ( $provider_name === null && is_scalar( $error_metadata['provider_name'] ?? null ) ) { $provider_name = $error_metadata['provider_name']; }
+    $provider_error_code = $error_metadata['provider_code'] ?? ( $error['provider_code'] ?? ( $raw_error_metadata['provider_code'] ?? ( $raw_error['provider_code'] ?? ( $raw_error['code'] ?? null ) ) ) );
+    $provider_error_type = $error_metadata['error_type'] ?? ( $error['error_type'] ?? ( $error['type'] ?? ( $raw_error_metadata['error_type'] ?? ( $raw_error['error_type'] ?? ( $raw_error['type'] ?? null ) ) ) ) );
+    $error_code = $error['code'] ?? null;
+    $provider_error_param = $error['param'] ?? ( $error_metadata['param'] ?? ( $raw_error['param'] ?? ( $raw_error_metadata['param'] ?? null ) ) );
+    $provider_error_path = $error['path'] ?? ( $error_metadata['path'] ?? ( $raw_error['path'] ?? ( $raw_error_metadata['path'] ?? null ) ) );
+    if ( is_array( $provider_error_path ) ) {
+        $provider_error_path = implode( '.', array_map( static fn( $part ): string => sanitize_key( (string) $part ), $provider_error_path ) );
+    }
+    $safe_scalar = static function ( $value, int $limit = 120 ) use ( $request_body ) {
+        return is_scalar( $value ) && trim( (string) $value ) !== '' ? wpae_llm_diagnostic_text( $value, $limit, $request_body ) : null;
+    };
+    $provider_message = $has_error_envelope ? wpae_llm_provider_error_message( $body, $request_body ) : '';
+    if ( $raw_provider_message !== null && ( $provider_message === '' || stripos( $provider_message, 'provider returned error' ) !== false ) ) {
+        $provider_message = wpae_llm_diagnostic_text( $raw_provider_message, 300, $request_body );
+    }
+    return [
         'choices_count' => count( $choices ),
         'finish_reason' => $finish_reason,
         'content_length' => strlen( $content_text ),
         'likely_truncated' => in_array( strtolower( (string) $finish_reason ), [ 'length', 'max_tokens', 'token_limit' ], true ),
         'content_type' => is_array( $content ) ? 'array' : gettype( $content ),
         'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
-		'returned_model' => $returned_model !== null ? wpae_llm_diagnostic_text( $returned_model, 120 ) : '',
-		'provider_name' => $provider_name !== null ? wpae_llm_diagnostic_text( $provider_name, 120 ) : '',
+        'returned_model' => $safe_scalar( $returned_model ),
+        'provider_name' => $safe_scalar( $provider_name ),
         'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
-        'provider_error_code' => sanitize_text_field( (string) ( $body['error']['code'] ?? $choice['error']['code'] ?? '' ) ),
-		'provider_message' => wpae_llm_provider_error_message( $body ),
-		'usage' => [
-			'input_tokens' => is_numeric( $input_tokens ) ? max( 0, (int) $input_tokens ) : null,
-			'output_tokens' => is_numeric( $output_tokens ) ? max( 0, (int) $output_tokens ) : null,
-			'total_tokens' => is_numeric( $total_tokens ) ? max( 0, (int) $total_tokens ) : null,
-			'reasoning_tokens' => is_numeric( $reasoning_tokens ) ? max( 0, (int) $reasoning_tokens ) : null,
-			'known' => is_numeric( $input_tokens ) || is_numeric( $output_tokens ) || is_numeric( $total_tokens ) || is_numeric( $reasoning_tokens ),
-		],
-	];
+        'has_error_envelope' => $has_error_envelope,
+        'error_code' => $safe_scalar( $error_code, 80 ),
+        'provider_error_code' => $safe_scalar( $provider_error_code, 120 ),
+        'provider_error_type' => $safe_scalar( $provider_error_type, 120 ),
+        'provider_error_param' => $safe_scalar( $provider_error_param, 180 ),
+        'provider_error_path' => $safe_scalar( $provider_error_path, 240 ),
+        'provider_message' => $provider_message !== '' ? $provider_message : null,
+        'usage' => [
+            'input_tokens' => is_numeric( $input_tokens ) ? max( 0, (int) $input_tokens ) : null,
+            'output_tokens' => is_numeric( $output_tokens ) ? max( 0, (int) $output_tokens ) : null,
+            'total_tokens' => is_numeric( $total_tokens ) ? max( 0, (int) $total_tokens ) : null,
+            'reasoning_tokens' => is_numeric( $reasoning_tokens ) ? max( 0, (int) $reasoning_tokens ) : null,
+            'known' => is_numeric( $input_tokens ) || is_numeric( $output_tokens ) || is_numeric( $total_tokens ) || is_numeric( $reasoning_tokens ),
+        ],
+    ];
 }
 
-function wpae_llm_diagnostic_text( $value, int $limit = 300 ): string {
-    $text = sanitize_text_field( (string) $value );
-    $redacted = preg_replace( '/Bearer\s+[^\s]+/i', 'Bearer [redacted]', $text );
-    $text = is_string( $redacted ) ? $redacted : $text;
-    $redacted = preg_replace( '/\bsk-[A-Za-z0-9._-]{8,}\b/i', '[redacted-key]', $text );
-    $text = is_string( $redacted ) ? $redacted : $text;
-    return substr( $text, 0, $limit );
+function wpae_llm_diagnostic_redact_request_echo( string $text, array $request_body ): string {
+    $needles = [];
+    $collect = static function ( $value ) use ( &$collect, &$needles ): void {
+        if ( is_string( $value ) ) {
+            if ( strlen( $value ) >= 20 ) {
+                $needles[] = $value;
+                foreach ( preg_split( '/(?<=[.!?;])\s+/u', $value ) ?: [] as $sentence ) {
+                    if ( strlen( $sentence ) >= 20 ) { $needles[] = $sentence; }
+                }
+            }
+            return;
+        }
+        if ( is_array( $value ) ) {
+            foreach ( $value as $nested ) { $collect( $nested ); }
+        }
+    };
+    foreach ( (array) ( $request_body['messages'] ?? [] ) as $message ) {
+        if ( ! is_array( $message ) || ( $message['role'] ?? '' ) !== 'user' ) { continue; }
+        $user_content = $message['content'] ?? null;
+        if ( is_string( $user_content ) ) {
+            $needles[] = $user_content;
+            $decoded = json_decode( $user_content, true );
+            if ( is_array( $decoded ) ) { $collect( $decoded ); }
+        } else {
+            $collect( $user_content );
+        }
+    }
+    usort( $needles, static fn( string $a, string $b ): int => strlen( $b ) <=> strlen( $a ) );
+    foreach ( array_unique( $needles ) as $needle ) {
+        if ( $needle !== '' ) { $text = str_replace( $needle, '[request text redacted]', $text ); }
+    }
+    return $text;
 }
 
-function wpae_llm_diagnostic_endpoint( string $url ): string {
+function wpae_llm_diagnostic_truncate_utf8( string $text, int $limit ): string {
+    $limit = max( 0, $limit );
+    if ( function_exists( 'wp_check_invalid_utf8' ) ) { $text = wp_check_invalid_utf8( $text, true ); }
+    if ( function_exists( 'mb_strcut' ) ) { return mb_strcut( $text, 0, $limit, 'UTF-8' ); }
+    $text = substr( $text, 0, $limit );
+    while ( $text !== '' && preg_match( '//u', $text ) !== 1 ) { $text = substr( $text, 0, -1 ); }
+    return $text;
+}
+
+function wpae_llm_diagnostic_text( $value, int $limit = 300, array $request_body = [] ): string {
+    if ( ! is_scalar( $value ) ) { return ''; }
+    $text = (string) $value;
+    if ( function_exists( 'wp_check_invalid_utf8' ) ) { $text = wp_check_invalid_utf8( $text, true ); }
+    $text = sanitize_text_field( $text );
+    $text = wpae_llm_diagnostic_redact_request_echo( $text, $request_body );
+    $redacted = preg_replace( '/\b(Bearer|Basic)\s+[^\s,;]+/iu', '$1 [redacted]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    $redacted = preg_replace( '/\b(?:sk-or-v1-|sk-|or-v1-)[A-Za-z0-9._-]{8,}\b/i', '[redacted-key]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    $redacted = preg_replace( '/\b(authorization|cookie|api[_ -]?key|token)\s*[:=]\s*[^\s,;]+/iu', '$1=[redacted]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    $redacted = preg_replace( '/https?:\/\/[^\s?]+\?[^\s]*/iu', '[URL query redacted]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    return wpae_llm_diagnostic_truncate_utf8( $text, $limit );
+}
+
+function wpae_llm_diagnostic_endpoint( string $url ): ?string {
     $parts = wp_parse_url( $url );
     if ( ! is_array( $parts ) || empty( $parts['host'] ) ) {
-        return 'invalid-endpoint';
+        return null;
     }
     $scheme = sanitize_key( (string) ( $parts['scheme'] ?? '' ) );
     $host = sanitize_text_field( (string) $parts['host'] );
@@ -498,11 +542,12 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
         'top_level_keys' => $top_level_keys,
     ];
     if ( is_array( $body ) ) {
-        $response_details = wpae_llm_response_diagnostics( $body );
+        $response_details = wpae_llm_response_diagnostics( $body, $request_body );
         $response['choices_count'] = (int) ( $response_details['choices_count'] ?? 0 );
         $response['finish_reason'] = is_string( $response_details['finish_reason'] ?? null ) ? $response_details['finish_reason'] : null;
-        $response['provider_error_code'] = wpae_llm_diagnostic_text( $response_details['provider_error_code'] ?? '' );
-        $response['provider_message'] = wpae_llm_diagnostic_text( $response_details['provider_message'] ?? '' );
+        $response['provider_error_code'] = isset( $response_details['provider_error_code'] ) ? wpae_llm_diagnostic_text( $response_details['provider_error_code'] ) : null;
+        $response['provider_message'] = $response_details['provider_message'] ?? null;
+        foreach ( [ 'has_error_envelope', 'error_code', 'provider_error_type', 'provider_error_param', 'provider_error_path', 'provider_name' ] as $diagnostic_key ) { $response[ $diagnostic_key ] = $response_details[ $diagnostic_key ] ?? null; }
     }
 
     $diagnostics = [
@@ -511,12 +556,18 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
         'provider' => sanitize_key( $provider ),
         'model' => wpae_llm_diagnostic_text( $model, 120 ),
         'endpoint' => wpae_llm_diagnostic_endpoint( $url ),
+        'api_endpoint' => wpae_llm_diagnostic_endpoint( $url ),
         'timeout_seconds' => max( 0, (int) ( $remote_args['timeout'] ?? 0 ) ),
         'request' => [
             'body_keys' => $body_keys,
             'message_count' => is_array( $request_body['messages'] ?? null ) ? count( $request_body['messages'] ) : 0,
             'has_response_format' => array_key_exists( 'response_format', $request_body ),
             'has_provider_parameters' => array_key_exists( 'provider', $request_body ),
+            'response_format' => is_array( $request_body['response_format'] ?? null ) ? sanitize_key( (string) ( $request_body['response_format']['type'] ?? '' ) ) : null,
+            'response_format_strict' => is_array( $request_body['response_format']['json_schema'] ?? null ) ? ( $request_body['response_format']['json_schema']['strict'] ?? null ) : null,
+            'require_parameters' => is_array( $request_body['provider'] ?? null ) ? ( $request_body['provider']['require_parameters'] ?? null ) : null,
+            'schema_sha256' => isset( $request_body['response_format']['json_schema']['schema'] ) ? hash( 'sha256', (string) wp_json_encode( $request_body['response_format']['json_schema']['schema'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) : null,
+            'schema_bytes' => isset( $request_body['response_format']['json_schema']['schema'] ) ? strlen( (string) wp_json_encode( $request_body['response_format']['json_schema']['schema'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) : null,
             'max_tokens' => isset( $request_body['max_tokens'] ) ? (int) $request_body['max_tokens'] : ( isset( $request_body['max_completion_tokens'] ) ? (int) $request_body['max_completion_tokens'] : 0 ),
             'headers' => [
                 'authorization_header_present' => array_key_exists( 'authorization', $headers ),
@@ -532,7 +583,7 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
     if ( is_wp_error( $transport_error ) ) {
         $diagnostics['transport'] = [
             'error_code' => sanitize_key( (string) $transport_error->get_error_code() ),
-            'error_message' => wpae_llm_diagnostic_text( $transport_error->get_error_message() ),
+            'error_message' => wpae_llm_diagnostic_text( $transport_error->get_error_message(), 300, $request_body ),
         ];
     }
     return $diagnostics;
@@ -581,7 +632,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 				$decoded = json_decode( (string) wp_remote_retrieve_body( $attempt_response ), true );
 				$response_body = is_array( $decoded ) ? $decoded : null;
 			}
-			$details = wpae_llm_response_diagnostics( is_array( $response_body ) ? $response_body : [] );
+			$details = wpae_llm_response_diagnostics( is_array( $response_body ) ? $response_body : [], $attempt_body );
 			$response_format = is_array( $attempt_body['response_format'] ?? null ) ? $attempt_body['response_format'] : [];
 			$schema = is_array( $response_format['json_schema']['schema'] ?? null ) ? $response_format['json_schema']['schema'] : null;
 			$encoded_schema = $schema === null ? '' : (string) wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -591,12 +642,24 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 				'requested_model' => wpae_llm_diagnostic_text( $attempt_body['model'] ?? '', 120 ),
 				'returned_model' => (string) ( $details['returned_model'] ?? '' ) !== '' ? $details['returned_model'] : null,
 				'endpoint' => wpae_llm_diagnostic_endpoint( $url ),
+				'api_endpoint' => wpae_llm_diagnostic_endpoint( $url ),
 				'endpoint_provider' => (string) ( $details['provider_name'] ?? '' ) !== '' ? $details['provider_name'] : null,
+				'provider_name' => $details['provider_name'] ?? null,
 				'response_format' => (string) ( $response_format['type'] ?? '' ) !== '' ? sanitize_key( (string) $response_format['type'] ) : null,
+				'response_format_strict' => array_key_exists( 'strict', (array) ( $response_format['json_schema'] ?? [] ) ) ? (bool) $response_format['json_schema']['strict'] : null,
+				'require_parameters' => array_key_exists( 'require_parameters', (array) ( $attempt_body['provider'] ?? [] ) ) ? (bool) $attempt_body['provider']['require_parameters'] : null,
 				'schema_sha256' => $encoded_schema !== '' ? hash( 'sha256', $encoded_schema ) : null,
 				'schema_bytes' => $encoded_schema !== '' ? strlen( $encoded_schema ) : null,
 				'http_status' => $status,
+				'error_code' => $details['error_code'] ?? null,
+				'provider_error_envelope' => ! empty( $details['has_error_envelope'] ),
+				'provider_error_code' => $details['provider_error_code'] ?? null,
+				'provider_error_type' => $details['provider_error_type'] ?? null,
+				'provider_message' => $details['provider_message'] ?? null,
+				'provider_error_param' => $details['provider_error_param'] ?? null,
+				'provider_error_path' => $details['provider_error_path'] ?? null,
 				'transport_error_code' => is_wp_error( $attempt_error ) ? sanitize_key( (string) $attempt_error->get_error_code() ) : null,
+				'transport_error_message' => is_wp_error( $attempt_error ) ? wpae_llm_diagnostic_text( $attempt_error->get_error_message(), 200, $attempt_body ) : null,
 				'finish_reason' => (string) ( $details['finish_reason'] ?? '' ) !== '' ? sanitize_key( (string) $details['finish_reason'] ) : null,
 				'token_limit' => is_numeric( $limit ) ? max( 0, (int) $limit ) : null,
 				'usage' => [ 'input_tokens' => $usage['input_tokens'] ?? null, 'output_tokens' => $usage['output_tokens'] ?? null, 'total_tokens' => $usage['total_tokens'] ?? null, 'reasoning_tokens' => $usage['reasoning_tokens'] ?? null ],
@@ -626,7 +689,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 		if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
             $initial_status = wp_remote_retrieve_response_code( $response );
             $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
-            $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
+            $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [], $request_body );
             $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
 			$attempt_meta['first_finish_reason'] = is_string( $initial_diagnostics['finish_reason'] ?? null ) ? $initial_diagnostics['finish_reason'] : null;
             $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );

@@ -124,6 +124,50 @@ $GLOBALS['http_calls'] = [];
 $invalid_request_schema = $run_services_route( $intake_hero_prompt, [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( [ 'error' => [ 'message' => 'Invalid JSON schema: unsupported keyword for this endpoint' ] ] ) ] ], [], 'intake-invalid-provider-schema' );
 $invalid_request_trace = (array) ( $invalid_request_schema['error']['data']['intake'] ?? [] );
 check( ! empty( $invalid_request_schema['error'] ) && $invalid_request_schema['calls'] === 1 && $invalid_request_schema['writes'] === 0 && ( $invalid_request_trace['refusal'] ?? '' ) === 'invalid_request_schema' && ( $invalid_request_trace['semantic_validation_result'] ?? '' ) === 'request_schema_rejected' && ( $invalid_request_trace['retry_count'] ?? -1 ) === 0 && ( $invalid_request_schema['http_calls'][0]['body']['response_format']['type'] ?? '' ) === 'json_schema' && ! empty( $invalid_request_schema['http_calls'][0]['body']['provider']['require_parameters'] ), 'Invalid request schema is a one-call no-write refusal with strict wire requirements intact' );
+
+$GLOBALS['http_calls'] = [];
+$typed_provider_error_body = [
+    'model' => 'returned/openrouter-route',
+    'provider' => 'AtlasCloud',
+    'error' => [
+        'code' => 400,
+        'message' => 'Provider returned error',
+        'metadata' => [
+            'error_type' => 'invalid_request',
+            'provider_code' => 'schema_keyword_not_supported',
+            'provider_name' => 'AtlasCloud',
+            'param' => 'response_format',
+            'path' => 'response_format.json_schema.schema.properties.generated.items.anyOf',
+            'raw' => wp_json_encode( [ 'error' => [ 'message' => 'Invalid JSON schema: unsupported keyword. Request: ' . $intake_hero_prompt . ' Authorization: Bearer fake-secret-value token=sk-or-v1-fake-secret-value', 'code' => 'schema_keyword_not_supported', 'type' => 'invalid_request', 'param' => 'response_format', 'path' => 'response_format.json_schema.schema.properties.generated.items.anyOf' ], 'private_blob' => 'RAW_UPSTREAM_SECRET_SHOULD_NOT_ESCAPE' ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+        ],
+    ],
+];
+$typed_provider_error = $run_services_route( $intake_hero_prompt, [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( $typed_provider_error_body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ] ], [], 'intake-provider-diagnostics-allowlist' );
+$typed_provider_trace = (array) ( $typed_provider_error['error']['data']['intake'] ?? [] );
+$typed_provider_attempt = (array) ( $typed_provider_trace['attempts'][0] ?? [] );
+check( ! empty( $typed_provider_error['error'] ) && $typed_provider_error['calls'] === 1 && $typed_provider_error['writes'] === 0 && $typed_provider_error['page_data'] === $legacy_page && ( $typed_provider_trace['failure_class'] ?? '' ) === 'request_schema_rejected' && ! empty( $typed_provider_trace['provider_error_envelope'] ) && ! empty( $typed_provider_trace['http_failure'] ) && ( $typed_provider_trace['provider_error_class'] ?? '' ) === 'request_schema_rejected', 'A typed provider rejection remains a single no-write refusal with separate envelope and request-schema classifications' );
+check( ( $typed_provider_attempt['http_status'] ?? null ) === 400 && ( $typed_provider_attempt['provider_error_code'] ?? '' ) === 'schema_keyword_not_supported' && ( $typed_provider_attempt['provider_error_type'] ?? '' ) === 'invalid_request' && ( $typed_provider_attempt['provider_error_param'] ?? '' ) === 'response_format' && strpos( (string) ( $typed_provider_attempt['provider_error_path'] ?? '' ), 'anyOf' ) !== false && ( $typed_provider_attempt['requested_model'] ?? '' ) === 'openrouter/free' && ( $typed_provider_attempt['returned_model'] ?? '' ) === 'returned/openrouter-route' && ( $typed_provider_attempt['provider_name'] ?? '' ) === 'AtlasCloud', 'Attempt diagnostics preserve safe provider error fields and distinguish disclosed model/provider from the API endpoint' );
+check( ( $typed_provider_attempt['response_format'] ?? '' ) === 'json_schema' && ! empty( $typed_provider_attempt['response_format_strict'] ) && ! empty( $typed_provider_attempt['require_parameters'] ) && strlen( (string) ( $typed_provider_attempt['schema_sha256'] ?? '' ) ) === 64 && (int) ( $typed_provider_attempt['schema_bytes'] ?? 0 ) > 0 && strpos( (string) ( $typed_provider_attempt['api_endpoint'] ?? '' ), 'openrouter.ai/api/v1/chat/completions' ) !== false && ( $typed_provider_trace['provider_calls'] ?? 0 ) === 1 && ( $typed_provider_trace['actual_http_calls'] ?? 0 ) === 1 && ( $typed_provider_trace['retry_count'] ?? -1 ) === 0 && ( $typed_provider_trace['write_count'] ?? -1 ) === 0, 'Diagnostics record strict routing, schema fingerprint/size, sanitized API endpoint, real calls, retry, and write count' );
+$typed_diagnostic_json = (string) wp_json_encode( $typed_provider_trace, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $typed_diagnostic_json, 'RAW_UPSTREAM_SECRET_SHOULD_NOT_ESCAPE' ) === false && strpos( $typed_diagnostic_json, $intake_hero_prompt ) === false && strpos( $typed_diagnostic_json, 'fake-secret-value' ) === false && json_decode( $typed_diagnostic_json, true ) !== null, 'Diagnostic serialization excludes raw upstream metadata and reflected request text while preserving valid JSON' );
+
+$GLOBALS['http_calls'] = [];
+$unknown_provider_error = $run_services_route( $intake_hero_prompt, [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( [ 'error' => [ 'code' => 400, 'metadata' => [ 'raw' => 'opaque raw body' ] ] ] ) ] ], [], 'intake-provider-diagnostics-unknown' );
+$unknown_provider_trace = (array) ( $unknown_provider_error['error']['data']['intake'] ?? [] );
+$unknown_provider_attempt = (array) ( $unknown_provider_trace['attempts'][0] ?? [] );
+check( ! empty( $unknown_provider_error['error'] ) && $unknown_provider_error['calls'] === 1 && $unknown_provider_error['writes'] === 0 && ( $unknown_provider_trace['provider_error_class'] ?? '' ) === 'UNKNOWN' && ( $unknown_provider_attempt['provider_error_code'] ?? null ) === null && ( $unknown_provider_attempt['provider_error_type'] ?? null ) === null && ( $unknown_provider_attempt['provider_message'] ?? null ) === null, 'Missing upstream details remain UNKNOWN/null rather than inferred from HTTP 400 or raw metadata' );
+
+$GLOBALS['http_calls'] = [];
+$http_200_error_envelope = $run_services_route( $intake_hero_prompt, [ [ 'response' => [ 'code' => 200 ], 'body' => wp_json_encode( [ 'error' => [ 'code' => 429, 'message' => 'provider rate limit exceeded', 'metadata' => [ 'error_type' => 'rate_limit_exceeded' ] ], 'model' => 'returned/failed-route' ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ] ], [], 'intake-http-200-error-envelope' );
+$http_200_error_trace = (array) ( $http_200_error_envelope['error']['data']['intake'] ?? [] );
+check( ! empty( $http_200_error_envelope['error'] ) && $http_200_error_envelope['calls'] === 1 && $http_200_error_envelope['writes'] === 0 && $http_200_error_envelope['write_attempts'] === 0 && $http_200_error_envelope['page_data'] === $legacy_page && ( $http_200_error_trace['refusal'] ?? '' ) === 'provider_error_envelope' && ( $http_200_error_trace['failure_class'] ?? '' ) === 'upstream_error_envelope' && ( $http_200_error_trace['retry_count'] ?? -1 ) === 0, 'An HTTP 200 upstream error envelope is not parsed as model copy, retried as syntax failure, or written' );
+
+$utf8_diagnostic_input = str_repeat( 'Ошибка схемы 😀 кириллица ', 80 );
+$utf8_diagnostic = wpae_llm_diagnostic_text( $utf8_diagnostic_input, 301 );
+$utf8_diagnostic_json = (string) wp_json_encode( [ 'message' => $utf8_diagnostic ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+$utf8_roundtrip = json_decode( $utf8_diagnostic_json, true );
+check( strlen( $utf8_diagnostic ) <= 301 && preg_match( '//u', $utf8_diagnostic ) === 1 && is_array( $utf8_roundtrip ) && ( $utf8_roundtrip['message'] ?? '' ) === $utf8_diagnostic && strpos( $utf8_diagnostic, '😀' ) !== false, 'Diagnostics truncate UTF-8 on codepoint boundaries and round-trip Russian, emoji, and over-limit messages safely' );
+
 $GLOBALS['http_calls'] = [];
 $GLOBALS['responses'] = [ [ 'response' => [ 'code' => 400 ], 'body' => wp_json_encode( [ 'error' => [ 'message' => 'No endpoints found' ] ] ) ], provider_reply( wp_json_encode( $intake_hero_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ];
 $intake_direct_retry = wpae_brief_ir_intake_extract( $intake_hero_prompt, wpae_brief_ir_parse( $intake_hero_prompt ), [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'base_url' => 'https://openrouter.ai/api/v1', 'api_key' => 'test-key' ] );
