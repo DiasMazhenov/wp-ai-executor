@@ -51,3 +51,5 @@ E exposed a separate Plan binding defect: the Brief parser treated a fact phrase
 - The five-acceptance gate remains open. The output is not a live visual acceptance of the new rule.
 
 The existing v321 and v325 reports remain historical and are not rewritten as v326 evidence.
+
+Publication follow-up (2026-10-09): runtime commit `223c9d03723eeb20ceb4b15f6b1d7721640a43bf` was independently confirmed at `origin/main` before the report commit. The documentation/evidence commit `f17e69b3fc9fdb6edb5b47a6a39f8ec219968a20` was accepted by `git push origin main`; the subsequent independent `git ls-remote origin refs/heads/main` could not resolve `github.com`, so this latest documentation SHA is not independently confirmed remotely. Push and remote verification remain separate statuses.
