@@ -27,18 +27,56 @@ test('scoped repair refuses a native document change during descriptor refresh',
  resolveDescriptor({ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'op',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available'}}})});
  await new Promise(r=>setImmediate(r));assert.equal(posts.length,1);assert.equal(posts[0].context.lifecycle_action,'describe_operation');assert.ok(errors.at(-1).includes('model изменилась'));assert.ok(!env.requestArgs);
 });
-test('durable Undo verifies fresh server document and visible Save before reload',async()=>{
+test('durable Undo compares the full document before a write and refreshed revision is authoritative',async()=>{
  const {env,posts,errors}=harness();
  const roundtripProof={post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,adapter_version:'wpae-native-roundtrip-v1',owned_payload_sha256:'owned',document_payload_sha256:'document',transformations:[],proof_sha256:'proof'};
  const op={status:'available',action:'undo_repair',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']};
  env.addTypedUndoControl(op);const button=env.messages.children[0].children[0];assert.equal(button.textContent,'Отменить последнее исправление');
- env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];button.listeners.click();assert.equal(posts.length,0);
- env.document.querySelectorAll=()=>[{disabled:true,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
- env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);if(p.context&&p.context.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available',native_roundtrip_recovery:roundtripProof}}})};return {ok:false,json:async()=>({ok:false,code:'typed_document_model_mismatch'})};};
- button.listeners.click();await new Promise(r=>setImmediate(r));assert.equal(posts[0].context.lifecycle_action,'describe_operation');assert.equal(posts[1].context.lifecycle_action,'check_document_model');assert.deepEqual(posts[1].context.accepted_native_roundtrip_proof,roundtripProof);assert.equal(posts.length,2);assert.ok(!env.reload);assert.ok(errors.at(-1).includes('mismatch'));
- posts.length=0;op.revision=4;env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);if(p.context&&p.context.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available',native_roundtrip_recovery:roundtripProof}}})};if(url==='/undo')return {ok:true,json:async()=>({ok:true})};return {ok:true,json:async()=>({ok:true})};};button.listeners.click();await new Promise(r=>setImmediate(r));
- assert.equal(posts[0].context.accepted_revision,4);assert.equal(posts[1].context.lifecycle_action,'check_document_model');assert.equal(posts[1].context.accepted_revision,9);assert.deepEqual(posts[1].context.accepted_native_roundtrip_proof,roundtripProof);assert.equal(posts[2].typed_undo,true);assert.equal(posts[2].revision,9);assert.equal(posts[2].accepted_contract_id,'contract');assert.deepEqual(posts[2].accepted_root_ids,['owned']);assert.deepEqual(posts[2].accepted_native_roundtrip_proof,roundtripProof);assert.equal(env.reload,true);
+ env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);if(p.context&&p.context.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available',native_roundtrip_recovery:roundtripProof}}})};return {ok:false,json:async()=>({ok:false,code:'typed_document_model_mismatch',write_count:0})};};
+ button.listeners.click();await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(p=>p.context.lifecycle_action),['describe_operation','check_document_model']);assert.equal(posts[1].context.accepted_revision,9);assert.deepEqual(posts[1].context.accepted_native_roundtrip_proof,roundtripProof);assert.equal(posts.length,2);assert.ok(!env.reload);assert.ok(errors.at(-1).includes('typed_document_model_mismatch'));
+ posts.length=0;op.revision=4;env.document.querySelectorAll=()=>[{disabled:true,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push({url,p});if(p.context&&p.context.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available',native_roundtrip_recovery:roundtripProof}}})};if(url==='/undo')return {ok:true,json:async()=>({ok:true,operation_id:'child',write_count:1,root_ids:[]})};return {ok:true,json:async()=>({ok:true,code:'typed_document_model_matches',write_count:0,operation_id:'child',root_ids:['owned']})};};button.listeners.click();await new Promise(r=>setImmediate(r));
+ assert.equal(posts[0].p.context.accepted_revision,4);assert.equal(posts[1].p.context.lifecycle_action,'check_document_model');assert.equal(posts[1].p.context.accepted_revision,9);assert.deepEqual(posts[1].p.context.accepted_native_roundtrip_proof,roundtripProof);assert.equal(posts[2].p.typed_undo,true);assert.equal(posts[2].p.revision,9);assert.equal(posts[2].p.accepted_contract_id,'contract');assert.deepEqual(posts[2].p.accepted_root_ids,['owned']);assert.deepEqual(posts[2].p.accepted_native_roundtrip_proof,roundtripProof);assert.equal(posts[2].url,'/undo');assert.equal(env.reload,true);
  const other=harness();other.env.addTypedUndoControl({status:'unavailable',reason:'historical_contract_unavailable'});assert.equal(other.env.messages.children[0].children[0].disabled,true);
+});
+
+test('dirty Publish permits only exact guarded Undo and synchronizes owned roots without losing neighbors',async()=>{
+ const {env,posts,errors}=harness();const neighbor={id:'neighbor',elType:'container',settings:{title:'User-owned'}},owned={id:'owned',elType:'container',settings:{title:'Owned'}};
+ env.editorModels=[owned,neighbor];env.getEditorModelChildren=m=>m&&m.id?[]:env.editorModels;env.getEditorContainerById=id=>id==='owned'?{id}:null;
+ env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ env.window.$e={run:async(command,{container})=>{assert.equal(command,'document/elements/delete');env.editorModels=env.editorModels.filter(m=>m.id!==container.id);}};
+ const op={status:'available',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']};
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push({url,p});if(p.context&&p.context.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available'}}})};if(url==='/undo')return {ok:true,json:async()=>({ok:true,operation_id:'child',write_count:1,root_ids:['neighbor']})};return {ok:true,json:async()=>({ok:true,code:'typed_document_model_matches',write_count:0,operation_id:'child',root_ids:['owned','neighbor']})};};
+ env.addTypedUndoControl(op);env.messages.children[0].children[0].listeners.click();await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(x=>x.url),['/chat','/chat','/undo']);assert.equal(posts[1].p.context.lifecycle_action,'check_document_model');assert.equal(posts[2].p.revision,9);assert.equal(posts[2].p.operation_identity,'identity');assert.deepEqual(posts[2].p.accepted_root_ids,['owned']);assert.deepEqual(env.editorModels,[neighbor],JSON.stringify(errors));assert.equal(env.reload,true,JSON.stringify(errors));
+});
+
+test('full-document mismatch or a model change after refresh prevents Undo',async()=>{
+ const {env,posts,errors}=harness();let resolveDocument;
+ env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ env.fetch=(url,o)=>{const p=JSON.parse(o.body);posts.push({url,p});if(p.context?.lifecycle_action==='describe_operation')return Promise.resolve({ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available'}}})});if(p.context?.lifecycle_action==='check_document_model')return new Promise(resolve=>{resolveDocument=resolve;});return Promise.resolve({ok:true,json:async()=>({ok:true})});};
+ env.addTypedUndoControl({status:'available',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']});env.messages.children[0].children[0].listeners.click();await new Promise(r=>setImmediate(r));
+ env.getEditorModelChildren=m=>m&&m.id?[]:[{id:'owned',elType:'container',settings:{user_edit:'preserve'}}];resolveDocument({ok:true,json:async()=>({ok:true,code:'typed_document_model_matches',write_count:0})});await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(x=>x.p.context.lifecycle_action),['describe_operation','check_document_model']);assert.ok(errors.at(-1).includes('модель изменилась после проверки'),JSON.stringify(errors));assert.ok(!env.reload);
+});
+
+test('refreshed descriptor cannot substitute accepted contract or owned roots',async()=>{
+ for(const mutate of [operation=>{operation.accepted_contract_id='foreign-contract';},operation=>{operation.root_ids=['foreign-root'];}]){
+  const {env,posts,errors}=harness();
+  env.fetch=async(url,o)=>{posts.push(JSON.parse(o.body));const c=JSON.parse(o.body).context||{};const operation={post_id:5214,operation_id:c.accepted_operation_id,operation_identity:c.accepted_identity,accepted_contract_id:c.accepted_contract_id,root_ids:c.accepted_root_ids,revision:9,eligibility:{status:'available'}};mutate(operation);return {ok:true,json:async()=>({ok:true,write_count:0,operation})};};
+  env.addTypedUndoControl({status:'available',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']});env.messages.children[0].children[0].listeners.click();await new Promise(r=>setImmediate(r));
+  assert.equal(posts.length,1);assert.ok(errors.at(-1).includes('scope'));assert.ok(!env.reload);
+ }
+});
+
+test('server revision change after the full read-only check is refused without retry',async()=>{
+ const {env,posts,errors}=harness();env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ env.getEditorContainerById=id=>({id});env.window.$e={run:async()=>{}};
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push({url,p});if(p.context?.lifecycle_action==='describe_operation')return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available'}}})};if(p.context?.lifecycle_action==='check_document_model')return {ok:true,json:async()=>({ok:true,code:'typed_document_model_matches',write_count:0})};return {ok:false,json:async()=>({ok:false,code:'typed_undo_scope_or_revision',write_count:0})};};
+ env.addTypedUndoControl({status:'available',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']});env.messages.children[0].children[0].listeners.click();await new Promise(r=>setImmediate(r));
+ assert.deepEqual(posts.map(x=>x.url),['/chat','/chat','/undo'],JSON.stringify(errors));assert.equal(posts.at(-1).p.revision,9);assert.ok(errors.at(-1).includes('typed_undo_scope_or_revision'));assert.ok(!env.reload);
 });
 
 test('Undo refuses native edit arriving during read-only descriptor refresh',async()=>{

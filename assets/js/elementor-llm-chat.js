@@ -1992,26 +1992,66 @@
         check.title = 'Read-only: проверяет текущую editor-модель, не изменяет страницу и operation';
         check.addEventListener('click', function () {
             if (requestInFlight) return;
-            if (!editorPublishIsClean()) { addMessage('assistant', 'Read-only check остановлен: редактор помечен как несохранённый. Запись не выполнялась.'); return; }
             if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') { addMessage('assistant', 'Read-only check недоступен: editor model не загружена. Запись не выполнялась.'); return; }
             check.disabled = true;
+            var wasClean = editorPublishIsClean();
             var before = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
             describeTypedOperation(descriptor).then(function () {
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-                if (!editorPublishIsClean() || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились после read-only descriptor; проверка прекращена.');
+                if ((wasClean && !editorPublishIsClean()) || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились после read-only descriptor; проверка прекращена.');
                 var context = typedOperationContext(descriptor, action);
                 if (action === 'check_model') context.editor_owned_model = before.filter(function (node) { return descriptor.root_ids.indexOf(String(node.id || '')) >= 0; });
                 else context.editor_document_model = before;
                 return typedLifecyclePost(context);
             }).then(function () {
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-                if (!editorPublishIsClean() || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились во время read-only check.');
+                if ((wasClean && !editorPublishIsClean()) || JSON.stringify(before) !== JSON.stringify(current)) throw new Error('Локальная модель или dirty-state изменились во время read-only check.');
                 addMessage('assistant', label + ': проверка завершена, write_count=0.');
             }).catch(function (error) {
                 addMessage('assistant', label + ': ' + error.message + ' Запись не выполнялась.');
             }).finally(function () { check.disabled = false; });
         });
         return check;
+    }
+    function syncTypedUndoRoots(operationRootIds, expectedRootIds, expectedEditorModel) {
+        var ownedIds = Array.isArray(operationRootIds) ? operationRootIds.map(String) : [];
+        var expectedIds = Array.isArray(expectedRootIds) ? expectedRootIds.map(String) : null;
+        if (!ownedIds.length || !expectedIds || !window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') {
+            return Promise.reject(new Error('Undo editor sync недоступен; локальная модель оставлена без изменений.'));
+        }
+        var container = window.elementor.getPreviewContainer();
+        var models = getEditorModelChildren(container);
+        var before = models.map(serializeTypedModel);
+        if (JSON.stringify(before) !== JSON.stringify(expectedEditorModel)) return Promise.reject(new Error('Undo editor sync остановлен: модель изменилась после server readback.'));
+        var expectedRemainingModel = before.filter(function (model) { return ownedIds.indexOf(String(model.id || '')) < 0; });
+        if (JSON.stringify(expectedRemainingModel.map(function (model) { return String(model.id || ''); })) !== JSON.stringify(expectedIds)) {
+            return Promise.reject(new Error('Undo editor sync остановлен: server root set не совпадает с точным удалением operation-owned roots.'));
+        }
+        var targets = ownedIds.map(function (id) {
+            var matches = models.filter(function (model) { return getEditorModelId(model) === id; });
+            if (matches.length !== 1) throw new Error('Undo editor sync остановлен: operation root ' + id + ' отсутствует или дублирован.');
+            var target = getEditorContainerById(id);
+            if (!target) throw new Error('Undo editor sync остановлен: native container ' + id + ' не найден.');
+            return target;
+        });
+        return targets.reduce(function (promise, target) {
+            return promise.then(function () { return Promise.resolve(window.$e.run('document/elements/delete', { container: target })); });
+        }, Promise.resolve()).then(function () {
+            var currentModels = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+            var remaining = currentModels.map(function (model) { return String(model.id || ''); });
+            if (JSON.stringify(remaining) !== JSON.stringify(expectedIds) || JSON.stringify(currentModels) !== JSON.stringify(expectedRemainingModel)) {
+                throw new Error('Undo editor sync изменил данные за пределами operation-owned roots; редактор оставлен без reload.');
+            }
+            return true;
+        });
+    }
+    function typedUndoRootsReady(operationRootIds) {
+        var ids = Array.isArray(operationRootIds) ? operationRootIds.map(String) : [];
+        if (!ids.length || new Set(ids).size !== ids.length || !window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return false;
+        var models = getEditorModelChildren(window.elementor.getPreviewContainer());
+        return ids.every(function (id) {
+            return models.filter(function (model) { return getEditorModelId(model) === id; }).length === 1 && Boolean(getEditorContainerById(id));
+        });
     }
     function addTypedUndoControl(descriptor) {
         var row = document.createElement('div'); row.className = 'wpae-llm-action-row';
@@ -2022,23 +2062,36 @@
         button.title = String(descriptor.status || '') + ': ' + String(descriptor.reason || descriptor.operation_id || '');
         button.addEventListener('click', function () {
             if (requestInFlight) return;
-            if (!editorPublishIsClean()) { addMessage('assistant', 'Undo остановлен: несохранённые изменения редактора сохранены локально.'); return; }
+            if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') { addMessage('assistant', 'Undo остановлен: editor model недоступна; write_count=0.'); return; }
             button.disabled = true;
+            var wasClean = editorPublishIsClean();
             var model = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
             refreshTypedOperationDescriptor(descriptor).then(function () {
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-                if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась во время проверки.');
+                if ((wasClean && !editorPublishIsClean()) || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась во время проверки.');
                 var context = typedOperationContext(descriptor, 'check_document_model'); context.editor_document_model = model;
                 return typedLifecyclePost(context);
-            }).then(function () {
+            }).then(function (documentCheck) {
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-                if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась после проверки native readback.');
+                if ((wasClean && !editorPublishIsClean()) || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась после проверки native readback.');
+                if (!documentCheck || documentCheck.write_count !== 0 || documentCheck.code !== 'typed_document_model_matches') throw new Error('Undo остановлен: полный native document check не подтвердил точную модель; write_count=0.');
+                // A dirty Publish control may reflect a WordPress autosave wrapper even after reload.
+                // The full-document server comparison above must still match before a write; when
+                // the UI remains dirty, sync only owned roots and verify every other editor node.
+                if (!wasClean && !typedUndoRootsReady(descriptor.root_ids)) throw new Error('Undo остановлен: невозможно безопасно синхронизировать только operation-owned roots; write_count=0.');
                 return fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
                 body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, accepted_contract_id: descriptor.accepted_contract_id, accepted_root_ids: descriptor.root_ids, revision: descriptor.revision, accepted_native_roundtrip_proof: descriptor.native_roundtrip_recovery || null })
             }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal');
                     var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-                    if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo выполнен на сервере, но reload остановлен: локальные изменения сохранены в редакторе.');
-                    window.location.reload(); });
+                    if (JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo выполнен на сервере, но editor model изменилась; текущие локальные данные сохранены.');
+                    if (body.operation_id !== descriptor.operation_id || Number(body.write_count) !== 1 || !Array.isArray(body.root_ids)) throw new Error('Undo выполнен, но readback scope не подтверждён; не повторяйте запись.');
+                    if (wasClean && editorPublishIsClean()) { window.location.reload(); return; }
+                    return syncTypedUndoRoots(descriptor.root_ids, body.root_ids, model).then(function () {
+                        // The full editor matched the saved document before the transaction,
+                        // server Undo verified readback, and this check proves the local model
+                        // differs only by removal of the owned roots. Reload cannot discard edits.
+                        window.location.reload();
+                    }); });
                 });
             }).catch(function (error) { button.disabled = false; addMessage('assistant', error.message); });
         });
@@ -2068,6 +2121,7 @@
                 }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });
             });
             row.appendChild(verify);
+            row.appendChild(addTypedReadOnlyCheckControl(descriptor, 'check_document_model', 'Сравнить полный editor/server документ'));
         } else if (descriptor.accepted_contract_id) {
             row.appendChild(addTypedReadOnlyCheckControl(descriptor, 'check_model', 'Проверить owned модель перед Save'));
             row.appendChild(addTypedReadOnlyCheckControl(descriptor, 'check_document_model', 'Сравнить полный editor/server документ'));
