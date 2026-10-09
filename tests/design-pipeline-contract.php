@@ -2434,6 +2434,99 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
  }
 }
 
+// Shared content-density policy resolves Team portrait frames and testimonial
+// identity geometry before freeze, then compiles those decisions into native Flex.
+$team_density_prompt = 'Блок команды. Надзаголовок «КОМАНДА». Заголовок «Люди и роли». '
+	. 'Участник 1 имя «Короткая биография». Участник 1 должность «Архитектор». Участник 1 биография «Короткий текст.» '
+	. 'Участник 2 имя «Средняя биография». Участник 2 должность «Дизайнер». Участник 2 биография «' . trim( str_repeat( 'Средняя биография сохраняет все детали. ', 7 ) ) . '» '
+	. 'Участник 3 имя «Длинная биография». Участник 3 должность «Руководитель». Участник 3 биография «' . trim( str_repeat( 'Длинная биография сохраняет все детали и естественно увеличивает высоту содержимого. ', 12 ) ) . '»';
+$team_density_brief = wpae_brief_ir_parse( $team_density_prompt );
+$team_density_brief['canonical_create'] = true;
+$team_density_assets = [];
+foreach ( (array) $team_density_brief['groups'] as $index => $group ) {
+	$team_density_assets[] = [ 'asset_id' => 'team-density-portrait-' . ( $index + 1 ), 'source_url' => 'https://example.test/team/portrait-' . ( $index + 1 ) . '.jpg', 'attachment_id' => null, 'role' => 'portrait', 'purpose' => 'portrait', 'group_id' => (string) $group['group_id'], 'alt' => 'Synthetic portrait ' . ( $index + 1 ), 'license' => 'Contract fixture', 'attribution' => 'Contract fixture', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'synthetic_test_fixture' ] ];
+}
+$team_density_brief['media_references'] = $team_density_assets;
+$team_density_brief['groups'] = wpae_brief_ir_entity_groups( 'team', $team_density_brief['content'], $team_density_assets );
+$team_density_plan = wpae_design_plan_from_brief( $team_density_brief, [ 'canonical_create' => true, 'composition_record' => 'team.editorial_rows', 'visual_profile' => 'editorial_light' ] );
+$team_density_validation = wpae_design_plan_validate( $team_density_plan, $team_density_brief );
+$team_density_metrics = (array) ( $team_density_plan['composition_decision']['selection_metrics']['entities_by_group'] ?? [] );
+$team_density_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $team_density_plan, $team_density_brief ), $team_density_brief, [], [ 'resolved_visual' => $team_density_plan['resolved_visual'] ] );
+$team_density_images = array_values( array_filter( $walk_elements( $team_density_native['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) );
+$team_density_frames_match = count( $team_density_images ) === 3;
+foreach ( $team_density_images as $image_index => $image_node ) {
+	$group_id = (string) ( $team_density_assets[$image_index]['group_id'] ?? '' );
+	$expected_frame = (array) ( $team_density_metrics[$group_id]['portrait_height'] ?? [] );
+	$settings = (array) ( $image_node['settings'] ?? [] );
+	foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+		$dimension = (array) ( $settings['height' . $suffix] ?? [] );
+		$team_density_frames_match = $team_density_frames_match && ( $dimension['unit'] ?? '' ) === 'rem' && (float) ( $dimension['size'] ?? 0 ) === (float) rtrim( (string) ( $expected_frame[$device] ?? '' ), 'rem' );
+	}
+	$team_density_frames_match = $team_density_frames_match && ( $settings['object-fit'] ?? '' ) === 'contain';
+}
+$team_density_values = array_values( $team_density_metrics );
+$check( $team_density_validation['ok'] && ( $team_density_plan['composition_decision']['record_id'] ?? '' ) === 'team.editorial_rows' && count( $team_density_metrics ) === 3 && ! isset( $team_density_plan['visual_policy']['content_metrics'] ), 'Team density is frozen once in selection evidence and the Plan stores only resolved layout decisions' );
+$team_density_frame_signatures = array_map( 'wp_json_encode', array_column( $team_density_values, 'portrait_height' ) );
+$check( ( $team_density_values[0]['density'] ?? '' ) === 'compact' && ( $team_density_values[1]['density'] ?? '' ) === 'balanced' && ( $team_density_values[2]['density'] ?? '' ) === 'spacious' && count( array_unique( $team_density_frame_signatures ) ) === 3, 'Short, medium and long bios produce distinct content-driven portrait frames without changing their copy' );
+$check( ( $team_density_plan['visual_policy']['entity_layout']['tracks']['content_density'] ?? '' ) === 'spacious' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '' ) === '2rem' && ! empty( $team_density_native['ok'] ) && $team_density_frames_match, 'Team Plan uses observed copy density to select row spacing and compiles per-entity responsive portrait frames with contain cropping' );
+
+$testimonial_density_prompt = 'Блок отзывов. Надзаголовок «ДЕМО». Заголовок «Короткие и подробные отзывы». '
+	. 'Отзыв 1 текст «Короткая цитата.» Отзыв 1 автор «Автор один». Отзыв 1 компания «Компания один». '
+	. 'Отзыв 2 текст «' . trim( str_repeat( 'Длинная цитата сохраняет связь с автором и проверяет естественный рост текста. ', 12 ) ) . '» Отзыв 2 автор «Автор два». Отзыв 2 компания «Компания два».';
+$testimonial_density_brief = wpae_brief_ir_parse( $testimonial_density_prompt );
+$testimonial_density_brief['canonical_create'] = true;
+$testimonial_avatar_assets = [];
+foreach ( (array) $testimonial_density_brief['groups'] as $index => $group ) {
+	$testimonial_avatar_assets[] = [ 'asset_id' => 'testimonial-density-avatar-' . ( $index + 1 ), 'source_url' => 'https://example.test/testimonials/avatar-' . ( $index + 1 ) . '.jpg', 'attachment_id' => null, 'role' => 'avatar', 'purpose' => 'avatar', 'group_id' => (string) $group['group_id'], 'alt' => 'Synthetic avatar ' . ( $index + 1 ), 'license' => 'Contract fixture', 'attribution' => 'Contract fixture', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'synthetic_test_fixture' ] ];
+}
+$testimonial_density_brief['media_references'] = $testimonial_avatar_assets;
+$testimonial_density_brief['groups'] = wpae_brief_ir_entity_groups( 'testimonials', $testimonial_density_brief['content'], $testimonial_avatar_assets );
+$testimonial_density_plan = wpae_design_plan_from_brief( $testimonial_density_brief, [ 'canonical_create' => true, 'composition_record' => 'testimonials.editorial_rows', 'visual_profile' => 'editorial_light' ] );
+$testimonial_density_validation = wpae_design_plan_validate( $testimonial_density_plan, $testimonial_density_brief );
+$testimonial_density_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $testimonial_density_plan, $testimonial_density_brief ), $testimonial_density_brief, [], [ 'resolved_visual' => $testimonial_density_plan['resolved_visual'] ] );
+$testimonial_density_nodes = $walk_elements( $testimonial_density_native['elementor_data'] ?? [] );
+$testimonial_density_collection = array_values( array_filter( $testimonial_density_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-testimonial_cards' && count( (array) ( $node['elements'] ?? [] ) ) === 2 ) )[0] ?? [];
+$testimonial_density_tracks = (array) ( $testimonial_density_plan['visual_policy']['entity_layout']['tracks'] ?? [] );
+$testimonial_identity_ok = count( (array) ( $testimonial_density_collection['elements'] ?? [] ) ) === 2;
+$testimonial_copy_owned = true;
+$testimonial_content_by_id = [];
+foreach ( (array) $testimonial_density_brief['content'] as $content_item ) { if ( is_array( $content_item ) ) { $testimonial_content_by_id[(string) ( $content_item['id'] ?? '' )] = $content_item; } }
+foreach ( (array) ( $testimonial_density_collection['elements'] ?? [] ) as $card_index => $card ) {
+	$body = (array) ( $card['elements'][0] ?? [] );
+	$identity = (array) ( $body['elements'][0] ?? [] );
+	$avatar = (array) ( $identity['elements'][0] ?? [] );
+	$metadata = (array) ( $identity['elements'][1] ?? [] );
+	$identity_settings = (array) ( $identity['settings'] ?? [] );
+	$metadata_settings = (array) ( $metadata['settings'] ?? [] );
+	$group = (array) ( $testimonial_density_brief['groups'][$card_index] ?? [] );
+	$card_json = (string) wp_json_encode( $card, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	$testimonial_identity_ok = $testimonial_identity_ok
+		&& ( $avatar['widgetType'] ?? '' ) === 'image'
+		&& ( $avatar['settings']['image']['url'] ?? '' ) === ( $testimonial_avatar_assets[$card_index]['source_url'] ?? '' )
+		&& ( $avatar['settings']['align'] ?? '' ) === 'left'
+		&& ( $avatar['settings']['align_tablet'] ?? '' ) === 'left'
+		&& ( $avatar['settings']['align_mobile'] ?? '' ) === 'left'
+		&& ( $identity_settings['flex_direction'] ?? '' ) === 'row'
+		&& ( $identity_settings['flex_direction_tablet'] ?? '' ) === 'row'
+		&& ( $identity_settings['flex_direction_mobile'] ?? '' ) === 'row'
+		&& ( $metadata_settings['flex_direction'] ?? '' ) === 'column'
+		&& ( $metadata_settings['flex_align_items'] ?? '' ) === 'flex-start'
+		&& count( (array) ( $metadata['elements'] ?? [] ) ) === 2;
+	foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+		$identity_gap = (array) ( $identity_settings['flex_gap' . $suffix] ?? [] );
+		$metadata_gap = (array) ( $metadata_settings['flex_gap' . $suffix] ?? [] );
+		$testimonial_identity_ok = $testimonial_identity_ok
+			&& ( $identity_gap['unit'] ?? '' ) === 'rem' && (float) ( $identity_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $testimonial_density_tracks['identity_gap'][$device] ?? '' ), 'rem' )
+			&& ( $metadata_gap['unit'] ?? '' ) === 'rem' && (float) ( $metadata_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $testimonial_density_tracks['identity_metadata_gap'][$device] ?? '' ), 'rem' );
+	}
+	foreach ( [ 'quote_ref', 'author_ref', 'meta_ref' ] as $ref_key ) {
+		$exact_text = (string) ( $testimonial_content_by_id[(string) ( $group[$ref_key] ?? '' )]['exact_text'] ?? '' );
+		if ( $exact_text !== '' ) { $testimonial_copy_owned = $testimonial_copy_owned && str_contains( $card_json, $exact_text ); }
+	}
+}
+$check( $testimonial_density_validation['ok'] && ! empty( $testimonial_density_native['ok'] ) && $testimonial_identity_ok && $testimonial_copy_owned, 'Testimonials preserve each quote/author/meta owner and compile a left-aligned avatar/metadata Flex row with responsive Plan-owned gaps' );
+$check( ( $testimonial_density_tracks['content_density'] ?? '' ) === 'spacious' && ( $testimonial_density_tracks['identity_presentation'] ?? '' ) === 'avatar_with_metadata' && ( $testimonial_density_tracks['gap'] ?? [] ) !== [], 'Testimonials Plan records content density and the compact identity presentation as accepted layout decisions' );
+
 // Saved live fixtures use the same deterministic grammar before any production write.
 foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact-request.txt','testimonials.grid'], ['E-services-exact-request.txt','services.photo_cards'], ['F-pricing-exact-request.txt','pricing.tiers'] ] as [$fixture,$record] ) {
  $prompt=file_get_contents(dirname(__DIR__).'/docs/audits/2026-10-05-m3-1-entities/'.$fixture);

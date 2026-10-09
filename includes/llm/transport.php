@@ -603,6 +603,34 @@ function wpae_llm_openrouter_typed_wire_schema( array $schema ): array {
     return $schema;
 }
 
+/** Describe typed JSON Schema routing without treating a successful response as a durable endpoint capability claim. */
+function wpae_llm_typed_intake_capability_policy( string $provider, string $model, array $request_body ): array {
+	$format = (array) ( $request_body['response_format'] ?? [] );
+	$json_schema = (array) ( $format['json_schema'] ?? [] );
+	$required_parameters = [ 'response_format.type=json_schema', 'response_format.json_schema.strict=true' ];
+	$router_gate = $provider === 'openrouter' && ! empty( $request_body['provider']['require_parameters'] );
+	$wire_complete = ( $format['type'] ?? '' ) === 'json_schema' && ! empty( $json_schema['strict'] ) && is_array( $json_schema['schema'] ?? null );
+	$state = $provider !== 'openrouter' || ! $router_gate || ! $wire_complete ? 'unsupported' : 'unknown';
+	return [
+		'policy' => 'typed_intake_json_schema_v1',
+		'state' => $state,
+		'provider' => sanitize_key( $provider ),
+		'requested_model' => sanitize_text_field( $model ),
+		'required_capabilities' => $required_parameters,
+		'response_format' => sanitize_key( (string) ( $format['type'] ?? '' ) ),
+		'strict_requested' => array_key_exists( 'strict', $json_schema ) ? (bool) $json_schema['strict'] : null,
+		'require_parameters' => array_key_exists( 'require_parameters', (array) ( $request_body['provider'] ?? [] ) ) ? (bool) $request_body['provider']['require_parameters'] : null,
+		'endpoint_selection' => 'router_selected_per_request',
+		'endpoint_strict_enforcement' => 'unknown',
+		'capability_source' => $provider === 'openrouter' ? 'OpenRouter per-endpoint structured-output metadata; runtime require_parameters filter' : 'unsupported_provider_adapter',
+		'capability_source_url' => $provider === 'openrouter' ? 'https://openrouter.ai/docs/guides/features/structured-outputs' : null,
+		'observed_at_utc' => gmdate( 'c' ),
+		'source_age_seconds' => null,
+		'admission' => $state === 'unsupported' ? 'refuse_before_provider_call' : 'require_parameter_routing_then_validate_response_locally',
+		'failure_policy' => 'no_json_mode_no_raw_tree_no_legacy_fallback',
+	];
+}
+
 function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider, array $policy = [] ): array {
 	$strict_typed_contract = ( $policy['contract'] ?? '' ) === 'typed_intake_strict';
     if ( $provider === 'openrouter' ) {
@@ -645,9 +673,15 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
         $canonical_schema = is_array( $request_body['response_format']['json_schema']['schema'] ?? null ) ? $request_body['response_format']['json_schema']['schema'] : null;
         $canonical_schema_json = $canonical_schema === null ? '' : (string) wp_json_encode( $canonical_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $canonical_schema_sha256 = $canonical_schema_json !== '' ? hash( 'sha256', $canonical_schema_json ) : null;
-        $canonical_schema_bytes = $canonical_schema_json !== '' ? strlen( $canonical_schema_json ) : null;
-        $wire_schema_adapter = $strict_typed_contract && $provider === 'openrouter' ? 'openrouter_typed_omit_uniqueItems_v1' : null;
+		$canonical_schema_bytes = $canonical_schema_json !== '' ? strlen( $canonical_schema_json ) : null;
+		$wire_schema_adapter = $strict_typed_contract && $provider === 'openrouter' ? 'openrouter_typed_omit_uniqueItems_v1' : null;
 		$request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider, $policy );
+		$capability_policy = $strict_typed_contract ? wpae_llm_typed_intake_capability_policy( $provider, (string) ( $request_body['model'] ?? '' ), $request_body ) : null;
+		if ( $strict_typed_contract && ( $capability_policy['state'] ?? '' ) === 'unsupported' ) {
+			$attempt_meta['capability_policy'] = $capability_policy;
+			return new WP_Error( 'wpae_llm_no_compatible_structured_endpoint', 'Для этого typed intake нет подтверждённого строгого JSON Schema маршрута.' );
+		}
+		if ( $strict_typed_contract ) { $attempt_meta['capability_policy'] = $capability_policy; }
 		$append_attempt = static function ( $attempt_response, $attempt_error, array $attempt_body, string $retry_reason = '' ) use ( &$attempt_meta, $url, $provider, $deadline, $strict_typed_contract, $canonical_schema_sha256, $canonical_schema_bytes, $wire_schema_adapter ): void {
 			$status = ! is_wp_error( $attempt_response ) && ! is_wp_error( $attempt_error ) ? wpae_llm_diagnostic_http_status( wp_remote_retrieve_response_code( $attempt_response ) ) : null;
 			$response_body = null;
@@ -661,6 +695,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 			$encoded_schema = $schema === null ? '' : (string) wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 			$limit = $attempt_body['max_tokens'] ?? ( $attempt_body['max_completion_tokens'] ?? null );
 			$usage = is_array( $details['usage'] ?? null ) ? $details['usage'] : [];
+			$capability_policy = $strict_typed_contract ? wpae_llm_typed_intake_capability_policy( $provider, (string) ( $attempt_body['model'] ?? '' ), $attempt_body ) : null;
 			$attempt_meta['attempts'][] = [
 				'requested_model' => wpae_llm_diagnostic_text( $attempt_body['model'] ?? '', 120 ),
 				'returned_model' => (string) ( $details['returned_model'] ?? '' ) !== '' ? $details['returned_model'] : null,
@@ -678,6 +713,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
 				'wire_schema_sha256' => $encoded_schema !== '' ? hash( 'sha256', $encoded_schema ) : null,
 				'wire_schema_bytes' => $encoded_schema !== '' ? strlen( $encoded_schema ) : null,
 				'wire_schema_adapter' => $wire_schema_adapter,
+				'capability_policy' => $capability_policy,
 				'http_status' => $status,
 				'error_code' => $details['error_code'] ?? null,
 				'provider_error_envelope' => ! empty( $details['has_error_envelope'] ),

@@ -493,24 +493,65 @@ function wpae_composition_family_compositions(): array {
 function wpae_composition_content_metrics( array $brief ): array {
 	$texts = [];
 	$content = [];
+	$family = sanitize_key( (string) ( $brief['intent']['archetype'] ?? '' ) );
+	$text_chars = static function ( string $text ): int { return function_exists( 'mb_strlen' ) ? mb_strlen( $text, 'UTF-8' ) : strlen( $text ); };
+	$text_words = static function ( string $text ): int { return preg_match_all( '/[\p{L}\p{N}]+/u', $text ) ?: 0; };
+	$estimated_lines = static function ( int $chars, int $line_capacity ): int { return $chars > 0 ? max( 1, (int) ceil( $chars / max( 1, $line_capacity ) ) ) : 0; };
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
 		if ( ! is_array( $item ) ) { continue; }
 		$id = (string) ( $item['id'] ?? '' );
 		$text = trim( (string) ( $item['exact_text'] ?? '' ) );
 		if ( $id !== '' ) { $content[ $id ] = $item; }
-		if ( $text !== '' ) { $texts[] = [ 'id' => $id, 'role' => (string) ( $item['role'] ?? '' ), 'group_id' => (string) ( $item['group_id'] ?? '' ), 'chars' => function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text ) ]; }
+		if ( $text !== '' ) { $texts[] = [ 'id' => $id, 'role' => (string) ( $item['role'] ?? '' ), 'group_id' => (string) ( $item['group_id'] ?? '' ), 'chars' => $text_chars( $text ), 'words' => $text_words( $text ) ]; }
 	}
 	$groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
 	if ( ! $groups && ( $brief['intent']['archetype'] ?? '' ) === 'services' && function_exists( 'wpae_brief_ir_service_groups' ) ) {
 		$groups = wpae_brief_ir_service_groups( (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) );
 	}
 	$group_lengths = [];
+	$entity_metrics = [];
 	foreach ( $groups as $group ) {
 		$ids = [];
 		foreach ( (array) ( $group['role_refs'] ?? [] ) as $refs ) { foreach ( (array) $refs as $ref ) { $ids[] = (string) $ref; } }
-		foreach ( [ 'title_ref', 'body_ref', 'name_ref', 'position_ref', 'bio_ref', 'quote_ref', 'author_ref', 'meta_ref', 'label_ref', 'text_ref', 'description_ref' ] as $key ) { if ( ! empty( $group[$key] ) ) { $ids[] = (string) $group[$key]; } }
+		foreach ( [ 'title_ref', 'body_ref', 'name_ref', 'position_ref', 'bio_ref', 'quote_ref', 'author_ref', 'meta_ref', 'label_ref', 'text_ref', 'description_ref', 'media_ref', 'portrait_ref', 'avatar_ref' ] as $key ) { if ( ! empty( $group[$key] ) ) { $ids[] = (string) $group[$key]; } }
 		$sum = 0;
-		foreach ( array_unique( $ids ) as $id ) { $item = $content[$id] ?? []; $text = trim( (string) ( $item['exact_text'] ?? '' ) ); $sum += function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text ); }
+		$role_chars = [];
+		$group_id = sanitize_key( (string) ( $group['group_id'] ?? $group['id'] ?? '' ) );
+		foreach ( array_unique( $ids ) as $id ) {
+			$item = $content[$id] ?? [];
+			$text = trim( (string) ( $item['exact_text'] ?? '' ) );
+			if ( $text === '' ) { continue; }
+			$chars = $text_chars( $text );
+			$sum += $chars;
+			$role = sanitize_key( (string) ( $item['role'] ?? '' ) );
+			if ( $role !== '' ) { $role_chars[$role] = max( (int) ( $role_chars[$role] ?? 0 ), $chars ); }
+			if ( $group_id === '' ) { $group_id = sanitize_key( (string) ( $item['group_id'] ?? '' ) ); }
+		}
+		if ( $group_id !== '' ) {
+			foreach ( $texts as $item ) {
+				if ( $item['group_id'] === $group_id && $item['role'] !== '' ) { $role_chars[sanitize_key( $item['role'] )] = max( (int) ( $role_chars[sanitize_key( $item['role'] )] ?? 0 ), (int) $item['chars'] ); }
+			}
+			$body_roles = $family === 'team' ? [ 'team_bio', 'bio', 'description', 'body', 'text' ] : ( $family === 'testimonials' ? [ 'testimonial_quote', 'quote', 'body', 'text' ] : [ 'service_body', 'feature_body', 'body', 'description', 'text' ] );
+			$title_roles = $family === 'team' ? [ 'team_name', 'name', 'team_position', 'position' ] : ( $family === 'testimonials' ? [ 'testimonial_author', 'author', 'testimonial_meta', 'meta' ] : [ 'title', 'service_title', 'feature_title', 'testimonial_author' ] );
+			$body_chars = 0; foreach ( $body_roles as $role ) { $body_chars = max( $body_chars, (int) ( $role_chars[$role] ?? 0 ) ); }
+			$title_chars = 0; foreach ( $title_roles as $role ) { $title_chars = max( $title_chars, (int) ( $role_chars[$role] ?? 0 ) ); }
+			if ( $body_chars === 0 ) { $body_chars = max( $role_chars ?: [ 0 ] ); }
+			$body_lines = $estimated_lines( $body_chars, 58 );
+			$title_lines = $estimated_lines( $title_chars, 28 );
+			$density = $body_lines <= 2 ? 'compact' : ( $body_lines <= 5 ? 'balanced' : 'spacious' );
+			$media_roles = [];
+			foreach ( (array) ( $brief['media_references'] ?? [] ) as $media ) {
+				if ( ! is_array( $media ) || sanitize_key( (string) ( $media['group_id'] ?? '' ) ) !== $group_id ) { continue; }
+				$media_role = sanitize_key( (string) ( $media['purpose'] ?? $media['role'] ?? '' ) );
+				if ( $media_role !== '' ) { $media_roles[] = $media_role; }
+			}
+			$entity = [ 'group_id' => $group_id, 'body_chars' => $body_chars, 'body_words' => 0, 'estimated_body_lines' => $body_lines, 'title_chars' => $title_chars, 'estimated_title_lines' => $title_lines, 'density' => $density, 'media_roles' => array_values( array_unique( $media_roles ) ) ];
+			foreach ( $texts as $item ) { if ( $item['group_id'] === $group_id && in_array( $item['role'], $body_roles, true ) ) { $entity['body_words'] = max( (int) $entity['body_words'], (int) $item['words'] ); } }
+			if ( $family === 'team' && in_array( 'portrait', $entity['media_roles'], true ) ) {
+				$entity['portrait_height'] = $body_lines <= 2 ? [ 'desktop' => '10rem', 'tablet' => '9rem', 'mobile' => '8rem' ] : ( $body_lines <= 5 ? [ 'desktop' => '12rem', 'tablet' => '11rem', 'mobile' => '10rem' ] : [ 'desktop' => '14rem', 'tablet' => '13rem', 'mobile' => '12rem' ] );
+			}
+			$entity_metrics[$group_id] = $entity;
+		}
 		$group_lengths[] = $sum;
 	}
 	if ( ! $group_lengths && $texts ) { $group_lengths = array_column( $texts, 'chars' ); }
@@ -536,6 +577,10 @@ function wpae_composition_content_metrics( array $brief ): array {
 	foreach ( $texts as $item ) { if ( $item['role'] === 'faq_question' ) { $faq_pairs++; } }
 	if ( ( $brief['intent']['archetype'] ?? '' ) === 'pricing' && $pricing ) { $groups = $pricing; $lengths = []; }
 	if ( ( $brief['intent']['archetype'] ?? '' ) === 'process' && function_exists( 'wpae_design_plan_process_content' ) ) { $groups = (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ); }
+	$entity_line_counts = array_values( array_filter( array_map( static fn( array $entity ): int => (int) ( $entity['estimated_body_lines'] ?? 0 ), $entity_metrics ) ) );
+	$entity_line_spread = $entity_line_counts ? max( $entity_line_counts ) - min( $entity_line_counts ) : 0;
+	$max_entity_lines = $entity_line_counts ? max( $entity_line_counts ) : 0;
+	$composition_density = $max_entity_lines >= 6 || $entity_line_spread >= 3 ? 'spacious' : ( $entity_line_counts && $max_entity_lines <= 2 && $entity_line_spread <= 1 ? 'compact' : 'balanced' );
 	return [
 		'item_count' => count( $groups ),
 		'max_title_chars' => $max_roles( [ 'title', 'service_title', 'feature_title', 'team_name', 'testimonial_author', 'pricing_label', 'faq_question', 'process_step_title' ] ),
@@ -546,6 +591,14 @@ function wpae_composition_content_metrics( array $brief ): array {
 		'cta_count' => count( $cta_refs ),
 		'max_cta_chars' => max( array_column( $cta_items, 'chars' ) ?: [ 0 ] ),
 		'faq_pair_count' => $faq_pairs,
+		'content_density_schema' => 'wpae-content-density-v1',
+		'content_density_source' => 'canonical_brief_exact_text',
+		'composition_density' => $composition_density,
+		'estimated_max_body_lines' => $max_entity_lines,
+		'estimated_body_line_spread' => $entity_line_spread,
+		'estimated_max_section_title_lines' => $estimated_lines( $max_roles( [ 'title', 'section_title', 'team_title', 'benefits_title', 'pricing_title', 'cta_title' ] ), 28 ),
+		'entities_by_group' => $entity_metrics,
+		'line_estimate' => [ 'basis' => 'canonical-character-count', 'body_chars_per_line' => 58, 'title_chars_per_line' => 28, 'render_evidence' => false ],
 	];
 }
 
@@ -737,6 +790,8 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 		elseif ( $explicit_composition !== null || $explicit_side !== null ) { $score += 5000; $reasons[] = 'honored_explicit_brief_constraint'; }
 		else {
 			$spread = (int) $metrics['entity_length_spread']; $body = (int) $metrics['max_body_chars']; $count = (int) $metrics['item_count'];
+			$estimated_body_lines = (int) ( $metrics['estimated_max_body_lines'] ?? 0 );
+			$estimated_line_spread = (int) ( $metrics['estimated_body_line_spread'] ?? 0 );
 			switch ( $family ) {
 				case 'benefits':
 					// The grid supports two through six items. Keep compact copy in the
@@ -752,11 +807,11 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'services.text_icon_list' ? 'long_or_uneven_copy_favors_list' : ( $want === 'services.photo_cards' ? 'required_media_favors_photo_cards' : 'balanced_copy_favors_icon_cards' ); }
 					break;
 				case 'testimonials':
-					$want = $body >= 240 || $spread >= 180 ? 'testimonials.editorial_rows' : 'testimonials.grid';
+					$want = $estimated_body_lines >= 4 || $estimated_line_spread >= 3 ? 'testimonials.editorial_rows' : 'testimonials.grid';
 					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'testimonials.editorial_rows' ? 'long_or_uneven_quotes_favor_editorial_rows' : 'compact_quotes_favor_cards'; }
 					break;
 				case 'team':
-					$want = $body >= 180 || $spread >= 140 ? 'team.editorial_rows' : 'team.grid';
+					$want = $estimated_body_lines >= 4 || $estimated_line_spread >= 3 ? 'team.editorial_rows' : 'team.grid';
 					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'team.editorial_rows' ? 'long_or_uneven_biographies_favor_rows' : 'compact_biographies_favor_cards'; }
 					break;
 				case 'cta':

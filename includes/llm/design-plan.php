@@ -405,21 +405,28 @@ function wpae_design_plan_media_reference_valid( array $media ): bool {
 }
 
 /** Resolve per-use image display settings into the frozen Plan; never mutate asset identity. */
-function wpae_design_plan_media_render_policy( array $media, string $family, array $record ): array {
+function wpae_design_plan_media_render_policy( array $media, string $family, array $record, array $content_metrics = [] ): array {
 	$policy = (array) ( $record['policy'] ?? [] );
 	$purpose = sanitize_key( (string) ( $media['purpose'] ?? '' ) );
+	$explicit_fields = array_fill_keys( array_map( 'sanitize_key', (array) ( $media['render']['explicit_fields'] ?? [] ) ), true );
 	$render = [ 'object_fit' => 'cover', 'focal_point' => null, 'focal_point_provenance' => [], 'shape' => 'rounded', 'radius_token' => 'radius.card' ];
 	if ( $purpose === 'avatar' ) {
 		$render['height'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
 		$render['width'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
 		$render['shape'] = 'circle'; $render['radius_token'] = null;
 	} elseif ( $purpose === 'portrait' ) {
-		// Give every Team portrait the same responsive native frame. A definite
-		// height makes Elementor's object-fit control effective; contain preserves
-		// the complete source without distorting it or letting one tall portrait
-		// set the height of every card in its row.
+		// Keep portraits complete, and for new editorial rows resolve a per-item
+		// frame from the owned biography length so a short bio is not held open by
+		// an oversized neighboring portrait. Historical Plans use this helper's
+		// old uniform dimensions because they do not carry content-density policy.
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 		$render['height'] = [ 'desktop' => '18rem', 'tablet' => '16rem', 'mobile' => '14rem' ];
+		$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
+		$entities_by_group = (array) ( $content_metrics['entities_by_group'] ?? [] );
+		$entity_metrics = (array) ( $entities_by_group[$group_id] ?? [] );
+		if ( ( $policy['entity_layout'] ?? '' ) === 'editorial_rows' && $family === 'team' && empty( $explicit_fields['height'] ) && is_array( $entity_metrics['portrait_height'] ?? null ) ) {
+			$render['height'] = $entity_metrics['portrait_height'];
+		}
 		$render['object_fit'] = 'contain';
 		$render['shape'] = 'rounded';
 	} elseif ( $family === 'portfolio' ) {
@@ -438,7 +445,6 @@ function wpae_design_plan_media_render_policy( array $media, string $family, arr
 		$render['height'] = [ 'desktop' => '16rem', 'tablet' => '14rem', 'mobile' => '12rem' ];
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 	}
-	$explicit_fields = array_fill_keys( array_map( 'sanitize_key', (array) ( $media['render']['explicit_fields'] ?? [] ) ), true );
 	$asset_focal = is_array( $media['focal_point'] ?? null ) ? $media['focal_point'] : null;
 	$render_focal = is_array( $media['render']['focal_point'] ?? null ) ? $media['render']['focal_point'] : null;
 	$asset_focal_source = sanitize_key( (string) ( $media['focal_point_provenance']['source'] ?? '' ) );
@@ -1185,8 +1191,9 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 }
 
 /** Resolve role geometry once, before the accepted Plan is hashed. Historical Plans lack this field. */
-function wpae_design_plan_visual_policy( array $brief, array $record, array $visual, string $composition, array $responsive, int $item_count = 0, string $services_recipe_id = '' ): array {
+function wpae_design_plan_visual_policy( array $brief, array $record, array $visual, string $composition, array $responsive, int $item_count = 0, string $services_recipe_id = '', array $content_metrics = [] ): array {
 	$values = array_replace( wpae_design_token_defaults(), (array) ( $visual['values'] ?? [] ) );
+	if ( ! $content_metrics && function_exists( 'wpae_composition_content_metrics' ) ) { $content_metrics = wpae_composition_content_metrics( $brief ); }
 	$record_policy = (array) ( $record['policy'] ?? [] );
 	$field_sources = [];
 	$pick = static function ( string $key, $fallback ) use ( $brief, $record_policy, $values, &$field_sources ) {
@@ -1282,17 +1289,35 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$entity_tracks = null;
 	if ( $entity_variant === 'editorial_rows' ) {
 		$identity_default = $family === 'team' ? 34 : ( $family === 'portfolio' ? 38 : 24 );
+		$density = sanitize_key( (string) ( $content_metrics['composition_density'] ?? 'balanced' ) );
+		$entity_gap_defaults = $density === 'compact'
+			? [ 'desktop' => '1.25rem', 'tablet' => '1rem', 'mobile' => '0.75rem' ]
+			: ( $density === 'spacious' ? [ 'desktop' => '2rem', 'tablet' => '1.5rem', 'mobile' => '1.125rem' ] : [ 'desktop' => '1.5rem', 'tablet' => '1.25rem', 'mobile' => '1rem' ] );
+		$identity_default_presentation = $family === 'testimonials' ? 'avatar_with_metadata' : 'portrait_then_labels';
 		$entity_tracks = [
 			'identity_percent' => (int) $pick( 'entity_identity_percent', $identity_default ),
 			'copy_percent' => (int) $pick( 'entity_copy_percent', 100 - $identity_default ),
 			'copy_measure' => $pick( 'entity_copy_measure', $family === 'team' ? '48rem' : ( $family === 'portfolio' ? '42rem' : '54rem' ) ),
 			'gap' => [
-				'desktop' => $pick( 'entity_gap_desktop', '2rem' ),
-				'tablet' => $pick( 'entity_gap_tablet', '1.5rem' ),
-				'mobile' => $pick( 'entity_gap_mobile', '1rem' ),
+				'desktop' => $pick( 'entity_gap_desktop', $entity_gap_defaults['desktop'] ),
+				'tablet' => $pick( 'entity_gap_tablet', $entity_gap_defaults['tablet'] ),
+				'mobile' => $pick( 'entity_gap_mobile', $entity_gap_defaults['mobile'] ),
 			],
 			'direction' => [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ],
 			'mobile_order' => [ 'identity', 'copy' ],
+			'identity_presentation' => $pick( 'entity_identity_presentation', $identity_default_presentation ),
+			'identity_gap' => [
+				'desktop' => $pick( 'entity_identity_gap_desktop', '0.75rem' ),
+				'tablet' => $pick( 'entity_identity_gap_tablet', '0.75rem' ),
+				'mobile' => $pick( 'entity_identity_gap_mobile', '0.75rem' ),
+			],
+			'identity_metadata_gap' => [
+				'desktop' => $pick( 'entity_identity_metadata_gap_desktop', '0.25rem' ),
+				'tablet' => $pick( 'entity_identity_metadata_gap_tablet', '0.25rem' ),
+				'mobile' => $pick( 'entity_identity_metadata_gap_mobile', '0.25rem' ),
+			],
+			'content_density' => in_array( $density, [ 'compact', 'balanced', 'spacious' ], true ) ? $density : 'balanced',
+			'content_density_source' => (string) ( $content_metrics['content_density_source'] ?? 'documented_default' ),
 		];
 	}
 	$surface_override = strtolower( trim( (string) wpae_design_plan_constraint_value( $brief, 'surface_color', '' ) ) );
@@ -1854,9 +1879,10 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	}
 	unset( $intro_child );
 	$resolved_visual = ! empty( $context['canonical_create'] ) ? wpae_design_plan_resolve_visual( $brief, $context ) : [];
-	$visual_policy = ! empty( $context['canonical_create'] ) ? wpae_design_plan_visual_policy( $brief, (array) ( $record_selection['record'] ?? [] ), $resolved_visual, $composition, [ 'tablet' => $record_selection['record']['policy']['tablet'] ?? ( $hero_has_media ? 'split_50_50' : 'stack' ), 'mobile' => $record_selection['record']['policy']['mobile'] ?? 'stack' ], max( array_merge( [ 0 ], array_map( static fn( array $child ): int => count( (array) ( $child['items'] ?? [] ) ), $section['children'] ) ) ) ) : null;
+	$content_metrics = function_exists( 'wpae_composition_content_metrics' ) ? wpae_composition_content_metrics( $brief ) : [];
+	$visual_policy = ! empty( $context['canonical_create'] ) ? wpae_design_plan_visual_policy( $brief, (array) ( $record_selection['record'] ?? [] ), $resolved_visual, $composition, [ 'tablet' => $record_selection['record']['policy']['tablet'] ?? ( $hero_has_media ? 'split_50_50' : 'stack' ), 'mobile' => $record_selection['record']['policy']['mobile'] ?? 'stack' ], max( array_merge( [ 0 ], array_map( static fn( array $child ): int => count( (array) ( $child['items'] ?? [] ) ), $section['children'] ) ) ), '', $content_metrics ) : null;
 	if ( ! empty( $context['canonical_create'] ) && is_array( $record_selection['record'] ?? null ) ) {
-		$media_references = array_map( static fn( array $media ): array => wpae_design_plan_media_render_policy( $media, $archetype, (array) $record_selection['record'] ), $media_references );
+		$media_references = array_map( static fn( array $media ): array => wpae_design_plan_media_render_policy( $media, $archetype, (array) $record_selection['record'], $content_metrics ), $media_references );
 	}
 	$plan = [
 		'composition_decision' => array_merge( [ 'identity' => $archetype . '.' . $composition, 'source' => $explicit_composition !== null ? 'explicit_brief' : 'documented_default', 'slot_bindings' => $section['children'] ], empty( $record_selection ) ? [] : [
@@ -2320,6 +2346,24 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 				$errors[] = 'cta_media_alt_required_' . $asset_id;
 			}
 		}
+		$policy_record = (array) ( $plan['composition_decision']['policy'] ?? [] );
+		$selection_metrics = (array) ( $plan['composition_decision']['selection_metrics'] ?? [] );
+		$entity_metrics = [];
+		if ( $brief && ( $selection_metrics['content_density_schema'] ?? '' ) === 'wpae-content-density-v1' && function_exists( 'wpae_composition_content_metrics' ) ) {
+			$expected_selection_metrics = wpae_composition_content_metrics( $brief );
+			foreach ( [ 'content_density_schema', 'content_density_source', 'composition_density', 'estimated_max_body_lines', 'estimated_body_line_spread', 'estimated_max_section_title_lines', 'entities_by_group', 'line_estimate' ] as $metric_key ) {
+				if ( ( $selection_metrics[$metric_key] ?? null ) !== ( $expected_selection_metrics[$metric_key] ?? null ) ) { $errors[] = 'composition_selection_metric_not_brief_derived:' . $metric_key; }
+			}
+			$entity_metrics = (array) ( $selection_metrics['entities_by_group'] ?? [] );
+		}
+		if ( ( $plan['archetype'] ?? '' ) === 'team' && ( $policy_record['entity_layout'] ?? '' ) === 'editorial_rows' && $entity_metrics ) {
+			foreach ( (array) ( $plan['media_references'] ?? [] ) as $media ) {
+				if ( ! is_array( $media ) || ( $media['purpose'] ?? '' ) !== 'portrait' ) { continue; }
+				$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
+				$expected_height = (array) ( $entity_metrics[$group_id]['portrait_height'] ?? [] );
+				if ( $expected_height && ( (array) ( $media['render']['height'] ?? [] ) !== $expected_height ) ) { $errors[] = 'team_portrait_frame_content_density_mismatch:' . $group_id; }
+			}
+		}
 	}
 	if ( ( $plan['archetype'] ?? '' ) === 'process' ) {
 		$process_children = [];
@@ -2496,6 +2540,16 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['copy_measure'] ?? null ) ) { $errors[] = 'visual_policy_entity_copy_measure_invalid'; }
 			if ( ( $entity_tracks['direction'] ?? [] ) !== [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ] || ( $entity_tracks['mobile_order'] ?? [] ) !== [ 'identity', 'copy' ] ) { $errors[] = 'visual_policy_entity_responsive_invalid'; }
 			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['gap'][$device] ?? null ) ) { $errors[] = 'visual_policy_entity_gap_invalid:' . $device; } }
+			if ( array_key_exists( 'identity_presentation', $entity_tracks ) ) {
+				$expected_identity_presentation = ( $plan['archetype'] ?? '' ) === 'testimonials' ? 'avatar_with_metadata' : 'portrait_then_labels';
+				if ( ( $entity_tracks['identity_presentation'] ?? '' ) !== $expected_identity_presentation ) { $errors[] = 'visual_policy_entity_identity_presentation_invalid'; }
+				if ( $expected_identity_presentation === 'avatar_with_metadata' ) {
+					foreach ( [ 'identity_gap', 'identity_metadata_gap' ] as $gap_key ) {
+						foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks[$gap_key][$device] ?? null ) ) { $errors[] = 'visual_policy_entity_' . $gap_key . '_invalid:' . $device; } }
+					}
+				}
+			}
+			if ( array_key_exists( 'content_density', $entity_tracks ) && ! in_array( $entity_tracks['content_density'], [ 'compact', 'balanced', 'spacious' ], true ) ) { $errors[] = 'visual_policy_entity_content_density_invalid'; }
 		}
 		if ( isset( $visual_policy['inline_value'] ) ) {
 			$inline = $visual_policy['inline_value'];

@@ -558,7 +558,14 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$identity = []; $copy = [];
 						foreach ( (array) ( $body['children'] ?? [] ) as $field ) { if ( in_array( $field['role'] ?? '', [ 'team_photo', 'team_name', 'team_position', 'testimonial_photo', 'testimonial_author', 'testimonial_meta' ], true ) ) { $identity[] = $field; } else { $copy[] = $field; } }
 						$body['children'] = [];
-						if ( $identity ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ); }
+						$identity_presentation = (string) ( $plan['visual_policy']['entity_layout']['tracks']['identity_presentation'] ?? '' );
+						if ( $identity && $identity_presentation === 'avatar_with_metadata' && ( $plan['archetype'] ?? '' ) === 'testimonials' ) {
+							$avatar_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => ( $field['role'] ?? '' ) === 'testimonial_photo' ) );
+							$metadata_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => in_array( $field['role'] ?? '', [ 'testimonial_author', 'testimonial_meta' ], true ) ) );
+							$identity_nodes = $avatar_nodes;
+							if ( $metadata_nodes ) { $identity_nodes[] = wpae_elementor_ir_node( $card['node_id'] . '-identity-metadata', 'entity_identity_metadata', 'container', [], [], $metadata_nodes, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ); }
+							if ( $identity_nodes ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity_nodes, [ 'min_width' => 0, 'max_width' => 100 ] ); }
+						} elseif ( $identity ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ); }
 						if ( $copy ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-copy', 'entity_copy', 'container', [], [], $copy ); }
 						$body['layout_constraints']['entity_layout'] = 'editorial_rows';
 						$card['children'][0] = $body;
@@ -618,7 +625,7 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	if ( $surface_v2 ) {
 		$node['visual_policy']['item_surface_scope'] = $is_surface_owner ? 'owner' : ( $inside_surface_owner ? 'interior' : 'outside' );
 	}
-	if ( ( ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) || $role === 'portfolio_project_row' ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
+	if ( ( ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) || $role === 'portfolio_project_row' || in_array( $role, [ 'entity_identity', 'entity_identity_metadata' ], true ) ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
 	if ( $role === 'testimonial_photo' ) { $node['visual_policy']['avatar_alignment'] = (string) ( $policy['cards']['avatar_alignment'] ?? 'start' ); }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
@@ -739,12 +746,28 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 	if ( ( $policy['entity_layout']['variant'] ?? '' ) === 'editorial_rows' ) {
 		$settings['_wpae_visual_policy_version'] = 1;
 		if ( isset( $policy['entity_layout']['tracks'] ) ) {
+			$tracks = (array) $policy['entity_layout']['tracks'];
+			$identity_presentation = (string) ( $tracks['identity_presentation'] ?? '' );
 			$settings['container_type'] = 'flex';
 			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
-				$gap = wpae_elementor_ir_dimension_control( $policy['entity_layout']['tracks']['gap'][$device], 'rem', 1 );
-				$settings['flex_direction' . $suffix] = $policy['entity_layout']['tracks']['direction'][$device];
+				$direction = (string) ( $tracks['direction'][$device] ?? 'row' );
+				$gap_value = $tracks['gap'][$device] ?? '1rem';
+				if ( $identity_presentation === 'avatar_with_metadata' && $role === 'entity_identity' ) {
+					$direction = 'row';
+					$gap_value = $tracks['identity_gap'][$device] ?? '0.75rem';
+				} elseif ( $identity_presentation === 'avatar_with_metadata' && $role === 'entity_identity_metadata' ) {
+					$direction = 'column';
+					$gap_value = $tracks['identity_metadata_gap'][$device] ?? '0.25rem';
+					$settings['_element_width' . $suffix] = 'initial';
+					$settings['_flex_size' . $suffix] = 'grow';
+					$settings['flex_grow' . $suffix] = $settings['_flex_grow' . $suffix] = 1;
+					$settings['flex_shrink' . $suffix] = $settings['_flex_shrink' . $suffix] = 1;
+				}
+				$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 1 );
+				$settings['flex_direction' . $suffix] = $direction;
 				$settings['flex_wrap' . $suffix] = 'nowrap';
 				$settings['flex_align_items' . $suffix] = 'flex-start';
+				$settings['flex_justify_content' . $suffix] = 'flex-start';
 				$settings['flex_gap' . $suffix] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
 			}
 		} else {
@@ -2104,6 +2127,15 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$avatar_alignment = (string) ( $node['visual_policy']['avatar_alignment'] ?? 'start' );
 			$settings['align'] = [ 'start' => 'left' ][ $avatar_alignment ] ?? 'left';
 			$settings['align_tablet'] = $settings['align_mobile'] = $settings['align'];
+			$identity_presentation = (string) ( $node['visual_policy']['entity_layout']['tracks']['identity_presentation'] ?? '' );
+			if ( $identity_presentation === 'avatar_with_metadata' ) {
+				foreach ( [ '' => '', '_tablet' => '_tablet', '_mobile' => '_mobile' ] as $suffix => $_unused ) {
+					$settings['_element_width' . $suffix] = 'initial';
+					$settings['_flex_size' . $suffix] = 'custom';
+					$settings['_flex_grow' . $suffix] = $settings['flex_grow' . $suffix] = 0;
+					$settings['_flex_shrink' . $suffix] = $settings['flex_shrink' . $suffix] = 0;
+				}
+			}
 		}
 		if ( $has_render_policy ) {
 			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
