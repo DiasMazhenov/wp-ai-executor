@@ -361,6 +361,47 @@ check( array_reduce( $intake_live_benefits_titles, static fn( bool $valid, array
 check( count( array_intersect( array_values( $intake_live_benefits_copy ), $intake_live_benefits_strings ) ) === 3 && ! array_filter( $intake_live_benefits_strings, static fn( string $text ): bool => str_contains( $text, 'images.unsplash.com' ) || str_contains( $text, '#contact' ) ), 'Benefits generated body text does not add media or CTA when forbidden' );
 check( str_contains( $intake_live_benefits_system_prompt, 'slot_id is a required schema field' ) && str_contains( $intake_live_benefits_system_prompt, 'sole exception to the prohibition on IDs' ) && str_contains( $intake_live_benefits_system_prompt, 'Elementor element IDs' ), 'Typed intake prompt explicitly distinguishes required Brief slot IDs from forbidden Elementor element IDs' );
 
+$intake_negative_fixture_path = __DIR__ . '/../docs/audits/2026-10-10-generated-copy-density-v328/fixtures/B-about-hybrid.txt';
+$intake_negative_prompt = trim( (string) file_get_contents( $intake_negative_fixture_path ) );
+$intake_negative_base = wpae_brief_ir_apply_canonical_intake_contract( wpae_brief_ir_parse( $intake_negative_prompt ), $intake_negative_prompt );
+$intake_negative_claims = (array) ( $intake_negative_base['copy_request']['prohibited_claims'] ?? [] );
+$intake_negative_slots = wpae_brief_ir_generated_copy_slots( $intake_negative_base, $intake_negative_prompt );
+$intake_negative_slot = (array) ( $intake_negative_slots[0] ?? [] );
+$intake_negative_fact_ids = [];
+foreach ( (array) ( $intake_negative_base['approved_facts'] ?? [] ) as $intake_negative_fact ) {
+	if ( is_array( $intake_negative_fact ) && wpae_brief_ir_source_record_allowed_for_slot( $intake_negative_fact, $intake_negative_slot ) ) { $intake_negative_fact_ids[] = (string) ( $intake_negative_fact['id'] ?? '' ); }
+}
+$intake_negative_payload = static function ( bool $mention_client ) use ( $intake_negative_slot, $intake_negative_fact_ids ): array {
+	$first = $mention_client ? 'На первой встрече команда обсуждает пожелания клиента и ограничения пространства.' : 'На первой встрече команда обсуждает пожелания и ограничения пространства.';
+	return [ 'family' => 'about', 'generated' => [ [ 'slot_id' => (string) ( $intake_negative_slot['slot_id'] ?? '' ), 'paragraphs' => [ $first, 'Перед разработкой чертежей согласуется планировка; дневной свет и повседневные сценарии учитываются в работе.' ], 'fact_refs' => $intake_negative_fact_ids ] ] ];
+};
+$intake_negative_retry = $run_services_route( $intake_negative_prompt, [
+	provider_reply( wp_json_encode( $intake_negative_payload( true ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+	provider_reply( wp_json_encode( $intake_negative_payload( false ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+], [], 'intake-live-about-explicit-prohibition-retry' );
+$intake_negative_trace = (array) ( $intake_negative_retry['response']['diagnostics']['intake'] ?? [] );
+$intake_negative_attempts = array_values( (array) ( $intake_negative_trace['attempts'] ?? [] ) );
+$intake_negative_pipeline = (array) ( $intake_negative_retry['response']['diagnostics']['design_pipeline'] ?? [] );
+$intake_negative_first_request = (array) ( $intake_negative_retry['http_calls'][0]['body'] ?? [] );
+$intake_negative_second_request = (array) ( $intake_negative_retry['http_calls'][1]['body'] ?? [] );
+$intake_negative_first_input = json_decode( (string) ( $intake_negative_first_request['messages'][1]['content'] ?? '' ), true );
+check( ( $intake_negative_base['copy_request']['schema'] ?? '' ) === 'wpae-copy-request-v2' && count( $intake_negative_claims ) === 6 && array_column( $intake_negative_claims, 'category' ) === [ 'numbers', 'deadlines', 'guarantees', 'clients', 'awards', 'completed_projects' ] && array_reduce( $intake_negative_claims, static fn( bool $valid, array $claim ): bool => $valid && substr( $intake_negative_prompt, (int) $claim['source_span'][0], (int) $claim['source_span'][1] - (int) $claim['source_span'][0] ) === (string) $claim['source_text'], true ), 'The exact About fixture freezes explicit negative copy categories with stable IDs and byte-accurate source spans' );
+$intake_negative_legacy_brief = $intake_negative_base;
+$intake_negative_legacy_brief['copy_request']['schema'] = 'wpae-copy-request-v1';
+unset( $intake_negative_legacy_brief['copy_request']['prohibited_claims'] );
+$intake_negative_legacy_reused = wpae_brief_ir_apply_canonical_intake_contract( $intake_negative_legacy_brief, $intake_negative_prompt );
+check( ( $intake_negative_legacy_reused['copy_request']['schema'] ?? '' ) === 'wpae-copy-request-v1' && ! array_key_exists( 'prohibited_claims', (array) ( $intake_negative_legacy_reused['copy_request'] ?? [] ) ), 'A matching historical copy-request v1 Brief is reused unchanged rather than retroactively rewritten' );
+check( wpae_brief_ir_prohibited_claim_violation( 'Обсуждаем пожелания клиента.', $intake_negative_claims ) === 'clients' && wpae_brief_ir_prohibited_claim_violation( 'Обсуждаем пожелания и ограничения пространства.', $intake_negative_claims ) === null, 'Explicitly prohibited category is rejected while grounded neutral wording remains available' );
+check( ! empty( $intake_negative_retry['response']['ok'] ) && $intake_negative_retry['calls'] === 2 && $intake_negative_retry['writes'] === 1 && $intake_negative_retry['write_attempts'] === 1 && ( $intake_negative_trace['retry_reason'] ?? '' ) === 'explicitly_prohibited_claim' && ( $intake_negative_attempts[0]['schema_validation_result'] ?? '' ) === 'semantic_provenance_failure' && ( $intake_negative_attempts[0]['write_count'] ?? -1 ) === 0 && ( $intake_negative_attempts[1]['schema_validation_result'] ?? '' ) === 'accepted' && ( $intake_negative_pipeline['brief']['hash'] ?? '' ) === ( $intake_negative_pipeline['plan']['brief_hash'] ?? '' ), 'Exact About fixture rejects the prohibited client mention before write, then accepts one same-contract correction retry: ' . wp_json_encode( [ 'error' => $intake_negative_retry['error'], 'trace' => $intake_negative_trace, 'attempts' => $intake_negative_attempts, 'brief_hash' => $intake_negative_pipeline['brief']['hash'] ?? null, 'plan_hash' => $intake_negative_pipeline['plan']['brief_hash'] ?? null ], JSON_UNESCAPED_UNICODE ) );
+$intake_negative_final_refusal = $run_services_route( $intake_negative_prompt, [
+	provider_reply( wp_json_encode( $intake_negative_payload( true ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+	provider_reply( wp_json_encode( $intake_negative_payload( true ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ),
+], [], 'intake-live-about-explicit-prohibition-final-refusal' );
+check( empty( $intake_negative_final_refusal['response']['ok'] ) && $intake_negative_final_refusal['calls'] === 2 && $intake_negative_final_refusal['writes'] === 0 && $intake_negative_final_refusal['write_attempts'] === 0 && $intake_negative_final_refusal['page_data'] === $legacy_page && ( $intake_negative_final_refusal['error']['code'] ?? '' ) === 'intake_generated_copy_rejected' && ( $intake_negative_final_refusal['error']['data']['intake']['refusal'] ?? '' ) === 'explicitly_prohibited_claim' && ( $intake_negative_final_refusal['error']['data']['intake']['prohibited_claim_category'] ?? '' ) === 'clients', 'A repeated prohibited claim after the one bounded retry remains a safe no-write refusal with a category-only diagnostic' );
+check( ( $intake_negative_first_request['messages'][1]['content'] ?? '' ) === ( $intake_negative_second_request['messages'][1]['content'] ?? null ) && ( $intake_negative_first_request['response_format'] ?? [] ) === ( $intake_negative_second_request['response_format'] ?? null ) && ( $intake_negative_first_request['provider'] ?? [] ) === ( $intake_negative_second_request['provider'] ?? null ) && count( (array) ( $intake_negative_first_input['explicit_prohibited_claims'] ?? [] ) ) === 6 && str_contains( (string) ( $intake_negative_second_request['messages'][0]['content'] ?? '' ), 'specific explicit negative copy instruction' ), 'The bounded correction keeps the exact Brief, prohibited source spans, strict schema, selected endpoint and routing parameters unchanged' );
+$intake_negative_strings = $intake_collect_strings( [ $intake_negative_retry['written'] ] );
+check( ! array_filter( $intake_negative_strings, static fn( string $text ): bool => preg_match( '/(?<![\p{L}\p{N}_])(?:клиент\p{L}*|заказчик\p{L}*|client\p{L}*|customer\p{L}*)(?![\p{L}\p{N}_])/iu', $text ) ) && in_array( 'Проект начинается с внимательного разговора', $intake_negative_strings, true ), 'Accepted About output preserves the exact authored heading and excludes the rejected claim from native output' );
+
 $intake_density_fixture_path = __DIR__ . '/../docs/audits/2026-10-10-generated-copy-density-v328/fixtures/C-benefits-grid-generated.txt';
 $intake_density_prompt = trim( (string) file_get_contents( $intake_density_fixture_path ) );
 $intake_density_base = wpae_brief_ir_parse( $intake_density_prompt );
