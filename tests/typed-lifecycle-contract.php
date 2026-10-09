@@ -275,6 +275,23 @@ check( wpae_native_roundtrip_project_accordion_tabs( $roundtrip_expected[0]['ele
 $non_accordion_expected = [[ 'id'=>'widget1', 'elType'=>'widget', 'widgetType'=>'text-editor', 'settings'=>[ 'tabs'=>[ [ 'tab_content'=>'Exact first answer.' ] ] ], 'elements'=>[] ]];
 $non_accordion_actual = $non_accordion_expected; $non_accordion_actual[0]['settings']['tabs'][0]['tab_content'] = '<p>Exact first answer.</p>';
 check( wpae_accepted_project_owned_model( $non_accordion_expected, $non_accordion_actual ) === null, 'Accordion serialization rule is not applied to another widget type' );
+$text_editor_expected = [[ 'id'=>'textroot1', 'elType'=>'container', 'settings'=>[], 'elements'=>[[ 'id'=>'textbody1', 'elType'=>'widget', 'widgetType'=>'text-editor', 'settings'=>[ 'editor'=>'Exact generated copy.' ], 'elements'=>[] ]] ]];
+$text_editor_actual = $text_editor_expected; $text_editor_actual[0]['elements'][0]['settings']['editor'] = '<p>Exact generated copy.</p>';
+$text_editor_changes = []; $text_editor_mismatch = null;
+$text_editor_projected = wpae_accepted_project_owned_model( $text_editor_expected, $text_editor_actual, null, $text_editor_mismatch, [ 'version'=>'wpae-native-roundtrip-v2' ], $text_editor_changes );
+check( $text_editor_projected === $text_editor_expected && count( $text_editor_changes ) === 1 && $text_editor_changes[0]['kind'] === 'legacy_single_paragraph_text_editor_serialization' && $text_editor_changes[0]['exact_copy_preserved'] === true && wpae_accepted_owned_fingerprint( $text_editor_projected ) === wpae_accepted_owned_fingerprint( $text_editor_expected ), 'Text Editor single-paragraph roundtrip projects to the exact frozen copy and fingerprint' );
+$text_editor_wrapped_expected = $text_editor_actual; $text_editor_wrapped_expected[0]['elements'][0]['settings']['editor'] = '<p>Exact generated copy.</p>';
+$text_editor_plain_actual = $text_editor_wrapped_expected; $text_editor_plain_actual[0]['elements'][0]['settings']['editor'] = 'Exact generated copy.';
+check( wpae_accepted_project_owned_model( $text_editor_wrapped_expected, $text_editor_plain_actual, null, $text_editor_mismatch, [ 'version'=>'wpae-native-roundtrip-v2' ] ) === $text_editor_wrapped_expected, 'Text Editor exact plain/paragraph serialization is accepted in the reverse direction' );
+$text_editor_tampers = [];
+$tampered = $text_editor_actual; $tampered[0]['elements'][0]['settings']['editor'] = '<p>Exact generated copy changed.</p>'; $text_editor_tampers['changed authored text'] = $tampered;
+$tampered = $text_editor_actual; $tampered[0]['elements'][0]['settings']['editor'] = '<p>Exact generated copy.</p><p>Added copy.</p>'; $text_editor_tampers['added paragraph'] = $tampered;
+$tampered = $text_editor_actual; $tampered[0]['elements'][0]['settings']['editor'] = '<p class="extra">Exact generated copy.</p>'; $text_editor_tampers['paragraph attributes'] = $tampered;
+$tampered = $text_editor_actual; $tampered[0]['elements'][0]['settings']['editor'] = '<p><strong>Exact generated copy.</strong></p>'; $text_editor_tampers['rich text markup'] = $tampered;
+foreach ( $text_editor_tampers as $label => $tampered ) { check( wpae_accepted_project_owned_model( $text_editor_expected, $tampered, null, $text_editor_mismatch, [ 'version'=>'wpae-native-roundtrip-v2' ] ) === null, 'Text Editor projection refuses ' . $label ); }
+check( wpae_accepted_project_owned_model( $text_editor_expected, $text_editor_actual ) === null, 'Text Editor paragraph projection requires a versioned native roundtrip contract' );
+$text_editor_unknown_mismatch = null;
+check( wpae_accepted_project_owned_model( $text_editor_expected, $text_editor_actual, null, $text_editor_unknown_mismatch, [ 'version'=>'wpae-native-roundtrip-unknown' ] ) === null, 'Unknown Text Editor adapter version fails closed' );
 $global_bg_expected = [[ 'id'=>'globalbg1', 'elType'=>'container', 'settings'=>[ 'background_color'=>'' ], 'elements'=>[] ]];
 $global_bg_actual = $global_bg_expected;
 $global_bg_actual[0]['settings']['__globals__'] = [ 'background_color'=>'globals/colors?id=surface' ];

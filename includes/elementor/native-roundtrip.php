@@ -2,11 +2,11 @@
 /** Versioned, control-aware native serialization rules shared by compiler and verifier. */
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_NATIVE_ROUNDTRIP_VERSION = 'wpae-native-roundtrip-v2';
+const WPAE_NATIVE_ROUNDTRIP_VERSION = 'wpae-native-roundtrip-v3';
 
-/** Existing v1 contracts remain readable while new freezes record v2. */
+/** Existing v1/v2 contracts remain readable while new freezes record v3. */
 function wpae_native_roundtrip_supported_version( $version ): bool {
-	return in_array( $version, [ null, 'wpae-native-roundtrip-v1', WPAE_NATIVE_ROUNDTRIP_VERSION ], true );
+	return in_array( $version, [ null, 'wpae-native-roundtrip-v1', 'wpae-native-roundtrip-v2', WPAE_NATIVE_ROUNDTRIP_VERSION ], true );
 }
 
 /** Resolve Elementor Global Color IDs from the active kit without guessing from labels. */
@@ -69,6 +69,33 @@ function wpae_native_roundtrip_plain_text_paragraph( $value ): ?string {
 	return '<p>' . $value . '</p>';
 }
 
+/**
+ * Project only Elementor's exact single-paragraph WYSIWYG serialization for a plain text-editor value.
+ * The accepted bytes remain the canonical value; any changed text, extra paragraph, or HTML is a conflict.
+ */
+function wpae_native_roundtrip_project_text_editor( $expected, $actual, ?array &$changes = null, ?string $adapter_version = null ): ?string {
+	$changes = [];
+	if ( ! is_string( $expected ) || ! is_string( $actual ) ) { return null; }
+	if ( $expected === $actual ) { return $actual; }
+	if ( ! is_string( $adapter_version ) || ! in_array( $adapter_version, [ 'wpae-native-roundtrip-v2', WPAE_NATIVE_ROUNDTRIP_VERSION ], true ) ) { return null; }
+	$actual_representation = null;
+	if ( wpae_native_roundtrip_plain_text_paragraph( $expected ) === $actual ) {
+		$actual_representation = $actual;
+	} elseif ( wpae_native_roundtrip_plain_text_paragraph( $actual ) === $expected ) {
+		$actual_representation = $actual;
+	} else {
+		return null;
+	}
+	$changes[] = [
+		'control' => 'editor',
+		'kind' => 'legacy_single_paragraph_text_editor_serialization',
+		'accepted_sha256' => hash( 'sha256', $expected ),
+		'native_sha256' => hash( 'sha256', $actual_representation ),
+		'exact_copy_preserved' => true,
+	];
+	return $expected;
+}
+
 /** Apply the native editor's confirmed plain-text WYSIWYG representation before freeze. */
 function wpae_native_roundtrip_compile_tree( array $elements ): array {
 	$decisions = [];
@@ -108,7 +135,7 @@ function wpae_native_roundtrip_compile_tree( array $elements ): array {
 			'authored_copy' => 'BriefIR exact_text retained; native representation freezes before accepted signature',
 			'repeater_order_and_count' => 'authored and strictly compared',
 			'repeater_ids' => 'technical-only; seven-character Elementor IDs may be projected to the accepted IDs',
-			'allowed_legacy_serialization' => 'one exact <p> wrapper around single-line plain Accordion answer text; a plan-bound Elementor global page-background reference',
+			'allowed_legacy_serialization' => 'one exact <p> wrapper around single-line plain Accordion answer or Text Editor content; a plan-bound Elementor global page-background reference',
 			'global_background_reference' => 'single background_color reference on an inherited container only when its active-kit value equals the frozen color.page_bg',
 			'registered_platform_defaults' => [],
 			'decisions' => $decisions,

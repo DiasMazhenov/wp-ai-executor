@@ -51,6 +51,17 @@ function wpae_accepted_control_equal( string $key, $a, $b, string $widget_type =
 		$projected_value = wpae_native_roundtrip_project_accordion_tabs( $a, $b, $mismatch, $roundtrip_changes, $adapter_version );
 		return $projected_value !== null;
 	}
+	if ( $widget_type === 'text-editor' && $key === 'editor' ) {
+		$projection_changes = [];
+		$projected_value = wpae_native_roundtrip_project_text_editor( $a, $b, $projection_changes, $adapter_version );
+		if ( $projected_value === null ) {
+			if ( $a !== $b ) { $mismatch = [ 'control' => 'editor', 'reason' => 'authored_control_changed' ]; }
+			return false;
+		}
+		if ( $roundtrip_changes === null ) { $roundtrip_changes = []; }
+		array_push( $roundtrip_changes, ...$projection_changes );
+		return true;
+	}
 	$projected_value = $b;
 	return hash_equals( wpae_llm_decision_signature( [ [ 'settings' => [ $key => $a ] ] ] ), wpae_llm_decision_signature( [ [ 'settings' => [ $key => $b ] ] ] ) );
 }
@@ -83,7 +94,7 @@ function wpae_accepted_project_owned_model( array $expected, array $current, ?ca
 			if ( array_key_exists( $key, $settings ) ) {
 				$normalized_value = null; $control_mismatch = null; $control_changes = null;
 				if ( ! wpae_accepted_control_equal( $key, $value, $settings[$key], (string) ( $node['widgetType'] ?? '' ), $normalized_value, $control_mismatch, $control_changes, $adapter_version ) ) { $mismatch = $control_mismatch ?: [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_changed' ]; return null; }
-				if ( $key === 'tabs' && ( $node['widgetType'] ?? '' ) === 'accordion' ) { $settings[$key] = $normalized_value; }
+				if ( ( $key === 'tabs' && ( $node['widgetType'] ?? '' ) === 'accordion' ) || ( $key === 'editor' && ( $node['widgetType'] ?? '' ) === 'text-editor' ) ) { $settings[$key] = $normalized_value; }
 				if ( $control_changes ) { foreach ( $control_changes as $change ) { $roundtrip_changes[] = array_merge( [ 'node_id' => (string) ( $node['id'] ?? '' ) ], $change ); } }
 				continue;
 			}
