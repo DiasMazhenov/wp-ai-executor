@@ -219,6 +219,38 @@ $intake_faq_strings = $intake_collect_strings( [ $intake_faq['written'] ] );
 check( array_column( $intake_faq_slots, 'slot_id' ) === [ 'faq_1_answer', 'faq_2_answer' ] && count( $intake_faq_facts ) === 2 && ! empty( $intake_faq['response']['ok'] ) && $intake_faq['calls'] === 1 && $intake_faq['writes'] === 1, 'FAQ ordinary chat preserves exact question groups and generates only the two authorized answers' );
 check( in_array( 'Какие сведения нужны для начала?', $intake_faq_strings, true ) && in_array( 'Как согласуем состав работ?', $intake_faq_strings, true ) && in_array( 'На первой встрече обсуждаем задачу и исходные материалы.', $intake_faq_strings, true ) && in_array( 'После изучения исходных материалов согласуем состав работ и смету.', $intake_faq_strings, true ) && in_array( 'accordion', $m1_widgets( [ $intake_faq['written'] ] ), true ), 'FAQ native readback keeps question/answer group bindings in a real Accordion' );
 
+$intake_faq_complete_prompt = "Создай блок FAQ в настоящем интерактивном Accordion. Сохрани вопросы точно и в этом порядке:\nВопрос 1: «С чего начинается работа?»\nВопрос 2: «Что подготовить к первой встрече?»\nФакты: На первой встрече команда обсуждает задачу, пожелания и исходные материалы; Можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей. Сформулируй ответы на основе только фактов, без новых сроков, обязательств, условий, цен или обещаний. Первый ответ сделай коротким, второй — полным и более длинным. Изображения и CTA не добавляй. Добавь блок к существующей странице.";
+$intake_faq_complete_probe = wpae_brief_ir_parse( $intake_faq_complete_prompt );
+$intake_faq_complete_facts = wpae_brief_ir_approved_facts( $intake_faq_complete_probe, $intake_faq_complete_prompt );
+$intake_faq_complete_fact_texts = array_column( $intake_faq_complete_facts, 'exact_text' );
+$intake_faq_complete_expected_facts = [
+	'На первой встрече команда обсуждает задачу, пожелания и исходные материалы',
+	'Можно показать планы помещения, фотографии и список пожеланий',
+	'Команда сверяет их с ограничениями пространства, затем согласует состав проектных работ и смету до начала разработки чертежей',
+];
+check( $intake_faq_complete_fact_texts === $intake_faq_complete_expected_facts && count( array_filter( $intake_faq_complete_facts, static fn( $fact ): bool => ( $fact['provenance']['label'] ?? '' ) === 'labeled_fact' && substr( $intake_faq_complete_prompt, $fact['source_span'][0], $fact['source_span'][1] - $fact['source_span'][0] ) === $fact['exact_text'] ) ) === 3, 'FAQ facts preserve complete same-line sentences, exact byte spans, and source order: ' . wp_json_encode( [ 'actual' => $intake_faq_complete_fact_texts, 'expected' => $intake_faq_complete_expected_facts, 'facts' => $intake_faq_complete_facts ], JSON_UNESCAPED_UNICODE ) );
+$intake_faq_complete_payload = [ 'family' => 'faq', 'generated' => [
+	[ 'slot_id' => 'faq_1_answer', 'text' => 'На первой встрече команда обсуждает задачу, пожелания и исходные материалы.', 'fact_refs' => [ 'fact_1' ] ],
+	[ 'slot_id' => 'faq_2_answer', 'text' => 'К встрече можно подготовить планы помещения, фотографии и список пожеланий. Команда сверит их с ограничениями пространства и согласует состав проектных работ и смету до чертежей.', 'fact_refs' => [ 'fact_2', 'fact_3' ] ],
+] ];
+$intake_faq_complete = $run_services_route( $intake_faq_complete_prompt, [ provider_reply( wp_json_encode( $intake_faq_complete_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-faq-complete-labeled-facts' );
+$intake_faq_complete_strings = $intake_collect_strings( [ $intake_faq_complete['written'] ] );
+$intake_faq_complete_trace = (array) ( $intake_faq_complete['response']['diagnostics']['intake'] ?? [] );
+check( ! empty( $intake_faq_complete['response']['ok'] ) && $intake_faq_complete['calls'] === 1 && $intake_faq_complete['writes'] === 1 && ( $intake_faq_complete_trace['generated_slot_count'] ?? 0 ) === 2 && ( $intake_faq_complete['response']['diagnostics']['provider_calls'] ?? 0 ) === 1, 'Production FAQ intake accepts distinct generated answers using all complete labeled facts in one provider call' );
+check( in_array( 'Что подготовить к первой встрече?', $intake_faq_complete_strings, true ) && in_array( 'К встрече можно подготовить планы помещения, фотографии и список пожеланий. Команда сверит их с ограничениями пространства и согласует состав проектных работ и смету до чертежей.', $intake_faq_complete_strings, true ) && in_array( 'accordion', $m1_widgets( [ $intake_faq_complete['written'] ] ), true ), 'Grounded FAQ copy retains full second answer and native Accordion structure' );
+$intake_faq_repeat_payload = [ 'family' => 'faq', 'generated' => [
+	[ 'slot_id' => 'faq_1_answer', 'text' => 'На первой встрече команда обсуждает задачу, пожелания и исходные материалы.', 'fact_refs' => [ 'fact_1' ] ],
+	[ 'slot_id' => 'faq_2_answer', 'text' => 'На первой встрече команда обсуждает задачу, пожелания и исходные материалы. Можно показать планы помещения, фотографии и список пожеланий. Команда сверяет их с ограничениями пространства и согласует состав проектных работ и смету до чертежей.', 'fact_refs' => [ 'fact_1', 'fact_2', 'fact_3' ] ],
+] ];
+$intake_faq_repeated_answer = $run_services_route( $intake_faq_complete_prompt, [ provider_reply( wp_json_encode( $intake_faq_repeat_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-faq-repeated-sibling-copy' );
+check( ! empty( $intake_faq_repeated_answer['error'] ) && $intake_faq_repeated_answer['calls'] === 1 && $intake_faq_repeated_answer['writes'] === 0 && $intake_faq_repeated_answer['write_attempts'] === 0 && $intake_faq_repeated_answer['page_data'] === $legacy_page && ( $intake_faq_repeated_answer['error']['data']['intake']['refusal'] ?? '' ) === 'repeated_sibling_sentence', 'Repeated long FAQ answer sentence is refused before transaction without a retry or partial root' );
+$intake_faq_missing_fact_payload = [ 'family' => 'faq', 'generated' => [
+	[ 'slot_id' => 'faq_1_answer', 'text' => 'На первой встрече команда обсуждает задачу, пожелания и исходные материалы.', 'fact_refs' => [ 'fact_1' ] ],
+	[ 'slot_id' => 'faq_2_answer', 'text' => 'К встрече можно подготовить планы помещения, фотографии и список пожеланий.', 'fact_refs' => [ 'fact_2' ] ],
+] ];
+$intake_faq_missing_fact = $run_services_route( $intake_faq_complete_prompt, [ provider_reply( wp_json_encode( $intake_faq_missing_fact_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-faq-unreferenced-labeled-fact' );
+check( ! empty( $intake_faq_missing_fact['error'] ) && $intake_faq_missing_fact['calls'] === 1 && $intake_faq_missing_fact['writes'] === 0 && $intake_faq_missing_fact['write_attempts'] === 0 && $intake_faq_missing_fact['page_data'] === $legacy_page && ( $intake_faq_missing_fact['error']['data']['intake']['refusal'] ?? '' ) === 'unreferenced_labeled_fact', 'An unused explicitly labeled FAQ fact refuses before transaction rather than silently disappearing' );
+
 $intake_bad_responses = [
 	'invented_number' => [ 'family' => 'hero', 'generated' => [ [ 'slot_id' => 'section_title', 'text' => 'Лучшие решения для 12 семей', 'fact_refs' => [] ], [ 'slot_id' => 'section_intro', 'text' => 'Проектируем дома и общественные пространства под задачи заказчика.', 'fact_refs' => [] ] ] ],
 	'invented_url' => [ 'family' => 'hero', 'generated' => [ [ 'slot_id' => 'section_title', 'text' => 'Пространство для жизни', 'fact_refs' => [] ], [ 'slot_id' => 'section_intro', 'text' => 'Обсудите задачу на https://invented.example.', 'fact_refs' => [] ] ] ],
