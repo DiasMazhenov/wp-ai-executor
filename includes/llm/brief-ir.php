@@ -44,13 +44,18 @@ function wpae_brief_ir_explicit_benefit_titles( string $source_text ): array {
 		$found_marker = preg_match( '/(?:заголовк\w*|titles?)\b(?:\s+и\s+(?:их\s+)?порядок)?\s+(?:сохрани|оставь|keep|preserve)\s+(?:точно|без\s+изменений|exactly?|unchanged)\s*:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE );
 	}
 	if ( ! $found_marker ) {
+		// Accept the natural imperative order used in requests such as
+		// "Сохрани эти заголовки точно и в указанном порядке:".
+		$found_marker = preg_match( '/(?:сохрани|оставь|используй|keep|preserve)\b(?=[^:\n]{0,120}\b(?:заголовк\w*|titles?)\b)[^:\n]{0,160}\b(?:точн\w*|без\s+изменений|exactly?|unchanged)\b[^:\n]{0,40}:\s*/iu', $source_text, $marker, PREG_OFFSET_CAPTURE );
+	}
+	if ( ! $found_marker ) {
 		return [];
 	}
 	$cursor = (int) $marker[0][1] + strlen( (string) $marker[0][0] );
 	$titles = [];
 	while ( $cursor < strlen( $source_text ) ) {
 		$tail = substr( $source_text, $cursor );
-		if ( ! preg_match( '/^\s*(?<quoted>«(?<angle>[^»\r\n]{1,200})»|“(?<curly>[^”\r\n]{1,200})”|"(?<plain>[^"\r\n]{1,200})")(?<separator>\s*[;,]\s*|\s*(?=[.!?\r\n]|$))/u', $tail, $item, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL ) ) {
+		if ( ! preg_match( '/^\s*(?:\d{1,2}[.)]\s*)?(?<quoted>«(?<angle>[^»\r\n]{1,200})»|“(?<curly>[^”\r\n]{1,200})”|"(?<plain>[^"\r\n]{1,200})")(?<separator>\s*[;,]\s*|\s*(?=[.!?\r\n]|$))/u', $tail, $item, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL ) ) {
 			break;
 		}
 		$text = '';
@@ -73,7 +78,8 @@ function wpae_brief_ir_explicit_benefit_titles( string $source_text ): array {
 		];
 		$cursor += strlen( (string) $item[0][0] );
 		$separator = (string) ( $item['separator'][0] ?? '' );
-		if ( ! preg_match( '/[;,]/u', $separator ) ) {
+		$next_numbered_title = preg_match( '/^\s*\d{1,2}[.)]\s*(?:«|“|")/u', substr( $source_text, $cursor ) );
+		if ( ! preg_match( '/[;,]/u', $separator ) && ! $next_numbered_title ) {
 			break;
 		}
 	}
