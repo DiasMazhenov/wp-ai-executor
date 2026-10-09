@@ -612,10 +612,13 @@ function wpae_brief_ir_generated_copy_slots( array $brief, string $source_text )
 		return false;
 	};
 	$slots = [];
-	$add = static function ( string $slot_id, string $role, string $instruction, string $group_id = '', bool $requires_fact = false, array $copy_limits = [] ) use ( &$slots, $source_text, $copy_request, $has_approved_facts, $family ): void {
+	$add = static function ( string $slot_id, string $role, string $instruction, string $group_id = '', bool $requires_fact = false, array $copy_limits = [] ) use ( &$slots, $source_text, $copy_request, $has_approved_facts, $family, $has_role ): void {
 		$role = sanitize_key( $role );
 		if ( $role === 'title' ) {
 			$instruction = trim( $instruction . ' Write an informative natural sentence-case heading that names the section subject or offering. When approved facts describe what the organization does, do not use only its size, type or a generic label as the entire headline. Keep the heading distinct from the body and do not invent claims.' );
+		}
+		if ( $role === 'body' && $has_role( 'title' ) ) {
+			$instruction = trim( $instruction . ' The exact section heading is already locked and will be displayed separately. Do not repeat, quote, paraphrase, or begin the body by restating that heading. Use each requested paragraph to add a distinct, directly supported detail.' );
 		}
 		$binding = [
 			'hero' => [ 'title' => 'section_intro.title', 'body' => 'section_intro.body' ],
