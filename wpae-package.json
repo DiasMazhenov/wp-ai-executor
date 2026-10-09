@@ -236,14 +236,14 @@
     "includes/guide/guide.php": "d4ea713d153a7434f82fbb28b13dc9b9b2d22b4b4f973208d51b8b7dc3bfd56d",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/brief-ir-structured.php": "71ed0e568ed7829846425ec9acb101a278bd357c6a969c0d30246fa477f57b96",
+    "includes/llm/brief-ir-structured.php": "3d26ab5d21c0ea7d3f3552f08b7797f35e20e691179741370d49949a22cd1f54",
     "includes/llm/brief-ir.php": "d9c8865eb691a1c0266b48a6f6bc5e7fbbfcf9e9a4820235e965af68079e6eb4",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
     "includes/llm/design-plan.php": "bcb4310075bd09dcd9edb61a991efab2fd64124c6ce2e21666fd7c20003389eb",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/llm.php": "78276cf9f37d5c685a3c6c36465b5ebc4672a9be602286d1dc10db87b48d40c3",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
-    "includes/llm/transport.php": "9c7b56f92269bf6b6f167a50d509326e804edfc9ccaf1012b7cd5899cfcf7103",
+    "includes/llm/transport.php": "223551c15ddda1ec8a3ad9d89650ba2b6e5b30263666dbe1980c4232a0139dcd",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "671ce421743365f43b7c733bf7d8beefe91ca2b9b78ff8cd06f63ddc0a56f7fd",
     "includes/rollback/rollback.php": "f67eb2d6029364e54ffeebd20cb73c8f42ffd10b6b1b87cd423b3d01cd73e816",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "254410c7854a64b4eb91a2099f47e148d0d7eec3e2a1e6a20bbac702a6e632d2"
+    "wp-ai-executor.php": "bdef8cfdccecf9d2bbaf236877848159d0fb49ecd306511e1e9d68999a493ca4"
   }
 }

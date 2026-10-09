@@ -394,19 +394,29 @@ function wpae_llm_response_diagnostics( $body ): array {
     $choice = is_array( $choices[0] ?? null ) ? $choices[0] : [];
     $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
     $content = $message['content'] ?? ( $choice['text'] ?? ( $body['output_text'] ?? null ) );
-    $finish_reason = sanitize_text_field( (string) ( $choice['finish_reason'] ?? '' ) );
+    $finish_reason = is_scalar( $choice['finish_reason'] ?? null ) && trim( (string) $choice['finish_reason'] ) !== ''
+        ? sanitize_key( (string) $choice['finish_reason'] )
+        : null;
 	$content_text = is_string( $content ) ? $content : '';
 	$usage = is_array( $body['usage'] ?? null ) ? $body['usage'] : [];
 	$input_tokens = $usage['prompt_tokens'] ?? ( $usage['input_tokens'] ?? null );
 	$output_tokens = $usage['completion_tokens'] ?? ( $usage['output_tokens'] ?? null );
 	$total_tokens = $usage['total_tokens'] ?? null;
+	$completion_details = is_array( $usage['completion_tokens_details'] ?? null ) ? $usage['completion_tokens_details'] : [];
+	$reasoning_tokens = $usage['reasoning_tokens'] ?? ( $completion_details['reasoning_tokens'] ?? null );
+	$returned_model = $body['model'] ?? null;
+	$provider_name = $body['provider_name'] ?? ( $body['provider'] ?? null );
+	if ( ! is_scalar( $returned_model ) ) { $returned_model = null; }
+	if ( ! is_scalar( $provider_name ) ) { $provider_name = null; }
 	return [
         'choices_count' => count( $choices ),
         'finish_reason' => $finish_reason,
         'content_length' => strlen( $content_text ),
-        'likely_truncated' => in_array( strtolower( $finish_reason ), [ 'length', 'max_tokens', 'token_limit' ], true ),
+        'likely_truncated' => in_array( strtolower( (string) $finish_reason ), [ 'length', 'max_tokens', 'token_limit' ], true ),
         'content_type' => is_array( $content ) ? 'array' : gettype( $content ),
         'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
+		'returned_model' => $returned_model !== null ? wpae_llm_diagnostic_text( $returned_model, 120 ) : '',
+		'provider_name' => $provider_name !== null ? wpae_llm_diagnostic_text( $provider_name, 120 ) : '',
         'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
         'provider_error_code' => sanitize_text_field( (string) ( $body['error']['code'] ?? $choice['error']['code'] ?? '' ) ),
 		'provider_message' => wpae_llm_provider_error_message( $body ),
@@ -414,7 +424,8 @@ function wpae_llm_response_diagnostics( $body ): array {
 			'input_tokens' => is_numeric( $input_tokens ) ? max( 0, (int) $input_tokens ) : null,
 			'output_tokens' => is_numeric( $output_tokens ) ? max( 0, (int) $output_tokens ) : null,
 			'total_tokens' => is_numeric( $total_tokens ) ? max( 0, (int) $total_tokens ) : null,
-			'known' => is_numeric( $input_tokens ) || is_numeric( $output_tokens ) || is_numeric( $total_tokens ),
+			'reasoning_tokens' => is_numeric( $reasoning_tokens ) ? max( 0, (int) $reasoning_tokens ) : null,
+			'known' => is_numeric( $input_tokens ) || is_numeric( $output_tokens ) || is_numeric( $total_tokens ) || is_numeric( $reasoning_tokens ),
 		],
 	];
 }
@@ -439,7 +450,15 @@ function wpae_llm_diagnostic_endpoint( string $url ): string {
     return ( $scheme !== '' ? $scheme . '://' : '' ) . $host . ( is_string( $path ) && $path !== '' ? $path : '/' );
 }
 
-function wpae_llm_build_request_diagnostics( string $url, array $remote_args, array $request_body, string $provider, string $model, string $attempt, bool $action_request, int $status = 0, $raw = '', $body = null, $transport_error = null ): array {
+function wpae_llm_diagnostic_http_status( $status ): ?int {
+    if ( ! is_numeric( $status ) ) {
+        return null;
+    }
+    $status = (int) $status;
+    return $status > 0 ? $status : null;
+}
+
+function wpae_llm_build_request_diagnostics( string $url, array $remote_args, array $request_body, string $provider, string $model, string $attempt, bool $action_request, ?int $status = null, $raw = '', $body = null, $transport_error = null ): array {
     $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
     $headers = [];
     foreach ( (array) ( $remote_args['headers'] ?? [] ) as $name => $value ) {
@@ -473,7 +492,7 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
     }
 
     $response = [
-        'http_status' => max( 0, $status ),
+        'http_status' => wpae_llm_diagnostic_http_status( $status ),
         'body_type' => $body_type,
         'body_bytes' => strlen( $raw ),
         'top_level_keys' => $top_level_keys,
@@ -481,7 +500,7 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
     if ( is_array( $body ) ) {
         $response_details = wpae_llm_response_diagnostics( $body );
         $response['choices_count'] = (int) ( $response_details['choices_count'] ?? 0 );
-        $response['finish_reason'] = wpae_llm_diagnostic_text( $response_details['finish_reason'] ?? '' );
+        $response['finish_reason'] = is_string( $response_details['finish_reason'] ?? null ) ? $response_details['finish_reason'] : null;
         $response['provider_error_code'] = wpae_llm_diagnostic_text( $response_details['provider_error_code'] ?? '' );
         $response['provider_message'] = wpae_llm_diagnostic_text( $response_details['provider_message'] ?? '' );
     }
@@ -519,7 +538,8 @@ function wpae_llm_build_request_diagnostics( string $url, array $remote_args, ar
     return $diagnostics;
 }
 
-function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider ): array {
+function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider, array $policy = [] ): array {
+	$strict_typed_contract = ( $policy['contract'] ?? '' ) === 'typed_intake_strict';
     if ( $provider === 'openrouter' ) {
         // OpenRouter's schema uses max_tokens; the OpenAI-only max_completion_tokens
         // field is outside that schema and is ignored or rejected by upstream routes.
@@ -536,32 +556,79 @@ function wpae_llm_prepare_provider_request_body( array $request_body, bool $acti
 
     // Gemini's OpenAI-compatible endpoint does not accept OpenAI-only action fields.
     unset( $request_body['max_completion_tokens'] );
-    if ( $action_request ) {
+    if ( $action_request && ! $strict_typed_contract ) {
         unset( $request_body['response_format'] );
     }
 
     return $request_body;
 }
 
-function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0, ?array &$attempt_meta = null ) {
+function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0, ?array &$attempt_meta = null, array $policy = [] ) {
     try {
-        $attempt_meta = [ 'provider_calls' => 0, 'retry_count' => 0, 'retry_reason' => '', 'first_finish_reason' => '', 'finish_reason' => '', 'http_status' => 0 ];
+		$attempt_meta = [ 'provider_calls' => 0, 'retry_count' => 0, 'retry_reason' => '', 'first_finish_reason' => '', 'finish_reason' => '', 'http_status' => null, 'attempts' => [] ];
+		$strict_typed_contract = ( $policy['contract'] ?? '' ) === 'typed_intake_strict';
         $deadline = $deadline > 0 ? $deadline : microtime( true ) + (float) ( $remote_args['timeout'] ?? 45 );
         $remaining = $deadline - microtime( true );
         if ( $remaining < 1 ) {
             return new WP_Error( 'wpae_llm_provider_budget_exhausted', 'Общее время ожидания LLM исчерпано.' );
         }
         $remote_args['timeout'] = min( (float) ( $remote_args['timeout'] ?? 45 ), $remaining );
-        $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
+		$request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider, $policy );
+		$append_attempt = static function ( $attempt_response, $attempt_error, array $attempt_body, string $retry_reason = '' ) use ( &$attempt_meta, $url, $provider, $deadline ): void {
+			$status = ! is_wp_error( $attempt_response ) && ! is_wp_error( $attempt_error ) ? wpae_llm_diagnostic_http_status( wp_remote_retrieve_response_code( $attempt_response ) ) : null;
+			$response_body = null;
+			if ( ! is_wp_error( $attempt_response ) && ! is_wp_error( $attempt_error ) ) {
+				$decoded = json_decode( (string) wp_remote_retrieve_body( $attempt_response ), true );
+				$response_body = is_array( $decoded ) ? $decoded : null;
+			}
+			$details = wpae_llm_response_diagnostics( is_array( $response_body ) ? $response_body : [] );
+			$response_format = is_array( $attempt_body['response_format'] ?? null ) ? $attempt_body['response_format'] : [];
+			$schema = is_array( $response_format['json_schema']['schema'] ?? null ) ? $response_format['json_schema']['schema'] : null;
+			$encoded_schema = $schema === null ? '' : (string) wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+			$limit = $attempt_body['max_tokens'] ?? ( $attempt_body['max_completion_tokens'] ?? null );
+			$usage = is_array( $details['usage'] ?? null ) ? $details['usage'] : [];
+			$attempt_meta['attempts'][] = [
+				'requested_model' => wpae_llm_diagnostic_text( $attempt_body['model'] ?? '', 120 ),
+				'returned_model' => (string) ( $details['returned_model'] ?? '' ) !== '' ? $details['returned_model'] : null,
+				'endpoint' => wpae_llm_diagnostic_endpoint( $url ),
+				'endpoint_provider' => (string) ( $details['provider_name'] ?? '' ) !== '' ? $details['provider_name'] : null,
+				'response_format' => (string) ( $response_format['type'] ?? '' ) !== '' ? sanitize_key( (string) $response_format['type'] ) : null,
+				'schema_sha256' => $encoded_schema !== '' ? hash( 'sha256', $encoded_schema ) : null,
+				'schema_bytes' => $encoded_schema !== '' ? strlen( $encoded_schema ) : null,
+				'http_status' => $status,
+				'transport_error_code' => is_wp_error( $attempt_error ) ? sanitize_key( (string) $attempt_error->get_error_code() ) : null,
+				'finish_reason' => (string) ( $details['finish_reason'] ?? '' ) !== '' ? sanitize_key( (string) $details['finish_reason'] ) : null,
+				'token_limit' => is_numeric( $limit ) ? max( 0, (int) $limit ) : null,
+				'usage' => [ 'input_tokens' => $usage['input_tokens'] ?? null, 'output_tokens' => $usage['output_tokens'] ?? null, 'total_tokens' => $usage['total_tokens'] ?? null, 'reasoning_tokens' => $usage['reasoning_tokens'] ?? null ],
+				'duration_ms' => isset( $attempt_meta['_attempt_started'] ) ? max( 0, (int) round( ( microtime( true ) - (float) $attempt_meta['_attempt_started'] ) * 1000 ) ) : null,
+				'remaining_budget_ms' => max( 0, (int) round( ( $deadline - microtime( true ) ) * 1000 ) ),
+				'retry_reason' => $retry_reason !== '' ? sanitize_key( $retry_reason ) : null,
+				'schema_validation_result' => 'not_checked',
+				'write_count' => 0,
+			];
+			unset( $attempt_meta['_attempt_started'] );
+		};
         $remote_args['body'] = wp_json_encode( $request_body );
+		$attempt_meta['_attempt_started'] = microtime( true );
         ++$attempt_meta['provider_calls'];
         $response = wp_safe_remote_post( $url, $remote_args );
-        if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
+		if ( $strict_typed_contract ) {
+			$append_attempt( $response, is_wp_error( $response ) ? $response : null, $request_body );
+			if ( ! is_wp_error( $response ) ) {
+				$final_status = (int) wp_remote_retrieve_response_code( $response );
+				$final_body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+				$final_diagnostics = wpae_llm_response_diagnostics( is_array( $final_body ) ? $final_body : [] );
+				$attempt_meta['finish_reason'] = is_string( $final_diagnostics['finish_reason'] ?? null ) ? $final_diagnostics['finish_reason'] : null;
+				$attempt_meta['http_status'] = wpae_llm_diagnostic_http_status( $final_status );
+			}
+			return $response;
+		}
+		if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
             $initial_status = wp_remote_retrieve_response_code( $response );
             $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
             $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
             $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
-            $attempt_meta['first_finish_reason'] = sanitize_key( (string) ( $initial_diagnostics['finish_reason'] ?? '' ) );
+			$attempt_meta['first_finish_reason'] = is_string( $initial_diagnostics['finish_reason'] ?? null ) ? $initial_diagnostics['finish_reason'] : null;
             $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
             $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && in_array( strtolower( (string) ( $initial_diagnostics['finish_reason'] ?? '' ) ), [ 'error', 'length', 'max_tokens', 'token_limit' ], true );
             if ( $structured_route_rejected || $structured_response_failed ) {
@@ -573,18 +640,23 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
                 ++$attempt_meta['retry_count'];
                 $attempt_meta['retry_reason'] = $structured_route_rejected ? 'structured_response_format_rejected' : 'structured_response_finish_reason_' . sanitize_key( (string) ( $initial_diagnostics['finish_reason'] ?? 'failed' ) );
                 $remote_args['timeout'] = min( (float) $remote_args['timeout'], $remaining );
+                $append_attempt( $response, null, $request_body, $attempt_meta['retry_reason'] );
                 unset( $request_body['response_format'], $request_body['provider'] );
                 $remote_args['body'] = wp_json_encode( $request_body );
+				$attempt_meta['_attempt_started'] = microtime( true );
                 $response = wp_safe_remote_post( $url, $remote_args );
             }
             if ( ! is_wp_error( $response ) ) {
                 $final_status = (int) wp_remote_retrieve_response_code( $response );
                 $final_body = json_decode( wp_remote_retrieve_body( $response ), true );
                 $final_diagnostics = wpae_llm_response_diagnostics( is_array( $final_body ) ? $final_body : [] );
-                $attempt_meta['finish_reason'] = sanitize_key( (string) ( $final_diagnostics['finish_reason'] ?? '' ) );
-                $attempt_meta['http_status'] = $final_status;
+				$attempt_meta['finish_reason'] = is_string( $final_diagnostics['finish_reason'] ?? null ) ? $final_diagnostics['finish_reason'] : null;
+				$attempt_meta['http_status'] = wpae_llm_diagnostic_http_status( $final_status );
             }
         }
+		if ( empty( $attempt_meta['attempts'] ) || count( $attempt_meta['attempts'] ) < (int) $attempt_meta['provider_calls'] ) {
+			$append_attempt( $response, is_wp_error( $response ) ? $response : null, $request_body, (string) ( $attempt_meta['retry_reason'] ?? '' ) );
+		}
         return $response;
     } catch ( Throwable $error ) {
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
