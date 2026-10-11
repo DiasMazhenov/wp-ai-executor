@@ -118,4 +118,5 @@ Public mobile CSS viewport and PNG are 390×844. Greeting remains open in this c
 - F Team and G Testimonials were not started; the requested order places them after the mandatory A–E gate.
 - Final editor, saved page and public root set: `[]`; existing user content was preserved.
 - The screenshot manifest now includes the initial D greeting-overlap frame and both unique E first-result failure frames. Nine PNG paths were signature/hash-checked earlier; all current manifest PNG paths and exact fixture hashes were rechecked, and 22 `.jpg`/`.raw` conversion intermediates were removed only where a verified same-stem PNG existed.
+- Interim documentation/evidence checkpoint `d7138706940dc8a556a30187de9166459e4fd947` was pushed to `origin/main`; independent `git ls-remote origin refs/heads/main` returned the same SHA. It records the open 3/5 matrix, not task completion.
 - Runtime unchanged; no version bump, package hash change, new install or runtime test run in this continuation. Prior v340 checks remain the last source-check evidence. This is an open checkpoint; its documentation/evidence publication status is reported separately from source/install/live status.
