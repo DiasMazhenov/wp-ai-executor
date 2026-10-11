@@ -1147,6 +1147,35 @@ function wpae_brief_ir_intake_validation_result( array $result ): string {
 	return in_array( $refusal, $semantic_refusals, true ) ? 'semantic_provenance_failure' : 'rejected';
 }
 
+/** Expose bounded validator identifiers without persisting generated copy or source text. */
+function wpae_brief_ir_intake_safe_validation_diagnostics( array $result ): array {
+	$telemetry = (array) ( $result['telemetry'] ?? [] );
+	$diagnostics = [];
+	$identifier_fields = [
+		'refusal' => 'validation_refusal',
+		'slot_id' => 'validation_slot_id',
+		'prohibited_claim_category' => 'validation_prohibited_claim_category',
+		'missing_slot' => 'validation_missing_slot',
+	];
+	foreach ( $identifier_fields as $source_key => $diagnostic_key ) {
+		$value = sanitize_key( (string) ( $telemetry[ $source_key ] ?? '' ) );
+		if ( $value !== '' ) { $diagnostics[ $diagnostic_key ] = substr( $value, 0, 80 ); }
+	}
+	if ( is_numeric( $telemetry['expected_paragraph_count'] ?? null ) ) {
+		$diagnostics['validation_expected_paragraph_count'] = max( 0, min( 20, (int) $telemetry['expected_paragraph_count'] ) );
+	}
+	if ( is_array( $telemetry['missing_fact_ids'] ?? null ) ) {
+		$fact_ids = [];
+		foreach ( array_slice( $telemetry['missing_fact_ids'], 0, 20 ) as $fact_id ) {
+			if ( ! is_scalar( $fact_id ) ) { continue; }
+			$fact_id = sanitize_key( (string) $fact_id );
+			if ( $fact_id !== '' ) { $fact_ids[] = substr( $fact_id, 0, 80 ); }
+		}
+		$diagnostics['validation_missing_fact_ids'] = array_values( array_unique( $fact_ids ) );
+	}
+	return $diagnostics;
+}
+
 /** One public intake submit allows one primary provider call and at most one schema-preserving retry. */
 function wpae_brief_ir_intake_failure_class( array $result ): string {
     $telemetry = (array) ( $result['telemetry'] ?? [] );
@@ -1178,7 +1207,12 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 		$first['telemetry'] = $first_telemetry;
 		return $first;
 	}
-	if ( $first_attempts ) { $first_attempts[ count( $first_attempts ) - 1 ]['schema_validation_result'] = wpae_brief_ir_intake_validation_result( $first ); }
+	$first_validation_diagnostics = wpae_brief_ir_intake_safe_validation_diagnostics( $first );
+	if ( $first_attempts ) {
+		$first_attempts[ count( $first_attempts ) - 1 ]['schema_validation_result'] = wpae_brief_ir_intake_validation_result( $first );
+		$first_attempts[ count( $first_attempts ) - 1 ] = array_merge( $first_attempts[ count( $first_attempts ) - 1 ], $first_validation_diagnostics );
+	}
+	$first_telemetry = array_merge( $first_telemetry, $first_validation_diagnostics );
 	$first_telemetry['attempts'] = $first_attempts;
 	$first_telemetry['failure_class'] = (string) ( $first_telemetry['failure_class'] ?? wpae_brief_ir_intake_failure_class( $first ) );
 	$retry_context_frozen = sanitize_key( (string) ( $base_brief['intent']['archetype'] ?? 'unknown' ) ) !== 'unknown';
@@ -1201,13 +1235,19 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 	$second_attempts = array_values( (array) ( $second_telemetry['attempts'] ?? [] ) );
 	if ( $first_attempts ) { $first_attempts[ count( $first_attempts ) - 1 ]['retry_reason'] = $retry_reason; }
 	if ( $second_attempts ) { $second_attempts[ count( $second_attempts ) - 1 ]['retry_reason'] = $retry_reason; }
-	if ( $second_attempts ) { $second_attempts[ count( $second_attempts ) - 1 ]['schema_validation_result'] = wpae_brief_ir_intake_validation_result( $second ); }
+	$second_validation_diagnostics = wpae_brief_ir_intake_safe_validation_diagnostics( $second );
+	if ( $second_attempts ) {
+		$second_attempts[ count( $second_attempts ) - 1 ]['schema_validation_result'] = wpae_brief_ir_intake_validation_result( $second );
+		$second_attempts[ count( $second_attempts ) - 1 ] = array_merge( $second_attempts[ count( $second_attempts ) - 1 ], $second_validation_diagnostics );
+	}
 	$second_telemetry['attempts'] = array_merge( $first_attempts, $second_attempts );
 	$second_telemetry['provider_calls'] = (int) ( $first_telemetry['provider_calls'] ?? 0 ) + (int) ( $second_telemetry['provider_calls'] ?? 0 );
+	$second_telemetry['actual_http_calls'] = (int) ( $first_telemetry['actual_http_calls'] ?? 0 ) + (int) ( $second_telemetry['actual_http_calls'] ?? 0 );
 	$second_telemetry['latency_ms'] = (int) ( $first_telemetry['latency_ms'] ?? 0 ) + (int) ( $second_telemetry['latency_ms'] ?? 0 );
 	$second_telemetry['retry_count'] = count( $second_attempts ) > 0 ? 1 : 0;
 	$second_telemetry['retry_reason'] = $retry_reason;
 	$second_telemetry['semantic_validation_result'] = wpae_brief_ir_intake_validation_result( $second );
+	$second_telemetry = array_merge( $second_telemetry, $second_validation_diagnostics );
 	if ( empty( $second_attempts ) && ( $second_telemetry['refusal'] ?? '' ) === 'deadline_exhausted' ) { $second_telemetry['retry_suppressed_reason'] = 'deadline_exhausted'; }
 	$second_telemetry['first_finish_reason'] = (string) ( $first_telemetry['finish_reason'] ?? '' );
 	$second_telemetry['finish_reason'] = (string) ( $second_telemetry['finish_reason'] ?? '' );

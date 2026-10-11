@@ -2383,13 +2383,23 @@
                     if ((errorData.intake && typeof errorData.intake === 'object') || (errorData.validation && typeof errorData.validation === 'object')) {
                         var intakeTelemetry = errorData.intake && typeof errorData.intake === 'object' ? errorData.intake : {};
                         var safeIntakeTelemetry = {};
-                        ['source', 'provider', 'model', 'requested_model', 'returned_model', 'provider_name', 'provider_calls', 'actual_http_calls', 'latency_ms', 'attempt_timeout_ms', 'retry_count', 'retry_reason', 'retry_suppressed_reason', 'minimum_retry_budget_ms', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status', 'failure_class', 'provider_error_class', 'provider_error_envelope', 'http_failure', 'error_code', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'api_endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_adapter', 'prompt_bytes', 'token_limit', 'semantic_validation_result', 'write_count'].forEach(function (key) {
+                        ['source', 'provider', 'model', 'requested_model', 'returned_model', 'provider_name', 'provider_calls', 'actual_http_calls', 'latency_ms', 'attempt_timeout_ms', 'retry_count', 'retry_reason', 'retry_suppressed_reason', 'minimum_retry_budget_ms', 'first_finish_reason', 'finish_reason', 'response_bytes', 'json_decode_error', 'refusal', 'http_status', 'failure_class', 'provider_error_class', 'provider_error_envelope', 'http_failure', 'error_code', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'api_endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_adapter', 'prompt_bytes', 'token_limit', 'semantic_validation_result', 'validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot', 'validation_expected_paragraph_count', 'write_count'].forEach(function (key) {
                             var value = intakeTelemetry[key];
                             if (value === null) safeIntakeTelemetry[key] = null;
                             else if (typeof value === 'string') safeIntakeTelemetry[key] = value.slice(0, key === 'provider_message' ? 300 : 240);
                             else if (typeof value === 'number' && Number.isFinite(value)) safeIntakeTelemetry[key] = value;
                             else if (typeof value === 'boolean') safeIntakeTelemetry[key] = value;
                         });
+                        var safeDiagnosticId = function (value) {
+                            var normalized = String(value == null ? '' : value).toLowerCase();
+                            return /^[a-z0-9_-]{1,80}$/.test(normalized) ? normalized : null;
+                        };
+                        ['validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot'].forEach(function (key) {
+                            if (Object.prototype.hasOwnProperty.call(intakeTelemetry, key)) safeIntakeTelemetry[key] = safeDiagnosticId(intakeTelemetry[key]);
+                        });
+                        if (Array.isArray(intakeTelemetry.validation_missing_fact_ids)) {
+                            safeIntakeTelemetry.validation_missing_fact_ids = intakeTelemetry.validation_missing_fact_ids.slice(0, 20).map(safeDiagnosticId).filter(Boolean);
+                        }
                         var safeUsage = function (usage) {
                             usage = usage && typeof usage === 'object' ? usage : {};
                             var output = {};
@@ -2417,7 +2427,7 @@
                             safeIntakeTelemetry.capability_policy = null;
                         }
                         if (Array.isArray(intakeTelemetry.attempts)) {
-                            var attemptKeys = ['requested_model', 'returned_model', 'provider_name', 'endpoint_provider', 'api_endpoint', 'endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter', 'http_status', 'error_code', 'provider_error_envelope', 'http_failure', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'transport_error_code', 'transport_error_message', 'finish_reason', 'token_limit', 'duration_ms', 'remaining_budget_ms', 'prompt_bytes', 'retry_reason', 'schema_validation_result', 'write_count'];
+                            var attemptKeys = ['requested_model', 'returned_model', 'provider_name', 'endpoint_provider', 'api_endpoint', 'endpoint', 'response_format', 'response_format_strict', 'require_parameters', 'schema_sha256', 'schema_bytes', 'canonical_schema_sha256', 'canonical_schema_bytes', 'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter', 'http_status', 'error_code', 'provider_error_envelope', 'http_failure', 'provider_error_code', 'provider_error_type', 'provider_message', 'provider_error_param', 'provider_error_path', 'transport_error_code', 'transport_error_message', 'finish_reason', 'token_limit', 'duration_ms', 'remaining_budget_ms', 'prompt_bytes', 'retry_reason', 'schema_validation_result', 'validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot', 'validation_expected_paragraph_count', 'write_count'];
                             safeIntakeTelemetry.attempts = intakeTelemetry.attempts.slice(0, 2).map(function (attempt) {
                                 var safeAttempt = {};
                                 attemptKeys.forEach(function (key) {
@@ -2427,6 +2437,12 @@
                                     else if (typeof value === 'number' && Number.isFinite(value)) safeAttempt[key] = value;
                                     else if (typeof value === 'boolean') safeAttempt[key] = value;
                                 });
+                                ['validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot'].forEach(function (key) {
+                                    if (Object.prototype.hasOwnProperty.call(attempt || {}, key)) safeAttempt[key] = safeDiagnosticId(attempt[key]);
+                                });
+                                if (Array.isArray(attempt && attempt.validation_missing_fact_ids)) {
+                                    safeAttempt.validation_missing_fact_ids = attempt.validation_missing_fact_ids.slice(0, 20).map(safeDiagnosticId).filter(Boolean);
+                                }
                                 safeAttempt.usage = safeUsage(attempt && attempt.usage);
                                 return safeAttempt;
                             });

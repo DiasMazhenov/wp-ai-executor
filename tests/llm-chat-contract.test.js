@@ -403,6 +403,9 @@ assert.match(js, /safeIntakeTelemetry\.usage = safeUsage\(intakeTelemetry\.usage
 assert.match(js, /safeAttempt\.usage = safeUsage\(attempt && attempt\.usage\)/);
 assert.match(js, /remaining_budget_ms/);
 assert.match(js, /safeIntakeTelemetry\.capability_policy = safeCapabilityPolicy/);
+assert.match(js, /validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot'/);
+assert.match(js, /safeDiagnosticId = function/);
+assert.match(js, /validation_missing_fact_ids\.slice\(0, 20\)\.map\(safeDiagnosticId\)/);
 assert.match(js, /\['source', 'provider', 'model', 'requested_model'.*'actual_http_calls'.*'provider_message'.*'canonical_schema_sha256'.*'write_count'\]/);
 assert.match(js, /'wire_schema_sha256', 'wire_schema_bytes', 'wire_schema_adapter'/);
 assert.match(js, /rawValidation\.errors\.slice\(0, 20\)/);
