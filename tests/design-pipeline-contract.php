@@ -2358,14 +2358,23 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
     $copy_measures=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['width']['unit']??'')==='custom'&&str_contains((string)($n['settings']['width']['size']??''),$expected_copy_measure)));
     $copy_measure_gaps=array_values(array_filter($copy_measures,static fn(array $n):bool=>($n['settings']['flex_gap']['unit']??'')==='rem'&&(float)($n['settings']['flex_gap']['size']??0)===0.75));
     $expected_copy_percent=(int)$plan['visual_policy']['entity_layout']['tracks']['copy_percent'];
-    $copy_tracks=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['width']['unit']??'')==='%'&&($n['settings']['width']['size']??0)===$expected_copy_percent));
-    $check(count($copy_measures)>0&&count($copy_measure_gaps)>0&&count($copy_tracks)>0,'Editorial entity rows preserve copy track, reading measure, and authored item rhythm '.$family);
+	    $expected_copy_track = ( $plan['visual_policy']['entity_layout']['tracks']['track_basis'] ?? '' ) === 'after_gap_share_v1'
+	     ? wpae_elementor_ir_flex_share_track_dimension( $plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '1rem', $expected_copy_percent )
+	     : [ 'unit' => '%', 'size' => $expected_copy_percent, 'sizes' => [] ];
+	    $copy_tracks=array_values(array_filter($flat,static fn(array $n):bool=>(array)($n['settings']['width']??[])===$expected_copy_track));
+	    $check(count($copy_measures)>0&&count($copy_measure_gaps)>0&&count($copy_tracks)>0,'Editorial entity rows preserve gap-aware copy track, reading measure, and authored item rhythm '.$family);
     $tracks=$plan['visual_policy']['entity_layout']['tracks'];
     $entity_rows=array_values(array_filter($flat,static function(array $n)use($tracks):bool{
      $settings=(array)($n['settings']??[]);$children=array_values((array)($n['elements']??[]));
-     return ($settings['flex_direction']??'')==='row'&&count($children)===2
-      &&($children[0]['settings']['width']['unit']??'')==='%'&&($children[0]['settings']['width']['size']??0)===$tracks['identity_percent']
-      &&($children[1]['settings']['width']['unit']??'')==='%'&&($children[1]['settings']['width']['size']??0)===$tracks['copy_percent'];
+	     $expected_identity_track=( $tracks['track_basis']??'' )==='after_gap_share_v1'
+	      ?wpae_elementor_ir_flex_share_track_dimension($tracks['gap']['desktop']??'1rem',(int)$tracks['identity_percent'])
+	      :['unit'=>'%','size'=>(int)$tracks['identity_percent'],'sizes'=>[]];
+	     $expected_copy_track=( $tracks['track_basis']??'' )==='after_gap_share_v1'
+	      ?wpae_elementor_ir_flex_share_track_dimension($tracks['gap']['desktop']??'1rem',(int)$tracks['copy_percent'])
+	      :['unit'=>'%','size'=>(int)$tracks['copy_percent'],'sizes'=>[]];
+	     return ($settings['flex_direction']??'')==='row'&&count($children)===2
+	      &&(array)($children[0]['settings']['width']??[])===$expected_identity_track
+	      &&(array)($children[1]['settings']['width']??[])===$expected_copy_track;
     }));
     $gap_controls_match=count($entity_rows)===$count;
     foreach($entity_rows as $row){
@@ -2489,7 +2498,11 @@ $expected_team_density_frames = [
 	[ 'desktop' => '11rem', 'tablet' => '9rem', 'mobile' => '7.5rem' ],
 ];
 $check( ( $team_density_values[0]['density'] ?? '' ) === 'compact' && ( $team_density_values[1]['density'] ?? '' ) === 'balanced' && ( $team_density_values[2]['density'] ?? '' ) === 'spacious' && count( array_unique( $team_density_frame_signatures ) ) === 3 && array_column( $team_density_values, 'portrait_height' ) === $expected_team_density_frames, 'Short, medium and long bios select compact, responsive portrait frames instead of letting portraits dominate concise copy rows' );
-$check( ( $team_density_plan['visual_policy']['entity_layout']['tracks']['content_density'] ?? '' ) === 'spacious' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '' ) === '2rem' && ! empty( $team_density_native['ok'] ) && $team_density_frames_match, 'Team Plan uses observed copy density to select row spacing and compiles per-entity responsive portrait frames with contain cropping' );
+$check( ( $team_density_plan['visual_policy']['entity_layout']['tracks']['content_density'] ?? '' ) === 'spacious' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '' ) === '2rem' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['track_basis'] ?? '' ) === 'after_gap_share_v1' && ! empty( $team_density_native['ok'] ) && $team_density_frames_match, 'Team Plan uses observed copy density, explicit gap-aware tracks, and per-entity responsive portrait frames with contain cropping' );
+$team_density_report = wpae_layout_report_for_plan( $team_density_plan );
+$team_density_report_samples = (array) ( $team_density_report['collections'][0]['samples'] ?? [] );
+$team_density_report_desktop = array_values( array_filter( $team_density_report_samples, static fn( array $sample ): bool => ( $sample['breakpoint'] ?? '' ) === 'desktop' ) )[0] ?? [];
+$check( ( $team_density_report_desktop['entity_tracks']['track_basis'] ?? '' ) === 'after_gap_share_v1' && ( $team_density_report_desktop['entity_tracks']['formula'] ?? '' ) === 'share * (container_width - row_gap)' && empty( $team_density_report_desktop['entity_tracks']['visual_render_verified'] ) && empty( $team_density_report['visual_render_verified'] ), 'LayoutReport exposes the same static gap-aware track equation and does not claim browser render evidence' );
 $team_density_flat = $walk_elements( (array) ( $team_density_native['elementor_data'] ?? [] ) );
 $team_density_collection = array_values( array_filter( $team_density_flat, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-team_cards' && count( (array) ( $node['elements'] ?? [] ) ) === 3 ) )[0] ?? [];
 $team_density_identity_nodes = array_values( array_map( static fn( array $card ): array => (array) ( $card['elements'][0]['elements'][0] ?? [] ), array_values( (array) ( $team_density_collection['elements'] ?? [] ) ) ) );
@@ -2515,7 +2528,8 @@ foreach ( $team_density_identity_nodes as $identity_node ) {
 	}
 }
 $team_density_legacy_plan = $team_density_plan;
-unset( $team_density_legacy_plan['visual_policy']['entity_layout']['tracks']['identity_layout_version'] );
+unset( $team_density_legacy_plan['visual_policy']['entity_layout']['tracks']['identity_layout_version'], $team_density_legacy_plan['visual_policy']['entity_layout']['tracks']['track_basis'] );
+$team_density_legacy_plan['composition_decision']['selection_metrics'] = wpae_composition_content_metrics( $team_density_brief, 'wpae-content-density-v2' );
 $team_density_legacy_validation = wpae_design_plan_validate( $team_density_legacy_plan, $team_density_brief );
 $team_density_legacy_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $team_density_legacy_plan, $team_density_brief ), $team_density_brief, [], [ 'resolved_visual' => $team_density_legacy_plan['resolved_visual'] ] );
 $team_density_legacy_flat = $walk_elements( (array) ( $team_density_legacy_native['elementor_data'] ?? [] ) );
@@ -2604,7 +2618,22 @@ $testimonial_density_v1_plan = $testimonial_density_plan;
 $testimonial_density_v1_plan['composition_decision']['selection_metrics'] = $testimonial_legacy_metrics;
 $testimonial_density_v1_plan['media_references'] = array_map( static fn( array $media ): array => wpae_design_plan_media_render_policy( $media, 'testimonials', [ 'policy' => [ 'entity_layout' => 'editorial_rows' ] ], $testimonial_legacy_metrics ), $testimonial_avatar_assets );
 $testimonial_density_v1_validation = wpae_design_plan_validate( $testimonial_density_v1_plan, $testimonial_density_brief );
-$check( ( $testimonial_density_plan['composition_decision']['selection_metrics']['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && ( $testimonial_sizes[0]['desktop'] ?? '' ) === '2.5rem' && ( $testimonial_sizes[1]['desktop'] ?? '' ) === '3.5rem' && $testimonial_avatar_density_ok && $testimonial_legacy_metrics['content_density_schema'] === 'wpae-content-density-v1' && ! array_key_exists( 'avatar_size', (array) ( $testimonial_legacy_metrics['entities_by_group']['testimonial_1'] ?? [] ) ) && ! empty( $testimonial_density_v1_validation['ok'] ), 'Testimonials v2 density metrics compact short quote avatars, preserve larger long-quote avatars in native Flex, and still validate v1 frozen Plans' );
+$check( ( $testimonial_density_plan['composition_decision']['selection_metrics']['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && ( $testimonial_sizes[0]['desktop'] ?? '' ) === '2.5rem' && ( $testimonial_sizes[1]['desktop'] ?? '' ) === '3.5rem' && $testimonial_avatar_density_ok && $testimonial_legacy_metrics['content_density_schema'] === 'wpae-content-density-v1' && ! array_key_exists( 'avatar_size', (array) ( $testimonial_legacy_metrics['entities_by_group']['testimonial_1'] ?? [] ) ) && ! empty( $testimonial_density_v1_validation['ok'] ), 'Testimonials v2 metrics size short/long avatars while the v1 frozen metric shape remains compatible' );
+$testimonial_short_identity_tracks = (array) ( $testimonial_density_plan['visual_policy']['entity_layout']['tracks'] ?? [] );
+$testimonial_long_identity_brief = $testimonial_density_brief;
+$testimonial_long_identity_meta_ref = (string) ( $testimonial_long_identity_brief['groups'][0]['meta_ref'] ?? '' );
+foreach ( $testimonial_long_identity_brief['content'] as &$testimonial_long_identity_slot ) {
+	if ( ( $testimonial_long_identity_slot['id'] ?? '' ) === $testimonial_long_identity_meta_ref ) { $testimonial_long_identity_slot['exact_text'] = 'Международная студия городской архитектуры'; }
+}
+unset( $testimonial_long_identity_slot );
+$testimonial_long_identity_plan = wpae_design_plan_from_brief( $testimonial_long_identity_brief, [ 'canonical_create' => true, 'composition_record' => 'testimonials.editorial_rows', 'visual_profile' => 'editorial_light' ] );
+$testimonial_explicit_identity_brief = $testimonial_long_identity_brief;
+$testimonial_explicit_identity_brief['layout_constraints'][] = [ 'kind' => 'entity_identity_percent', 'value' => 30 ];
+$testimonial_explicit_identity_brief['layout_constraints'][] = [ 'kind' => 'entity_copy_percent', 'value' => 70 ];
+$testimonial_explicit_identity_plan = wpae_design_plan_from_brief( $testimonial_explicit_identity_brief, [ 'canonical_create' => true, 'composition_record' => 'testimonials.editorial_rows', 'visual_profile' => 'editorial_light' ] );
+$check( ( $testimonial_density_plan['composition_decision']['selection_metrics']['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && ( $testimonial_short_identity_tracks['identity_percent'] ?? 0 ) === 28 && ( $testimonial_short_identity_tracks['copy_percent'] ?? 0 ) === 72 && ( $testimonial_short_identity_tracks['track_basis'] ?? '' ) === 'after_gap_share_v1' && ( $testimonial_long_identity_plan['composition_decision']['selection_metrics']['entities_by_group']['testimonial_1']['title_chars'] ?? 0 ) >= 24 && ( $testimonial_long_identity_plan['visual_policy']['entity_layout']['tracks']['identity_percent'] ?? 0 ) === 32 && ( $testimonial_explicit_identity_plan['visual_policy']['entity_layout']['tracks']['identity_percent'] ?? 0 ) === 30 && ( $testimonial_explicit_identity_plan['visual_policy']['provenance']['field_sources']['entity_identity_percent'] ?? '' ) === 'explicit_brief', 'Existing per-entity identity length adjusts new editorial track shares without expanding the frozen density metric schema' );
+$gap_aware_identity_native_width = wpae_elementor_ir_flex_share_track_dimension( '1.5rem', 32 );
+$check( $gap_aware_identity_native_width === [ 'unit' => 'custom', 'size' => 'calc(32% - 0.48rem)', 'sizes' => [] ], 'Native Flex identity track expresses its percentage against the container width after subtracting the row gap' );
 
 // Automatic About composition should give long authored copy more width while
 // keeping a concise editorial split balanced. Explicit records remain frozen.

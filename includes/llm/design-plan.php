@@ -1295,15 +1295,24 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$collection_surface_alignment = (string) $pick( 'collection_surface_alignment', $surface_alignment_default );
 	$entity_tracks = null;
 	if ( $entity_variant === 'editorial_rows' ) {
-		$identity_default = $family === 'team' ? 34 : ( $family === 'portfolio' ? 38 : 24 );
+		$identity_character_counts = array_map( static fn( array $entity ): int => (int) ( $entity['title_chars'] ?? 0 ), array_filter( (array) ( $content_metrics['entities_by_group'] ?? [] ), 'is_array' ) );
+		$max_identity_chars = max( $identity_character_counts ?: [ (int) ( $content_metrics['max_title_chars'] ?? 0 ) ] );
+		$identity_default = $family === 'team'
+			? ( $max_identity_chars >= 32 ? 38 : 34 )
+			: ( $family === 'testimonials'
+				? ( $max_identity_chars >= 24 ? 32 : 28 )
+				: ( $family === 'portfolio' ? 38 : 24 ) );
 		$density = sanitize_key( (string) ( $content_metrics['composition_density'] ?? 'balanced' ) );
 		$entity_gap_defaults = $density === 'compact'
 			? [ 'desktop' => '1.25rem', 'tablet' => '1rem', 'mobile' => '0.75rem' ]
 			: ( $density === 'spacious' ? [ 'desktop' => '2rem', 'tablet' => '1.5rem', 'mobile' => '1.125rem' ] : [ 'desktop' => '1.5rem', 'tablet' => '1.25rem', 'mobile' => '1rem' ] );
 		$identity_default_presentation = $family === 'testimonials' ? 'avatar_with_metadata' : 'portrait_then_labels';
+		$identity_percent = (int) $pick( 'entity_identity_percent', $identity_default );
+		if ( ( $field_sources['entity_identity_percent'] ?? '' ) === 'documented_default' && $max_identity_chars > 0 ) { $field_sources['entity_identity_percent'] = 'canonical_content_metrics'; }
 		$entity_tracks = [
-			'identity_percent' => (int) $pick( 'entity_identity_percent', $identity_default ),
-			'copy_percent' => (int) $pick( 'entity_copy_percent', 100 - $identity_default ),
+			'identity_percent' => $identity_percent,
+			'copy_percent' => (int) $pick( 'entity_copy_percent', 100 - $identity_percent ),
+			'track_basis' => 'after_gap_share_v1',
 			'copy_measure' => $pick( 'entity_copy_measure', $family === 'team' ? '48rem' : ( $family === 'portfolio' ? '42rem' : '54rem' ) ),
 			'gap' => [
 				'desktop' => $pick( 'entity_gap_desktop', $entity_gap_defaults['desktop'] ),
@@ -1391,7 +1400,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	] : null;
 	$policy = [
 		'version' => 1,
-		'precedence' => [ 'explicit_brief', 'composition_record', 'visual_profile', 'documented_default' ],
+		'precedence' => [ 'explicit_brief', 'composition_record', 'visual_profile', 'canonical_content_metrics', 'documented_default' ],
 		'intro' => [ 'placement' => $pick( 'intro_placement', $split ? 'split_copy' : 'above_collection' ), 'text_align' => $intro_text_align, 'container_align' => $pick( 'intro_container_align', 'start' ), 'reading_measure' => $pick( 'reading_measure', $values['layout.copy_width'] ?? '38rem' ), 'heading_level' => $family === 'hero' ? 'h1' : 'h2', 'title_token' => $intro_title_token, 'eyebrow_presentation' => $pick( 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() ) ],
 		'typography' => [ 'intro_title' => $values[$intro_title_token], 'item_title' => $item, 'body' => $body, 'eyebrow' => $eyebrow, 'price' => array_replace( $body, [ 'desktop' => '2rem', 'tablet' => '1.8rem', 'mobile' => '1.6rem', 'weight' => '800', 'line_height' => '1.2' ] ) ],
 		'spacing' => [ 'eyebrow_title' => $pick( 'eyebrow_title_gap', '0.75rem' ), 'title_description' => $pick( 'title_description_gap', '1rem' ), 'description_cta' => $pick( 'description_cta_gap', '1.5rem' ), 'intro_collection' => $pick( 'intro_collection_gap', '2rem' ), 'item_copy' => $pick( 'item_copy_gap', '0.75rem' ), 'item_cta' => $pick( 'item_cta_gap', '1.25rem' ), 'section' => [ 'desktop' => $values['space.section'], 'tablet' => $values['space.section_tablet'] ?? $values['space.section'], 'mobile' => $values['space.section_mobile'] ?? '2rem' ] ],
@@ -2577,6 +2586,7 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			$identity_percent = $entity_tracks['identity_percent'] ?? null;
 			$copy_percent = $entity_tracks['copy_percent'] ?? null;
 			if ( ( $visual_policy['entity_layout']['variant'] ?? '' ) !== 'editorial_rows' || ! is_int( $identity_percent ) || ! is_int( $copy_percent ) || $identity_percent < 20 || $identity_percent > 45 || $copy_percent < 55 || $copy_percent > 80 || $identity_percent + $copy_percent !== 100 ) { $errors[] = 'visual_policy_entity_tracks_invalid'; }
+			if ( array_key_exists( 'track_basis', $entity_tracks ) && $entity_tracks['track_basis'] !== 'after_gap_share_v1' ) { $errors[] = 'visual_policy_entity_track_basis_invalid'; }
 			if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['copy_measure'] ?? null ) ) { $errors[] = 'visual_policy_entity_copy_measure_invalid'; }
 			if ( ( $entity_tracks['direction'] ?? [] ) !== [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ] || ( $entity_tracks['mobile_order'] ?? [] ) !== [ 'identity', 'copy' ] ) { $errors[] = 'visual_policy_entity_responsive_invalid'; }
 			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['gap'][$device] ?? null ) ) { $errors[] = 'visual_policy_entity_gap_invalid:' . $device; } }

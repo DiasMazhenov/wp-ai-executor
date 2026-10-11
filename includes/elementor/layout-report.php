@@ -287,7 +287,8 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 						$identity = $track_width * ( (float) ( $tracks['identity_percent'] ?? 50 ) / 100 );
 						$copy = $track_width * ( (float) ( $tracks['copy_percent'] ?? 50 ) / 100 );
 						$copy_measure = wpae_layout_report_length_px( $tracks['copy_measure'] ?? '100rem', $row['viewport_width'], $copy );
-						$sample['entity_tracks'] = [ 'identity_percent' => $tracks['identity_percent'] ?? null, 'copy_percent' => $tracks['copy_percent'] ?? null, 'gap_px' => round( $track_gap, 2 ), 'identity_width_px' => round( $identity, 2 ), 'copy_available_width_px' => round( $copy, 2 ), 'copy_measure_px' => round( min( $copy, $copy_measure ), 2 ), 'direction' => $tracks['direction'][$device] ?? null, 'mobile_order' => $tracks['mobile_order'] ?? [] ];
+						$track_basis = (string) ( $tracks['track_basis'] ?? 'legacy_flex_shrink' );
+						$sample['entity_tracks'] = [ 'identity_percent' => $tracks['identity_percent'] ?? null, 'copy_percent' => $tracks['copy_percent'] ?? null, 'track_basis' => $track_basis, 'gap_px' => round( $track_gap, 2 ), 'identity_width_px' => round( $identity, 2 ), 'copy_available_width_px' => round( $copy, 2 ), 'copy_measure_px' => round( min( $copy, $copy_measure ), 2 ), 'native_width_equation' => $track_basis === 'after_gap_share_v1' ? 'calc(share% - share * row_gap)' : 'percentage basis with native flex shrink', 'formula' => 'share * (container_width - row_gap)', 'direction' => $tracks['direction'][$device] ?? null, 'mobile_order' => $tracks['mobile_order'] ?? [] ];
 					}
 					$samples[] = $sample;
 					continue;

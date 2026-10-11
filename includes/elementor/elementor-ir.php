@@ -1350,6 +1350,21 @@ function wpae_elementor_ir_flex_equal_track_dimension( $gap_value, int $columns 
 	return [ 'unit' => 'custom', 'size' => 'calc((100% - ' . $subtractions . ') / ' . $columns . ')', 'sizes' => [] ];
 }
 
+/** Allocate a native Flex track as a share of the width left after its row gap. */
+function wpae_elementor_ir_flex_share_track_dimension( $gap_value, int $share_percent ): array {
+	$share_percent = max( 1, min( 99, $share_percent ) );
+	$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 1 );
+	$gap_size = max( 0.0, (float) ( $gap['size'] ?? 0 ) );
+	$gap_unit = sanitize_key( (string) ( $gap['unit'] ?? 'rem' ) );
+	if ( $gap_size <= 0 || ! in_array( $gap_unit, [ 'px', 'rem', 'em' ], true ) ) {
+		return [ 'unit' => '%', 'size' => $share_percent, 'sizes' => [] ];
+	}
+	$share_gap = $gap_size * $share_percent / 100;
+	$number = rtrim( rtrim( number_format( $share_gap, 4, '.', '' ), '0' ), '.' );
+	$term = ( $number === '' ? '0' : $number ) . $gap_unit;
+	return [ 'unit' => 'custom', 'size' => 'calc(' . $share_percent . '% - ' . $term . ')', 'sizes' => [] ];
+}
+
 /** Native image dimension controls use unit/size, while asset facts stay intrinsic. */
 function wpae_elementor_ir_media_dimension( $value ): array {
 	$raw = trim( (string) $value );
@@ -2529,7 +2544,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$percent = $track_role === 'entity_identity' ? (int) $tracks['identity_percent'] : (int) $tracks['copy_percent'];
 			$track_settings = &$compiled_child['settings'];
 			foreach ( [ '' => $percent, '_tablet' => 100, '_mobile' => 100 ] as $suffix => $width ) {
-				$dimension = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
+				$dimension = $suffix === '' && ( $tracks['track_basis'] ?? '' ) === 'after_gap_share_v1'
+					? wpae_elementor_ir_flex_share_track_dimension( $tracks['gap']['desktop'] ?? '1rem', $width )
+					: [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
 				$track_settings[ 'width' . $suffix ] = $track_settings[ '_element_custom_width' . $suffix ] = $dimension;
 				$track_settings[ '_element_width' . $suffix ] = 'initial';
 				$track_settings[ '_flex_size' . $suffix ] = 'custom';
