@@ -824,7 +824,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		if ( $archetype === 'cta' && $cta_index === 0 && $role === 'cta' && preg_match( '/^\s*(?:cta|call\s+to\s+action)\s*[:\-]?\s*$/iu', $prefix ) ) {
 			$role = 'title';
 		}
-		if ( $archetype === 'cta' && $role === 'text' && $cta_index === 0 && preg_match( '/(?:\bcta\b|call\s+to\s+action|призыв\w*\s+к\s+действи\w*|cta[-\s]+секци\w*|секци\w*\s+cta)/iu', $prefix ) ) {
+		// A CTA mentioned earlier in the request does not label every later
+		// quotation as the CTA heading. Only a trailing section label may do so.
+		if ( $archetype === 'cta' && $role === 'text' && $cta_index === 0 && preg_match( '/(?:^|[.!?\r\n])\s*[^.!?\r\n]{0,50}(?:cta(?:[-\s]+(?:блок|секци\w*))?|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\s*[:：\-]?\s*$/iu', $prefix ) ) {
 			$role = 'title';
 		}
 		$gap_from_previous = $process_gap_from_previous;

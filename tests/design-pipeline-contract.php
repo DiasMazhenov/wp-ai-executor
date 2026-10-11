@@ -1464,7 +1464,7 @@ $check( ( $testimonial_avatar_native['width']['unit'] ?? '' ) === 'rem' && (floa
 $check( ( $testimonial_avatar_render['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.25 ] && ( $testimonial_avatar_render['focal_point_provenance']['source'] ?? '' ) === 'role_default' && ( $testimonial_avatar_render['focal_point_provenance']['role'] ?? '' ) === 'avatar' && ( $testimonial_avatar_native['object-position'] ?? '' ) === 'top center', 'Avatar focal default is a frozen, provenance-marked upper-center role default lowered to a supported native position' );
 $testimonial_rows_context = [ 'canonical_create' => true, 'composition_record' => 'testimonials.editorial_rows', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ];
 $testimonial_rows_plan = wpae_design_plan_from_brief( $testimonial_avatar_brief, $testimonial_rows_context );
-$testimonial_rows_plan['media_references'] = [ $testimonial_avatar_rendered_ref ];
+// Keep the editorial-row dimensions resolved by the selected Plan's density metrics.
 $testimonial_rows_validation = wpae_design_plan_validate( $testimonial_rows_plan, $testimonial_avatar_brief );
 $testimonial_rows_ir = wpae_elementor_ir_from_design_plan( $testimonial_rows_plan, $testimonial_avatar_brief );
 $testimonial_rows_native = wpae_elementor_ir_compile( $testimonial_rows_ir, $testimonial_avatar_brief, [], [ 'resolved_visual' => $testimonial_rows_plan['resolved_visual'] ?? [], 'id_seed' => 'testimonial-avatar-editorial-rows' ] );
@@ -2482,7 +2482,12 @@ foreach ( $team_density_images as $image_index => $image_node ) {
 $team_density_values = array_values( $team_density_metrics );
 $check( $team_density_validation['ok'] && ( $team_density_plan['composition_decision']['record_id'] ?? '' ) === 'team.editorial_rows' && count( $team_density_metrics ) === 3 && ! isset( $team_density_plan['visual_policy']['content_metrics'] ), 'Team density is frozen once in selection evidence and the Plan stores only resolved layout decisions' );
 $team_density_frame_signatures = array_map( 'wp_json_encode', array_column( $team_density_values, 'portrait_height' ) );
-$check( ( $team_density_values[0]['density'] ?? '' ) === 'compact' && ( $team_density_values[1]['density'] ?? '' ) === 'balanced' && ( $team_density_values[2]['density'] ?? '' ) === 'spacious' && count( array_unique( $team_density_frame_signatures ) ) === 3, 'Short, medium and long bios produce distinct content-driven portrait frames without changing their copy' );
+$expected_team_density_frames = [
+	[ 'desktop' => '7rem', 'tablet' => '6rem', 'mobile' => '5.5rem' ],
+	[ 'desktop' => '9rem', 'tablet' => '7.5rem', 'mobile' => '6.5rem' ],
+	[ 'desktop' => '11rem', 'tablet' => '9rem', 'mobile' => '7.5rem' ],
+];
+$check( ( $team_density_values[0]['density'] ?? '' ) === 'compact' && ( $team_density_values[1]['density'] ?? '' ) === 'balanced' && ( $team_density_values[2]['density'] ?? '' ) === 'spacious' && count( array_unique( $team_density_frame_signatures ) ) === 3 && array_column( $team_density_values, 'portrait_height' ) === $expected_team_density_frames, 'Short, medium and long bios select compact, responsive portrait frames instead of letting portraits dominate concise copy rows' );
 $check( ( $team_density_plan['visual_policy']['entity_layout']['tracks']['content_density'] ?? '' ) === 'spacious' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '' ) === '2rem' && ! empty( $team_density_native['ok'] ) && $team_density_frames_match, 'Team Plan uses observed copy density to select row spacing and compiles per-entity responsive portrait frames with contain cropping' );
 
 $testimonial_density_prompt = 'Блок отзывов. Надзаголовок «ДЕМО». Заголовок «Короткие и подробные отзывы». '
@@ -2503,6 +2508,7 @@ $testimonial_density_nodes = $walk_elements( $testimonial_density_native['elemen
 $testimonial_density_collection = array_values( array_filter( $testimonial_density_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-testimonial_cards' && count( (array) ( $node['elements'] ?? [] ) ) === 2 ) )[0] ?? [];
 $testimonial_density_tracks = (array) ( $testimonial_density_plan['visual_policy']['entity_layout']['tracks'] ?? [] );
 $testimonial_identity_ok = count( (array) ( $testimonial_density_collection['elements'] ?? [] ) ) === 2;
+$testimonial_avatar_density_ok = true;
 $testimonial_copy_owned = true;
 $testimonial_content_by_id = [];
 foreach ( (array) $testimonial_density_brief['content'] as $content_item ) { if ( is_array( $content_item ) ) { $testimonial_content_by_id[(string) ( $content_item['id'] ?? '' )] = $content_item; } }
@@ -2510,10 +2516,18 @@ foreach ( (array) ( $testimonial_density_collection['elements'] ?? [] ) as $card
 	$body = (array) ( $card['elements'][0] ?? [] );
 	$identity = (array) ( $body['elements'][0] ?? [] );
 	$avatar = (array) ( $identity['elements'][0] ?? [] );
+	$avatar_settings = (array) ( $avatar['settings'] ?? [] );
 	$metadata = (array) ( $identity['elements'][1] ?? [] );
 	$identity_settings = (array) ( $identity['settings'] ?? [] );
 	$metadata_settings = (array) ( $metadata['settings'] ?? [] );
 	$group = (array) ( $testimonial_density_brief['groups'][$card_index] ?? [] );
+	$expected_avatar_size = (array) ( $testimonial_density_plan['composition_decision']['selection_metrics']['entities_by_group'][(string) ( $group['group_id'] ?? '' )]['avatar_size'] ?? [] );
+	foreach ( [ 'desktop' => [ '', '' ], 'tablet' => [ '_tablet', '_tablet' ], 'mobile' => [ '_mobile', '_mobile' ] ] as $device => [ $width_suffix, $height_suffix ] ) {
+		$expected_rem = (float) rtrim( (string) ( $expected_avatar_size[$device] ?? '' ), 'rem' );
+		$width = (array) ( $avatar_settings['width' . $width_suffix] ?? [] );
+		$height = (array) ( $avatar_settings['height' . $height_suffix] ?? [] );
+		$testimonial_avatar_density_ok = $testimonial_avatar_density_ok && ( $width['unit'] ?? '' ) === 'rem' && ( $height['unit'] ?? '' ) === 'rem' && (float) ( $width['size'] ?? -1 ) === $expected_rem && (float) ( $height['size'] ?? -1 ) === $expected_rem;
+	}
 	$card_json = (string) wp_json_encode( $card, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	$testimonial_identity_ok = $testimonial_identity_ok
 		&& ( $avatar['widgetType'] ?? '' ) === 'image'
@@ -2541,6 +2555,29 @@ foreach ( (array) ( $testimonial_density_collection['elements'] ?? [] ) as $card
 }
 $check( $testimonial_density_validation['ok'] && ! empty( $testimonial_density_native['ok'] ) && $testimonial_identity_ok && $testimonial_copy_owned, 'Testimonials preserve each quote/author/meta owner and compile a left-aligned avatar/metadata Flex row with responsive Plan-owned gaps' );
 $check( ( $testimonial_density_tracks['content_density'] ?? '' ) === 'spacious' && ( $testimonial_density_tracks['identity_presentation'] ?? '' ) === 'avatar_with_metadata' && ( $testimonial_density_tracks['gap'] ?? [] ) !== [], 'Testimonials Plan records content density and the compact identity presentation as accepted layout decisions' );
+$testimonial_density_entities = (array) ( $testimonial_density_plan['composition_decision']['selection_metrics']['entities_by_group'] ?? [] );
+$testimonial_sizes = array_map( static fn( array $metrics ): array => (array) ( $metrics['avatar_size'] ?? [] ), array_values( $testimonial_density_entities ) );
+$testimonial_legacy_metrics = wpae_composition_content_metrics( $testimonial_density_brief, 'wpae-content-density-v1' );
+$testimonial_density_v1_plan = $testimonial_density_plan;
+$testimonial_density_v1_plan['composition_decision']['selection_metrics'] = $testimonial_legacy_metrics;
+$testimonial_density_v1_plan['media_references'] = array_map( static fn( array $media ): array => wpae_design_plan_media_render_policy( $media, 'testimonials', [ 'policy' => [ 'entity_layout' => 'editorial_rows' ] ], $testimonial_legacy_metrics ), $testimonial_avatar_assets );
+$testimonial_density_v1_validation = wpae_design_plan_validate( $testimonial_density_v1_plan, $testimonial_density_brief );
+$check( ( $testimonial_density_plan['composition_decision']['selection_metrics']['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && ( $testimonial_sizes[0]['desktop'] ?? '' ) === '2.5rem' && ( $testimonial_sizes[1]['desktop'] ?? '' ) === '3.5rem' && $testimonial_avatar_density_ok && $testimonial_legacy_metrics['content_density_schema'] === 'wpae-content-density-v1' && ! array_key_exists( 'avatar_size', (array) ( $testimonial_legacy_metrics['entities_by_group']['testimonial_1'] ?? [] ) ) && ! empty( $testimonial_density_v1_validation['ok'] ), 'Testimonials v2 density metrics compact short quote avatars, preserve larger long-quote avatars in native Flex, and still validate v1 frozen Plans' );
+
+// Automatic About composition should give long authored copy more width while
+// keeping a concise editorial split balanced. Explicit records remain frozen.
+$about_split_brief_for = static function ( string $body ): array {
+	$prompt = 'Создай секцию About. Надзаголовок: «О БЮРО». Заголовок: «Проект начинается с разговора». Описание: «' . $body . '»';
+	$brief = wpae_brief_ir_parse( $prompt );
+	$brief['canonical_create'] = true;
+	$brief['media_references'] = [ [ 'asset_id' => 'about-layout-policy-image', 'source_url' => 'https://example.test/about-layout-policy.jpg', 'attachment_id' => null, 'role' => 'about', 'purpose' => 'about', 'group_id' => 'about', 'alt' => 'Тестовое изображение редакционной секции', 'license' => 'Contract fixture', 'attribution' => 'Contract fixture', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'synthetic_test_fixture' ] ] ];
+	return $brief;
+};
+$about_short_policy_brief = $about_split_brief_for( 'Обсуждаем задачу и ограничения пространства.' );
+$about_long_policy_brief = $about_split_brief_for( trim( str_repeat( 'Обсуждаем задачу, ограничения пространства, дневной свет и планировочные решения. ', 6 ) ) );
+$about_short_policy_plan = wpae_design_plan_from_brief( $about_short_policy_brief, [ 'canonical_create' => true ] );
+$about_long_policy_plan = wpae_design_plan_from_brief( $about_long_policy_brief, [ 'canonical_create' => true ] );
+$check( ( $about_short_policy_plan['composition_decision']['record_id'] ?? '' ) === 'about.split_50_50.right' && ( $about_long_policy_plan['composition_decision']['record_id'] ?? '' ) === 'about.split_60_40.right' && ( $about_short_policy_plan['composition_decision']['selection_metrics']['max_body_chars'] ?? 0 ) <= 280 && ( $about_long_policy_plan['composition_decision']['selection_metrics']['max_body_chars'] ?? 0 ) > 280, 'Automatic About selection uses a balanced split for concise copy and a wider text track for long copy while retaining image-right topology: ' . wp_json_encode( [ 'short' => $about_short_policy_plan['composition_decision'] ?? [], 'long' => $about_long_policy_plan['composition_decision'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
 
 // Saved live fixtures use the same deterministic grammar before any production write.
 foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact-request.txt','testimonials.grid'], ['E-services-exact-request.txt','services.photo_cards'], ['F-pricing-exact-request.txt','pricing.tiers'] ] as [$fixture,$record] ) {

@@ -413,6 +413,13 @@ function wpae_design_plan_media_render_policy( array $media, string $family, arr
 	if ( $purpose === 'avatar' ) {
 		$render['height'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
 		$render['width'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
+		$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
+		$entities_by_group = (array) ( $content_metrics['entities_by_group'] ?? [] );
+		$entity_metrics = (array) ( $entities_by_group[$group_id] ?? [] );
+		if ( ( $policy['entity_layout'] ?? '' ) === 'editorial_rows' && $family === 'testimonials' && empty( $explicit_fields['height'] ) && empty( $explicit_fields['width'] ) && is_array( $entity_metrics['avatar_size'] ?? null ) ) {
+			$render['height'] = $entity_metrics['avatar_size'];
+			$render['width'] = $entity_metrics['avatar_size'];
+		}
 		$render['shape'] = 'circle'; $render['radius_token'] = null;
 	} elseif ( $purpose === 'portrait' ) {
 		// Keep portraits complete, and for new editorial rows resolve a per-item
@@ -2360,8 +2367,8 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		$policy_record = (array) ( $plan['composition_decision']['policy'] ?? [] );
 		$selection_metrics = (array) ( $plan['composition_decision']['selection_metrics'] ?? [] );
 		$entity_metrics = [];
-		if ( $brief && ( $selection_metrics['content_density_schema'] ?? '' ) === 'wpae-content-density-v1' && function_exists( 'wpae_composition_content_metrics' ) ) {
-			$expected_selection_metrics = wpae_composition_content_metrics( $brief );
+		if ( $brief && in_array( (string) ( $selection_metrics['content_density_schema'] ?? '' ), [ 'wpae-content-density-v1', 'wpae-content-density-v2' ], true ) && function_exists( 'wpae_composition_content_metrics' ) ) {
+			$expected_selection_metrics = wpae_composition_content_metrics( $brief, (string) $selection_metrics['content_density_schema'] );
 			foreach ( [ 'content_density_schema', 'content_density_source', 'composition_density', 'estimated_max_body_lines', 'estimated_body_line_spread', 'estimated_max_section_title_lines', 'entities_by_group', 'line_estimate' ] as $metric_key ) {
 				if ( ( $selection_metrics[$metric_key] ?? null ) !== ( $expected_selection_metrics[$metric_key] ?? null ) ) { $errors[] = 'composition_selection_metric_not_brief_derived:' . $metric_key; }
 			}
@@ -2373,6 +2380,15 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 				$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
 				$expected_height = (array) ( $entity_metrics[$group_id]['portrait_height'] ?? [] );
 				if ( $expected_height && ( (array) ( $media['render']['height'] ?? [] ) !== $expected_height ) ) { $errors[] = 'team_portrait_frame_content_density_mismatch:' . $group_id; }
+			}
+		}
+		if ( ( $plan['archetype'] ?? '' ) === 'testimonials' && ( $policy_record['entity_layout'] ?? '' ) === 'editorial_rows' && ( $selection_metrics['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && $entity_metrics ) {
+			foreach ( (array) ( $plan['media_references'] ?? [] ) as $media ) {
+				if ( ! is_array( $media ) || ( $media['purpose'] ?? '' ) !== 'avatar' ) { continue; }
+				$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
+				$expected_size = (array) ( $entity_metrics[$group_id]['avatar_size'] ?? [] );
+				$explicit_fields = array_map( 'sanitize_key', (array) ( $media['render']['explicit_fields'] ?? [] ) );
+				if ( $expected_size && ! array_intersect( [ 'width', 'height' ], $explicit_fields ) && ( (array) ( $media['render']['height'] ?? [] ) !== $expected_size || (array) ( $media['render']['width'] ?? [] ) !== $expected_size ) ) { $errors[] = 'testimonial_avatar_frame_content_density_mismatch:' . $group_id; }
 			}
 		}
 	}

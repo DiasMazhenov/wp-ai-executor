@@ -490,7 +490,8 @@ function wpae_composition_family_compositions(): array {
 }
 
 /** Content-length hints guide composition choice but are never render measurements. */
-function wpae_composition_content_metrics( array $brief ): array {
+function wpae_composition_content_metrics( array $brief, string $schema_version = 'wpae-content-density-v2' ): array {
+	$schema_version = in_array( $schema_version, [ 'wpae-content-density-v1', 'wpae-content-density-v2' ], true ) ? $schema_version : 'wpae-content-density-v2';
 	$texts = [];
 	$content = [];
 	$family = sanitize_key( (string) ( $brief['intent']['archetype'] ?? '' ) );
@@ -548,7 +549,24 @@ function wpae_composition_content_metrics( array $brief ): array {
 			$entity = [ 'group_id' => $group_id, 'body_chars' => $body_chars, 'body_words' => 0, 'estimated_body_lines' => $body_lines, 'title_chars' => $title_chars, 'estimated_title_lines' => $title_lines, 'density' => $density, 'media_roles' => array_values( array_unique( $media_roles ) ) ];
 			foreach ( $texts as $item ) { if ( $item['group_id'] === $group_id && in_array( $item['role'], $body_roles, true ) ) { $entity['body_words'] = max( (int) $entity['body_words'], (int) $item['words'] ); } }
 			if ( $family === 'team' && in_array( 'portrait', $entity['media_roles'], true ) ) {
-				$entity['portrait_height'] = $body_lines <= 2 ? [ 'desktop' => '10rem', 'tablet' => '9rem', 'mobile' => '8rem' ] : ( $body_lines <= 5 ? [ 'desktop' => '12rem', 'tablet' => '11rem', 'mobile' => '10rem' ] : [ 'desktop' => '14rem', 'tablet' => '13rem', 'mobile' => '12rem' ] );
+				// Editorial rows should let biography copy determine row height. Portraits
+				// remain prominent, but must not create a large empty copy track for a
+				// short bio. These intrinsic native frames scale with measured copy length.
+				$entity['portrait_height'] = $body_lines <= 2
+					? [ 'desktop' => '7rem', 'tablet' => '6rem', 'mobile' => '5.5rem' ]
+					: ( $body_lines <= 5
+						? [ 'desktop' => '9rem', 'tablet' => '7.5rem', 'mobile' => '6.5rem' ]
+						: [ 'desktop' => '11rem', 'tablet' => '9rem', 'mobile' => '7.5rem' ] );
+			}
+			if ( $schema_version === 'wpae-content-density-v2' && $family === 'testimonials' && in_array( 'avatar', $entity['media_roles'], true ) ) {
+				// A brief quote should not inherit a large identity image track. Keep
+				// the editorial row and its ownership intact; resolve only the avatar
+				// dimensions from this entity's canonical quote length before Plan freeze.
+				$entity['avatar_size'] = $body_lines <= 2
+					? [ 'desktop' => '2.5rem', 'tablet' => '2.5rem', 'mobile' => '2.5rem' ]
+					: ( $body_lines <= 5
+						? [ 'desktop' => '3rem', 'tablet' => '3rem', 'mobile' => '3rem' ]
+						: [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ] );
 			}
 			$entity_metrics[$group_id] = $entity;
 		}
@@ -591,7 +609,7 @@ function wpae_composition_content_metrics( array $brief ): array {
 		'cta_count' => count( $cta_refs ),
 		'max_cta_chars' => max( array_column( $cta_items, 'chars' ) ?: [ 0 ] ),
 		'faq_pair_count' => $faq_pairs,
-		'content_density_schema' => 'wpae-content-density-v1',
+		'content_density_schema' => $schema_version,
 		'content_density_source' => 'canonical_brief_exact_text',
 		'composition_density' => $composition_density,
 		'estimated_max_body_lines' => $max_entity_lines,
@@ -821,8 +839,10 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 					break;
 				case 'hero': case 'about':
 					$has_media = (int) $compatibility['owned_media_count'] > 0;
-					$desired = $family . '.' . ( $has_media ? ( $body > 280 ? 'split_50_50' : 'split_60_40' ) : 'text_only' );
-					if ( $id === $desired . '.right' || $id === $desired ) { $score += 200; $reasons[] = $has_media ? 'copy_and_media_balance' : 'no_owned_media'; }
+					// Long editorial copy gets the wider copy track; concise copy can
+					// balance the image with an equal split. An explicit record still wins.
+					$desired = $family . '.' . ( $has_media ? ( $body > 280 ? 'split_60_40' : 'split_50_50' ) : 'text_only' );
+					if ( $id === $desired . '.right' || $id === $desired ) { $score += 200; $reasons[] = $has_media ? ( $body > 280 ? 'long_copy_favors_wider_copy_track' : 'concise_copy_favors_balanced_split' ) : 'no_owned_media'; }
 					if ( $has_media && str_ends_with( $id, '.right' ) ) { $score += 20; $reasons[] = 'documented_media_right_default'; }
 					break;
 				default: break;
