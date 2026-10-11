@@ -2159,14 +2159,19 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 					}
 				}
 			}
-			$identity_presentation = (string) ( $node['visual_policy']['entity_layout']['tracks']['identity_presentation'] ?? '' );
-			if ( $identity_presentation === 'avatar_with_metadata' ) {
-				foreach ( [ '' => '', '_tablet' => '_tablet', '_mobile' => '_mobile' ] as $suffix => $_unused ) {
-					$settings['_element_width' . $suffix] = 'initial';
-					$settings['_flex_size' . $suffix] = 'custom';
-					$settings['_flex_grow' . $suffix] = $settings['flex_grow' . $suffix] = 0;
-					$settings['_flex_shrink' . $suffix] = $settings['flex_shrink' . $suffix] = 0;
-				}
+			// The image width control styles the <img>, but does not reserve that
+			// width for its Elementor flex-item wrapper. A wrapper with no custom
+			// basis can collapse beside metadata, leaving a thin cropped strip even
+			// though the accepted Plan asks for a square avatar. Lower the Plan-owned
+			// responsive media width to both the image and its native wrapper.
+			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+				$avatar_width = wpae_elementor_ir_media_dimension( $render['width'][ $device ] ?? '' );
+				if ( ! $avatar_width ) { continue; }
+				$settings['_element_width' . $suffix] = 'initial';
+				$settings['_flex_size' . $suffix] = 'custom';
+				$settings['_element_custom_width' . $suffix] = $avatar_width;
+				$settings['_flex_grow' . $suffix] = $settings['flex_grow' . $suffix] = 0;
+				$settings['_flex_shrink' . $suffix] = $settings['flex_shrink' . $suffix] = 0;
 			}
 		}
 		if ( $has_render_policy ) {

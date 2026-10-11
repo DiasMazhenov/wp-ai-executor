@@ -2560,7 +2560,15 @@ foreach ( (array) ( $testimonial_density_collection['elements'] ?? [] ) as $card
 		$expected_rem = (float) rtrim( (string) ( $expected_avatar_size[$device] ?? '' ), 'rem' );
 		$width = (array) ( $avatar_settings['width' . $width_suffix] ?? [] );
 		$height = (array) ( $avatar_settings['height' . $height_suffix] ?? [] );
-		$testimonial_avatar_density_ok = $testimonial_avatar_density_ok && ( $width['unit'] ?? '' ) === 'rem' && ( $height['unit'] ?? '' ) === 'rem' && (float) ( $width['size'] ?? -1 ) === $expected_rem && (float) ( $height['size'] ?? -1 ) === $expected_rem;
+		$wrapper_width = (array) ( $avatar_settings['_element_custom_width' . $width_suffix] ?? [] );
+		$device_matches = ( $width['unit'] ?? '' ) === 'rem' && ( $height['unit'] ?? '' ) === 'rem'
+			&& (float) ( $width['size'] ?? -1 ) === $expected_rem && (float) ( $height['size'] ?? -1 ) === $expected_rem
+			&& ( $avatar_settings['_element_width' . $width_suffix] ?? '' ) === 'initial'
+			&& ( $avatar_settings['_flex_size' . $width_suffix] ?? '' ) === 'custom'
+			&& ( $wrapper_width['unit'] ?? '' ) === 'rem' && (float) ( $wrapper_width['size'] ?? -1 ) === $expected_rem
+			&& (float) ( $avatar_settings['_flex_shrink' . $width_suffix] ?? -1 ) === 0.0
+			&& (float) ( $avatar_settings['flex_shrink' . $width_suffix] ?? -1 ) === 0.0;
+		$testimonial_avatar_density_ok = $testimonial_avatar_density_ok && $device_matches;
 	}
 	$card_json = (string) wp_json_encode( $card, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	$testimonial_identity_ok = $testimonial_identity_ok
