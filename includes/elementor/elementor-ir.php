@@ -559,10 +559,17 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						foreach ( (array) ( $body['children'] ?? [] ) as $field ) { if ( in_array( $field['role'] ?? '', [ 'team_photo', 'team_name', 'team_position', 'testimonial_photo', 'testimonial_author', 'testimonial_meta' ], true ) ) { $identity[] = $field; } else { $copy[] = $field; } }
 						$body['children'] = [];
 						$identity_presentation = (string) ( $plan['visual_policy']['entity_layout']['tracks']['identity_presentation'] ?? '' );
+						$team_identity_layout_v2 = ( $plan['archetype'] ?? '' ) === 'team' && ( $plan['visual_policy']['entity_layout']['tracks']['identity_layout_version'] ?? null ) === 2 && $identity_presentation === 'portrait_then_labels';
 						if ( $identity && $identity_presentation === 'avatar_with_metadata' && ( $plan['archetype'] ?? '' ) === 'testimonials' ) {
 							$avatar_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => ( $field['role'] ?? '' ) === 'testimonial_photo' ) );
 							$metadata_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => in_array( $field['role'] ?? '', [ 'testimonial_author', 'testimonial_meta' ], true ) ) );
 							$identity_nodes = $avatar_nodes;
+							if ( $metadata_nodes ) { $identity_nodes[] = wpae_elementor_ir_node( $card['node_id'] . '-identity-metadata', 'entity_identity_metadata', 'container', [], [], $metadata_nodes, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ); }
+							if ( $identity_nodes ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity_nodes, [ 'min_width' => 0, 'max_width' => 100 ] ); }
+						} elseif ( $identity && $team_identity_layout_v2 ) {
+							$portrait_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => ( $field['role'] ?? '' ) === 'team_photo' ) );
+							$metadata_nodes = array_values( array_filter( $identity, static fn( array $field ): bool => in_array( $field['role'] ?? '', [ 'team_name', 'team_position' ], true ) ) );
+							$identity_nodes = $portrait_nodes;
 							if ( $metadata_nodes ) { $identity_nodes[] = wpae_elementor_ir_node( $card['node_id'] . '-identity-metadata', 'entity_identity_metadata', 'container', [], [], $metadata_nodes, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ); }
 							if ( $identity_nodes ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity_nodes, [ 'min_width' => 0, 'max_width' => 100 ] ); }
 						} elseif ( $identity ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ); }
@@ -768,6 +775,12 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 					$settings['_flex_size' . $suffix] = 'grow';
 					$settings['flex_grow' . $suffix] = $settings['_flex_grow' . $suffix] = 1;
 					$settings['flex_shrink' . $suffix] = $settings['_flex_shrink' . $suffix] = 1;
+					} elseif ( ( $tracks['identity_layout_version'] ?? null ) === 2 && $identity_presentation === 'portrait_then_labels' && $role === 'entity_identity' ) {
+						$direction = 'column';
+						$gap_value = $tracks['identity_gap'][$device] ?? '0.75rem';
+					} elseif ( ( $tracks['identity_layout_version'] ?? null ) === 2 && $identity_presentation === 'portrait_then_labels' && $role === 'entity_identity_metadata' ) {
+						$direction = 'column';
+						$gap_value = $tracks['identity_metadata_gap'][$device] ?? '0.25rem';
 				}
 				$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 1 );
 				$settings['flex_direction' . $suffix] = $direction;

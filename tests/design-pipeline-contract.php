@@ -2480,6 +2480,7 @@ foreach ( $team_density_images as $image_index => $image_node ) {
 	$team_density_frames_match = $team_density_frames_match && ( $settings['object-fit'] ?? '' ) === 'contain';
 }
 $team_density_values = array_values( $team_density_metrics );
+$team_density_tracks = (array) ( $team_density_plan['visual_policy']['entity_layout']['tracks'] ?? [] );
 $check( $team_density_validation['ok'] && ( $team_density_plan['composition_decision']['record_id'] ?? '' ) === 'team.editorial_rows' && count( $team_density_metrics ) === 3 && ! isset( $team_density_plan['visual_policy']['content_metrics'] ), 'Team density is frozen once in selection evidence and the Plan stores only resolved layout decisions' );
 $team_density_frame_signatures = array_map( 'wp_json_encode', array_column( $team_density_values, 'portrait_height' ) );
 $expected_team_density_frames = [
@@ -2489,6 +2490,39 @@ $expected_team_density_frames = [
 ];
 $check( ( $team_density_values[0]['density'] ?? '' ) === 'compact' && ( $team_density_values[1]['density'] ?? '' ) === 'balanced' && ( $team_density_values[2]['density'] ?? '' ) === 'spacious' && count( array_unique( $team_density_frame_signatures ) ) === 3 && array_column( $team_density_values, 'portrait_height' ) === $expected_team_density_frames, 'Short, medium and long bios select compact, responsive portrait frames instead of letting portraits dominate concise copy rows' );
 $check( ( $team_density_plan['visual_policy']['entity_layout']['tracks']['content_density'] ?? '' ) === 'spacious' && ( $team_density_plan['visual_policy']['entity_layout']['tracks']['gap']['desktop'] ?? '' ) === '2rem' && ! empty( $team_density_native['ok'] ) && $team_density_frames_match, 'Team Plan uses observed copy density to select row spacing and compiles per-entity responsive portrait frames with contain cropping' );
+$team_density_flat = $walk_elements( (array) ( $team_density_native['elementor_data'] ?? [] ) );
+$team_density_collection = array_values( array_filter( $team_density_flat, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-team_cards' && count( (array) ( $node['elements'] ?? [] ) ) === 3 ) )[0] ?? [];
+$team_density_identity_nodes = array_values( array_map( static fn( array $card ): array => (array) ( $card['elements'][0]['elements'][0] ?? [] ), array_values( (array) ( $team_density_collection['elements'] ?? [] ) ) ) );
+$team_identity_contract_ok = ( $team_density_tracks['identity_layout_version'] ?? null ) === 2 && count( $team_density_identity_nodes ) === 3;
+foreach ( $team_density_identity_nodes as $identity_node ) {
+	$identity_settings = (array) ( $identity_node['settings'] ?? [] );
+	$metadata_node = (array) ( $identity_node['elements'][1] ?? [] );
+	$metadata_settings = (array) ( $metadata_node['settings'] ?? [] );
+	$team_identity_contract_ok = $team_identity_contract_ok
+		&& ( $identity_node['elements'][0]['widgetType'] ?? '' ) === 'image'
+		&& ( $metadata_node['elType'] ?? '' ) === 'container'
+		&& count( (array) ( $metadata_node['elements'] ?? [] ) ) === 2
+		&& ( $metadata_node['elements'][0]['widgetType'] ?? '' ) === 'heading'
+		&& ( $metadata_node['elements'][1]['widgetType'] ?? '' ) === 'text-editor';
+	foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+		$identity_gap = (array) ( $identity_settings['flex_gap' . $suffix] ?? [] );
+		$metadata_gap = (array) ( $metadata_settings['flex_gap' . $suffix] ?? [] );
+		$team_identity_contract_ok = $team_identity_contract_ok
+			&& ( $identity_settings['flex_direction' . $suffix] ?? '' ) === 'column'
+			&& ( $metadata_settings['flex_direction' . $suffix] ?? '' ) === 'column'
+			&& ( $identity_gap['unit'] ?? '' ) === 'rem' && (float) ( $identity_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $team_density_tracks['identity_gap'][$device] ?? '' ), 'rem' )
+			&& ( $metadata_gap['unit'] ?? '' ) === 'rem' && (float) ( $metadata_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $team_density_tracks['identity_metadata_gap'][$device] ?? '' ), 'rem' );
+	}
+}
+$team_density_legacy_plan = $team_density_plan;
+unset( $team_density_legacy_plan['visual_policy']['entity_layout']['tracks']['identity_layout_version'] );
+$team_density_legacy_validation = wpae_design_plan_validate( $team_density_legacy_plan, $team_density_brief );
+$team_density_legacy_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $team_density_legacy_plan, $team_density_brief ), $team_density_brief, [], [ 'resolved_visual' => $team_density_legacy_plan['resolved_visual'] ] );
+$team_density_legacy_flat = $walk_elements( (array) ( $team_density_legacy_native['elementor_data'] ?? [] ) );
+$team_density_legacy_collection = array_values( array_filter( $team_density_legacy_flat, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-team_cards' && count( (array) ( $node['elements'] ?? [] ) ) === 3 ) )[0] ?? [];
+$team_density_legacy_identity = (array) ( $team_density_legacy_collection['elements'][0]['elements'][0]['elements'][0] ?? [] );
+$check( $team_identity_contract_ok, 'Versioned Team identity layout compiles portrait above a grouped name/position stack at every breakpoint using Plan-owned gaps' );
+$check( ! empty( $team_density_legacy_validation['ok'] ) && ( $team_density_legacy_identity['settings']['flex_direction'] ?? '' ) === 'row' && count( (array) ( $team_density_legacy_identity['elements'] ?? [] ) ) === 3, 'Historical Team Plans without identity_layout_version keep their prior native identity tree and remain valid' );
 
 $testimonial_density_prompt = 'Блок отзывов. Надзаголовок «ДЕМО». Заголовок «Короткие и подробные отзывы». '
 	. 'Отзыв 1 текст «Короткая цитата.» Отзыв 1 автор «Автор один». Отзыв 1 компания «Компания один». '
