@@ -1,0 +1,126 @@
+{
+  "schema": "wpae-live-first-render-evidence-v1",
+  "scenario": "B-about-hybrid",
+  "source_version": "v02.11.340",
+  "post_id": 5214,
+  "baseline_before_generation": [],
+  "generation": {
+    "action_path": "pipeline",
+    "write_count": 1,
+    "intake": {
+      "requested_model": "openrouter/free",
+      "returned_model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "provider_name": "Nvidia",
+      "provider_calls": 1,
+      "actual_http_calls": 1,
+      "latency_ms": 10181,
+      "retry_count": 0,
+      "http_status": 200,
+      "response_format": "json_schema",
+      "strict_requested": true,
+      "require_parameters": true,
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 2114,
+        "output_tokens": 865,
+        "total_tokens": 2979,
+        "reasoning_tokens": 790,
+        "known": true
+      },
+      "semantic_validation_result": "accepted",
+      "generated_slot_count": 1
+    },
+    "brief_hash": "de018ba7051dec5486136bcd406e25f6acbcebc15483d96495bd39b7d762243e",
+    "plan_hash": "0f6fd8af48de970dbab6adf0bb03b389996e14c02390d9eb036f8a53b47222a8",
+    "record_id": "about.split_50_50.right",
+    "record_hash": "77d1777c15586a0654d38c2b8da44a302eb7017211453df87fd8ec16c355fbad",
+    "composition_source": "content_ranked_catalog",
+    "profile": "editorial_light",
+    "media_side": "right",
+    "selection_metrics": {
+      "item_count": 1,
+      "max_title_chars": 43,
+      "max_body_chars": 125,
+      "max_entity_chars": 43,
+      "min_entity_chars": 43,
+      "entity_length_spread": 0,
+      "cta_count": 0,
+      "max_cta_chars": 0,
+      "faq_pair_count": 0,
+      "content_density_schema": "wpae-content-density-v2",
+      "content_density_source": "canonical_brief_exact_text",
+      "composition_density": "compact",
+      "estimated_max_body_lines": 1,
+      "estimated_body_line_spread": 0,
+      "estimated_max_section_title_lines": 2,
+      "entities_by_group": {
+        "about": {
+          "group_id": "about",
+          "body_chars": 43,
+          "body_words": 0,
+          "estimated_body_lines": 1,
+          "title_chars": 43,
+          "estimated_title_lines": 2,
+          "density": "compact",
+          "media_roles": [
+            "section_image"
+          ]
+        }
+      },
+      "line_estimate": {
+        "basis": "canonical-character-count",
+        "body_chars_per_line": 58,
+        "title_chars_per_line": 28,
+        "render_evidence": false
+      }
+    },
+    "layout": {
+      "schema": "wpae-layout-report-v1",
+      "ok": true,
+      "violations": [],
+      "breakpoints": [
+        {
+          "breakpoint": "desktop",
+          "container_width": 1376,
+          "used_width": 1356,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "laptop",
+          "container_width": 960,
+          "used_width": 944,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "tablet",
+          "container_width": 704,
+          "used_width": 688,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "mobile",
+          "container_width": 358,
+          "used_width": 358,
+          "mobile_stack_result": "stack"
+        }
+      ]
+    },
+    "compiled_signature": "ae4b5dbe5fc2eca2cca4f937b51098fe47590357c6b5b74af7c441944fc63b80",
+    "readback_matches": true,
+    "operation": {
+      "operation_id": "wpae-347f0085318b1140",
+      "operation_identity": "7eefb2a2-7326-42eb-a083-3e1055bb685f",
+      "revision": 4,
+      "root_ids": [
+        "b6cb47f"
+      ],
+      "accepted_contract_id": "contract-68d5443d8d0ac35c8b0e3794",
+      "accepted_contract_hash": "68d5443d8d0ac35c8b0e3794f4374db325dd09d1e41e74cdd7c68d3e880d41c2",
+      "compiled_hash": "721f8dce31621090ffab596c946c5d56f3ffd565140b69aa4f1f9b4ed5c499f4",
+      "saved_hash": "ad9ebec06eae16ace19296fa470b1c884ad9f54a466025ceed570e91fc787abc",
+      "current_state": "written"
+    },
+    "vision_text": "The About section has strong typography and follows the layout requirements, but the contrast between the body text color and the dark background is extremely low, making the text nearly illegible."
+  },
+  "note": "Provider diagnostics are summarized from allowlisted fields; no request/response bodies or credentials stored."
+}

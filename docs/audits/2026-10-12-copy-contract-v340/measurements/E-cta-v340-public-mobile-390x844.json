@@ -1,0 +1,158 @@
+{
+  "actions": {
+    "align": "flex-start",
+    "background": "rgba(0, 0, 0, 0)",
+    "direction": "column",
+    "display": "flex",
+    "fontSize": "16px",
+    "gap": "12px",
+    "height": 92,
+    "justify": "normal",
+    "lineHeight": "24px",
+    "overflowX": "visible",
+    "overflowY": "visible",
+    "padding": "0px",
+    "textAlign": "start",
+    "width": 358,
+    "x": 16,
+    "y": 362.4
+  },
+  "body": {
+    "box": {
+      "align": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "direction": "row",
+      "display": "block",
+      "fontSize": "16px",
+      "gap": "0px",
+      "height": 38.4,
+      "justify": "normal",
+      "lineHeight": "26.4px",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px",
+      "textAlign": "start",
+      "width": 355.77,
+      "x": 16,
+      "y": 292
+    },
+    "text": "Первый шаг — обсудить задачу и ограничения"
+  },
+  "buttons": [
+    {
+      "box": {
+        "align": "normal",
+        "background": "rgb(0, 0, 0)",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "gap": "normal",
+        "height": 39,
+        "justify": "normal",
+        "lineHeight": "15px",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "12px 24px",
+        "textAlign": "center",
+        "width": 168.07,
+        "x": 16,
+        "y": 362.4
+      },
+      "href": "#contact",
+      "text": "Обсудить проект"
+    },
+    {
+      "box": {
+        "align": "normal",
+        "background": "rgb(255, 255, 255)",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "gap": "normal",
+        "height": 41,
+        "justify": "normal",
+        "lineHeight": "15px",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "12px 24px",
+        "textAlign": "center",
+        "width": 192.68,
+        "x": 16,
+        "y": 413.4
+      },
+      "href": "#projects",
+      "text": "Посмотреть работы"
+    }
+  ],
+  "copy": {
+    "align": "flex-start",
+    "background": "rgba(0, 0, 0, 0)",
+    "direction": "column",
+    "display": "flex",
+    "fontSize": "16px",
+    "gap": "0px",
+    "height": 244.4,
+    "justify": "normal",
+    "lineHeight": "24px",
+    "overflowX": "visible",
+    "overflowY": "visible",
+    "padding": "0px",
+    "textAlign": "start",
+    "width": 358,
+    "x": 16,
+    "y": 86
+  },
+  "root": {
+    "box": {
+      "align": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": 448.4,
+      "justify": "normal",
+      "lineHeight": "24px",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px 16px",
+      "textAlign": "start",
+      "width": 390,
+      "x": 0,
+      "y": 46
+    },
+    "id": "8963f38"
+  },
+  "scroll": {
+    "height": 844,
+    "width": 390
+  },
+  "title": {
+    "box": {
+      "align": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "direction": "row",
+      "display": "block",
+      "fontSize": "16px",
+      "gap": "0px",
+      "height": 173.02,
+      "justify": "normal",
+      "lineHeight": "24px",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px",
+      "textAlign": "start",
+      "width": 358,
+      "x": 16,
+      "y": 118.98
+    },
+    "text": "СВЯЗЬ"
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 390,
+    "height": 844,
+    "width": 390
+  }
+}

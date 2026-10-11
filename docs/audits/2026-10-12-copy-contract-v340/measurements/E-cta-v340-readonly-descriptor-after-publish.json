@@ -1,0 +1,91 @@
+{
+  "status": "Свежий read-only descriptor: operation wpae-0992dc2fe57f0482, revision 5, status available. write_count=0.",
+  "composition": {
+    "schema": "wpae-composition-evidence-v1",
+    "status": "complete",
+    "request": {
+      "mode": "automatic",
+      "record_id": null,
+      "record_version": null,
+      "visual_profile": null,
+      "visual_profile_source": "not_requested",
+      "brief_composition": null,
+      "brief_media_side": null
+    },
+    "accepted": {
+      "record_id": "cta.split_actions",
+      "record_version": 1,
+      "record_hash": "e71681d425d30140c3576cc420bd9b9d04108aeb21b2c113d0f278c3c7c74c74",
+      "source": "content_ranked_catalog",
+      "visual_profile": "editorial_light",
+      "selection_reasons": [
+        "separate_actions_favor_split_actions"
+      ],
+      "selection_policy": "wpae-composition-selection-v2",
+      "catalog_id": "wpae-compositions-v1",
+      "catalog_identity": "078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18"
+    },
+    "hashes": {
+      "brief_sha256": "957fff015dae0f2f620a06be73607dbd50e7b331967b78f7405765744080d220",
+      "plan_sha256": "92277fe7090805e59b5813368996f9784592162b307d9083b98780d04e0bfbeb"
+    },
+    "surface": {
+      "profile": "editorial_light",
+      "section_surface": {
+        "token": "color.section_bg",
+        "source": "documented_default",
+        "palette_role": "accent",
+        "opacity": 0.2,
+        "transparency": 0.8,
+        "accent_source": "elementor_system_color_stock_default:accent",
+        "accent_confirmed": false
+      },
+      "resolved_value": "#61ce7033",
+      "value_source": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent",
+      "accent_reference": {
+        "value": "#61ce70",
+        "source": "elementor_system_color_stock_default:accent",
+        "confirmed": false
+      },
+      "opaque_underlay": "#ffffff"
+    },
+    "generation": {
+      "route": "provider_typed_intake_then_local_deterministic",
+      "provider_calls": 2,
+      "provider_call_count_source": "canonical_intake_and_design_pipeline",
+      "transaction_write_count": 1,
+      "transaction_write_count_source": "successful_transaction_and_readback"
+    },
+    "operation": {
+      "post_id": 5214,
+      "operation_id": "wpae-0992dc2fe57f0482",
+      "operation_identity": "52b8c801-ee92-4afe-8602-4c320bdccb69",
+      "root_ids": [
+        "8963f38"
+      ],
+      "revision": 5,
+      "accepted_contract_id": "contract-5249b072ce5a4a9a4708ec8f",
+      "accepted_contract_sha256": "5249b072ce5a4a9a4708ec8f9eef17878c24b00ea215ae487491dc52a67053ad",
+      "saved_document_sha256": "24465df1516ab9a1c505f84201f373361228d2d566f965c217f16567dfa2ba1d"
+    },
+    "native": {
+      "saved_native_fingerprint": "6bd0186d31a3b1014aa93dd95c2346437816e0ec45e9740e73ca36cfb7c2c6dc",
+      "saved_root_ids": [
+        "8963f38"
+      ]
+    }
+  },
+  "native_readback": {
+    "post_id": 5214,
+    "operation_id": "wpae-0992dc2fe57f0482",
+    "operation_identity": "52b8c801-ee92-4afe-8602-4c320bdccb69",
+    "root_ids": [
+      "8963f38"
+    ],
+    "revision": 5,
+    "accepted_contract_id": "contract-5249b072ce5a4a9a4708ec8f",
+    "accepted_contract_sha256": "5249b072ce5a4a9a4708ec8f9eef17878c24b00ea215ae487491dc52a67053ad",
+    "saved_document_sha256": "24465df1516ab9a1c505f84201f373361228d2d566f965c217f16567dfa2ba1d"
+  },
+  "captured_at_utc": "2026-10-11T20:46:47.005Z"
+}

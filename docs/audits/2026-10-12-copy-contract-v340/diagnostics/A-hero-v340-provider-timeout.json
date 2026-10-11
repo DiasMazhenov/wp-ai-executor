@@ -1,0 +1,44 @@
+{
+  "schema": "wpae-intake-failure-diagnostics-v1",
+  "scenario": "A-hero-generated",
+  "source_version": "v02.11.340",
+  "requested_model": "openrouter/free",
+  "provider": "openrouter",
+  "capability_state": "unknown",
+  "capability_source": "OpenRouter per-endpoint structured-output metadata; runtime require_parameters filter",
+  "strict_requested": true,
+  "require_parameters": true,
+  "response_format": "json_schema",
+  "canonical_schema_bytes": 864,
+  "wire_schema_adapter": "openrouter_typed_omit_uniqueItems_v1",
+  "token_limit": 3200,
+  "failure_class": "transport_failure",
+  "failure": "provider_timeout",
+  "provider_error": null,
+  "actual_http_calls": 2,
+  "retry_count": 1,
+  "attempt_timeout_ms": 30000,
+  "latency_ms": 60171,
+  "attempts": [
+    {
+      "http_status": null,
+      "transport_error_code": "http_request_failed",
+      "transport_error_message": "cURL error 28: Operation timed out after 30000 milliseconds with 94 out of -1 bytes received",
+      "duration_ms": 30088,
+      "remaining_budget_ms": 59911,
+      "write_count": 0
+    },
+    {
+      "http_status": null,
+      "transport_error_code": "http_request_failed",
+      "transport_error_message": "cURL error 28: Operation timed out after 30001 milliseconds with 86 out of -1 bytes received",
+      "duration_ms": 30083,
+      "remaining_budget_ms": 29828,
+      "write_count": 0
+    }
+  ],
+  "validation": "not_checked",
+  "operation_id": null,
+  "root_id": null,
+  "acceptance": "prewrite_refusal"
+}

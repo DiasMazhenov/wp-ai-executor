@@ -1,0 +1,474 @@
+{
+  "scenario": "D-pricing-two-tiers-generated-intro",
+  "post_id": 5214,
+  "source": "public",
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "css_viewport": {
+    "devicePixelRatio": 1,
+    "innerHeight": 923,
+    "innerWidth": 1232
+  },
+  "document": {
+    "clientHeight": 923,
+    "clientWidth": 1232,
+    "scrollHeight": 923,
+    "scrollWidth": 1232
+  },
+  "root": {
+    "children": [
+      {
+        "className": "e-con-inner",
+        "rect": {
+          "height": 679,
+          "width": 1140,
+          "x": 46,
+          "y": 32
+        },
+        "role": null,
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 51, 51)",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "32px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "margin": "0px 14px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "72px 0px",
+          "wrap": "nowrap"
+        },
+        "tag": "DIV",
+        "text": "УСЛОВИЯ\nНебольшая архитектурная студия проектирует жилые и общественные пространства\nНа пе"
+      }
+    ],
+    "className": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-6303608 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+    "rect": {
+      "height": 679,
+      "width": 1232,
+      "x": 0,
+      "y": 32
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "color": "rgb(51, 51, 51)",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "margin": "0px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "objectFit": "fill",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px 32px",
+      "wrap": "nowrap"
+    },
+    "tag": "DIV"
+  },
+  "layout": {
+    "direct": [
+      {
+        "className": "elementor-element elementor-element-b7699a3 e-con-full e-flex e-con e-child",
+        "css": {
+          "alignItems": "flex-start",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "0px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "rect": {
+          "bottom": 348.8,
+          "height": 244.8,
+          "width": 1140,
+          "x": 46,
+          "y": 104
+        },
+        "text": "УСЛОВИЯ\nНебольшая архитектурная студия проектирует жилые и общественные пространства\nНа первой встрече обсуждаются задача, пожелан"
+      },
+      {
+        "className": "elementor-element elementor-element-ae001cb e-con-full e-flex e-con e-child",
+        "css": {
+          "alignItems": "stretch",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "flex",
+          "gap": "24px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "wrap"
+        },
+        "rect": {
+          "bottom": 638.8,
+          "height": 258,
+          "width": 1140,
+          "x": 46,
+          "y": 380.8
+        },
+        "text": "Старт\n50 000 ₸\n/мес\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nДизайн\nРазработка\nВыбрать Проект"
+      }
+    ],
+    "group": {
+      "cardCount": 2,
+      "cards": [
+        {
+          "css": {
+            "alignItems": "stretch",
+            "background": "rgb(255, 255, 255)",
+            "borderRadius": "8px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "justifyContent": "space-between",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "24px",
+            "wrap": "nowrap"
+          },
+          "cta": [
+            {
+              "href": "#start",
+              "rect": {
+                "bottom": 613.8,
+                "height": 39,
+                "width": 154.3,
+                "x": 71,
+                "y": 574.8
+              },
+              "text": "Выбрать Старт"
+            }
+          ],
+          "id": "e4864e3",
+          "rect": {
+            "bottom": 638.8,
+            "height": 258,
+            "width": 558,
+            "x": 46,
+            "y": 380.8
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nАудит\nПлан\nВыбрать Старт"
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "background": "rgb(255, 255, 255)",
+            "borderRadius": "8px",
+            "direction": "column",
+            "display": "flex",
+            "gap": "20px",
+            "justifyContent": "space-between",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "24px",
+            "wrap": "nowrap"
+          },
+          "cta": [
+            {
+              "href": "#project",
+              "rect": {
+                "bottom": 613.8,
+                "height": 39,
+                "width": 165.1,
+                "x": 653,
+                "y": 574.8
+              },
+              "text": "Выбрать Проект"
+            }
+          ],
+          "id": "625a945",
+          "rect": {
+            "bottom": 638.8,
+            "height": 258,
+            "width": 558,
+            "x": 628,
+            "y": 380.8
+          },
+          "text": "Проект\n150 000 ₸\n/год\nДизайн\nРазработка\nВыбрать Проект"
+        }
+      ],
+      "css": {
+        "alignItems": "stretch",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "24px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "rect": {
+        "bottom": 638.8,
+        "height": 258,
+        "width": 1140,
+        "x": 46,
+        "y": 380.8
+      }
+    },
+    "overflow": {
+      "documentScrollWidth": 1232,
+      "rootClientHeight": 679,
+      "rootClientWidth": 1232,
+      "rootScrollHeight": 679,
+      "rootScrollWidth": 1232,
+      "viewport": 1232
+    },
+    "textEditors": [
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "0px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 348.8,
+          "height": 244.8,
+          "width": 608,
+          "x": 46,
+          "y": 104
+        },
+        "rect": {
+          "bottom": 348.8,
+          "height": 67.2,
+          "width": 608,
+          "x": 46,
+          "y": 281.6
+        },
+        "text": "На первой встрече обсуждаются задача, пожелания и ограничения пространства"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "4px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 479.6,
+          "height": 38.4,
+          "width": 508,
+          "x": 71,
+          "y": 441.2
+        },
+        "rect": {
+          "bottom": 473.2,
+          "height": 25.6,
+          "width": 32,
+          "x": 199.6,
+          "y": 447.6
+        },
+        "text": "/мес"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 554.8,
+          "height": 149,
+          "width": 508,
+          "x": 71,
+          "y": 405.8
+        },
+        "rect": {
+          "bottom": 517.2,
+          "height": 25.6,
+          "width": 508,
+          "x": 71,
+          "y": 491.6
+        },
+        "text": "Аудит"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 554.8,
+          "height": 149,
+          "width": 508,
+          "x": 71,
+          "y": 405.8
+        },
+        "rect": {
+          "bottom": 554.8,
+          "height": 25.6,
+          "width": 508,
+          "x": 71,
+          "y": 529.2
+        },
+        "text": "План"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "4px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 479.6,
+          "height": 38.4,
+          "width": 508,
+          "x": 653,
+          "y": 441.2
+        },
+        "rect": {
+          "bottom": 473.2,
+          "height": 25.6,
+          "width": 29.5,
+          "x": 799.4,
+          "y": 447.6
+        },
+        "text": "/год"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 554.8,
+          "height": 149,
+          "width": 508,
+          "x": 653,
+          "y": 405.8
+        },
+        "rect": {
+          "bottom": 517.2,
+          "height": 25.6,
+          "width": 508,
+          "x": 653,
+          "y": 491.6
+        },
+        "text": "Дизайн"
+      },
+      {
+        "css": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "borderRadius": "0px",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "justifyContent": "normal",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "0px",
+          "wrap": "nowrap"
+        },
+        "parent": {
+          "bottom": 554.8,
+          "height": 149,
+          "width": 508,
+          "x": 653,
+          "y": 405.8
+        },
+        "rect": {
+          "bottom": 554.8,
+          "height": 25.6,
+          "width": 508,
+          "x": 653,
+          "y": 529.2
+        },
+        "text": "Разработка"
+      }
+    ]
+  }
+}

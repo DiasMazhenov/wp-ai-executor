@@ -1,0 +1,26 @@
+{
+  "operation_id": "wpae-347f0085318b1140",
+  "operation_identity": "7eefb2a2-7326-42eb-a083-3e1055bb685f",
+  "revision_before_undo": 5,
+  "undo_control": "guarded operation-scoped Undo",
+  "undo_result": "already_undone",
+  "editor": {
+    "root_ids": [],
+    "publish_disabled": true,
+    "unsaved": false
+  },
+  "public": {
+    "bodyText": "О WordPress\nMazhenov Design\nНастроить\n16\n16 комментариев ждут одобрения\nДобавить\nAI Executor\nРедактировать страницу\nРедактировать в Elementor\nОбновления\nMaintenance is Off\nLLAR\nWP Rocket\nПривет, diasmazhenov\nПоиск\nЗдравствуйте!\nAI-Dana",
+    "documentWidth": 1232,
+    "elementorContentNodes": [],
+    "elementorRoots": [],
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "dpr": 1,
+      "height": 923,
+      "width": 1232
+    }
+  },
+  "baseline_before_generation": [],
+  "baseline_after_undo": []
+}

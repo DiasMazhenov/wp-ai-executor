@@ -1,0 +1,284 @@
+{
+  "children": [
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": 475,
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "80px 0px",
+        "textAlign": "start",
+        "width": 1140,
+        "x": 46,
+        "y": 32
+      },
+      "cls": "e-con-inner",
+      "tag": "DIV"
+    }
+  ],
+  "document": {
+    "height": 923,
+    "width": 1232
+  },
+  "elements": [
+    {
+      "box": {
+        "alignItems": "center",
+        "bg": "rgb(0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": 27.6,
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "width": 100.4,
+        "x": 46,
+        "y": 112
+      },
+      "cls": "wpae-generated-badge elementor-element elementor-element-45e8aa8 e-con-full e-flex e-con e-child",
+      "href": null,
+      "loaded": null,
+      "tag": "DIV",
+      "text": "КОНТЕКСТ"
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": 14.4,
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": 74.4,
+        "x": 59,
+        "y": 118.6
+      },
+      "cls": "elementor-element elementor-element-febe080 elementor-widget__width-initial elementor-widget-tablet__width-initial elementor-widget-mobile__width-initial wpae-generated-badge-label elementor-widget elementor-widget-heading",
+      "href": null,
+      "loaded": null,
+      "tag": "DIV",
+      "text": "КОНТЕКСТ"
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "12px",
+        "gap": "normal",
+        "height": 14.4,
+        "justifyContent": "normal",
+        "lineHeight": "14.4px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": 74.4,
+        "x": 59,
+        "y": 118.6
+      },
+      "cls": "elementor-heading-title elementor-size-default",
+      "href": null,
+      "loaded": null,
+      "tag": "H6",
+      "text": "КОНТЕКСТ"
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "40px",
+        "gap": "normal",
+        "height": 92,
+        "justifyContent": "normal",
+        "lineHeight": "46px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": 560,
+        "x": 46,
+        "y": 151.6
+      },
+      "cls": "elementor-heading-title elementor-size-default",
+      "href": null,
+      "loaded": null,
+      "tag": "H2",
+      "text": "Проект начинается с внимательного разговора"
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "17px",
+        "gap": "normal",
+        "height": 56.1,
+        "justifyContent": "normal",
+        "lineHeight": "28.05px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": 560,
+        "x": 46,
+        "y": 259.6
+      },
+      "cls": "",
+      "href": null,
+      "loaded": null,
+      "tag": "P",
+      "text": "На первой встрече команда обсуждает пожелания и ограничения пространства."
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "17px",
+        "gap": "normal",
+        "height": 28,
+        "justifyContent": "normal",
+        "lineHeight": "28.05px",
+        "overflow": "visible",
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": 560,
+        "x": 46,
+        "y": 330.1
+      },
+      "cls": "",
+      "href": null,
+      "loaded": null,
+      "tag": "P",
+      "text": "Перед разработкой чертежей согласуется планировка."
+    },
+    {
+      "box": {
+        "alignItems": "normal",
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": 315,
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "overflow": "clip",
+        "overflowX": "clip",
+        "overflowY": "clip",
+        "padding": "0px",
+        "textAlign": "center",
+        "width": 560,
+        "x": 626,
+        "y": 112
+      },
+      "cls": "",
+      "href": null,
+      "loaded": {
+        "complete": true,
+        "naturalHeight": 675,
+        "naturalWidth": 1200,
+        "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+      },
+      "tag": "IMG",
+      "text": "Современный архитектурный интерьер с панорамным светом."
+    }
+  ],
+  "found": true,
+  "root": {
+    "alignItems": "normal",
+    "bg": "rgba(97, 206, 112, 0.2)",
+    "color": "rgb(51, 51, 51)",
+    "direction": "column",
+    "display": "flex",
+    "fontSize": "16px",
+    "gap": "normal",
+    "height": 475,
+    "justifyContent": "normal",
+    "lineHeight": "24px",
+    "overflow": "visible",
+    "overflowX": "visible",
+    "overflowY": "visible",
+    "padding": "0px 32px",
+    "textAlign": "start",
+    "width": 1232,
+    "x": 0,
+    "y": 32
+  },
+  "rootId": "b6cb47f",
+  "viewport": {
+    "dpr": 2,
+    "height": 923,
+    "width": 1232
+  },
+  "screenshot": {
+    "source": "public",
+    "cssViewport": {
+      "width": 1232,
+      "height": 923
+    },
+    "pngViewport": "screenshots/B-about-v340-public-desktop-viewport.png",
+    "pngAfterSiteChatCollapse": "screenshots/B-about-v340-public-desktop-1232x923-ai-dana-collapsed.png",
+    "raster": {
+      "width": 1232,
+      "height": 923
+    }
+  },
+  "image": {
+    "alt": "Современный архитектурный интерьер с панорамным светом.",
+    "borderRadius": "4px",
+    "complete": true,
+    "naturalHeight": 675,
+    "naturalWidth": 1200,
+    "objectFit": "cover",
+    "objectPosition": "50% 0%",
+    "rendered": {
+      "height": 315,
+      "width": 560,
+      "x": 626,
+      "y": 112
+    },
+    "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+  }
+}

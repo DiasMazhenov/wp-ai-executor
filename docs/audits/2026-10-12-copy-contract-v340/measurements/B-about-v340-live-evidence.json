@@ -1,0 +1,147 @@
+{
+  "schema": "wpae-live-acceptance-evidence-v1",
+  "scenario": "B-about-hybrid",
+  "source_version": "v02.11.340",
+  "post_id": 5214,
+  "fixture": "fixtures/B-about-hybrid.txt",
+  "fixture_sha256": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+  "brief_hash": "de018ba7051dec5486136bcd406e25f6acbcebc15483d96495bd39b7d762243e",
+  "plan_hash": "0f6fd8af48de970dbab6adf0bb03b389996e14c02390d9eb036f8a53b47222a8",
+  "record_id": "about.split_50_50.right",
+  "record_hash": "77d1777c15586a0654d38c2b8da44a302eb7017211453df87fd8ec16c355fbad",
+  "profile": "editorial_light",
+  "operation_id": "wpae-347f0085318b1140",
+  "operation_identity": "7eefb2a2-7326-42eb-a083-3e1055bb685f",
+  "revision": 4,
+  "root_ids": [
+    "b6cb47f"
+  ],
+  "write_count": 1,
+  "provider": {
+    "requested_model": "openrouter/free",
+    "returned_model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "provider_name": "Nvidia",
+    "http_status": 200,
+    "provider_calls": 1,
+    "retry_count": 0,
+    "latency_ms": 10181,
+    "strict": true,
+    "require_parameters": true,
+    "usage": {
+      "input_tokens": 2114,
+      "output_tokens": 865,
+      "reasoning_tokens": 790,
+      "total_tokens": 2979
+    }
+  },
+  "content": {
+    "heading": "Проект начинается с внимательным разговором",
+    "generated_paragraphs": [
+      "На первой встрече команда обсуждает пожелания и ограничения пространства.",
+      "Перед разработкой чертежей согласуется планировка."
+    ],
+    "cta_count": 0,
+    "media": {
+      "url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "alt": "Современный архитектурный интерьер с панорамным светом.",
+      "focal": "center top"
+    }
+  },
+  "post_reload_readback": {
+    "publish_disabled": true,
+    "editor_root_ids": [
+      "b6cb47f"
+    ],
+    "readonly_editor_server_compare": "completed write_count=0",
+    "owned_model_check": "accepted contract match",
+    "writes": 0
+  },
+  "public": {
+    "desktop": {
+      "viewport": [
+        1232,
+        923
+      ],
+      "root_box": {
+        "x": 0,
+        "y": 32,
+        "width": 1232,
+        "height": 475
+      },
+      "inner_box": {
+        "x": 46,
+        "y": 32,
+        "width": 1140,
+        "height": 475,
+        "direction": "row",
+        "gap": "20px"
+      },
+      "copy_width": 560,
+      "copy_x": 46,
+      "media_x": 626,
+      "media_width": 560,
+      "media_height": 315,
+      "body_color": "rgb(51,51,51)",
+      "section_background": "rgba(97,206,112,0.2)",
+      "contrast_ratio": 11.008,
+      "media_loaded": true,
+      "media_natural": [
+        1200,
+        675
+      ],
+      "media_object_fit": "cover",
+      "media_object_position": "50% 0%",
+      "overflow": false,
+      "screenshot": "screenshots/B-about-v340-public-desktop-viewport.png",
+      "screenshot_dimensions": [
+        1232,
+        923
+      ],
+      "collapsed_overlay_screenshot": "screenshots/B-about-v340-public-desktop-1232x923-ai-dana-collapsed.png"
+    },
+    "mobile": {
+      "viewport": [
+        390,
+        844
+      ],
+      "root_box": {
+        "x": 0,
+        "y": 46,
+        "width": 390,
+        "height": 674,
+        "direction": "column"
+      },
+      "inner_box": {
+        "x": 16,
+        "y": 46,
+        "width": 358,
+        "height": 674,
+        "direction": "column",
+        "gap": "14px"
+      },
+      "heading_font": "28px",
+      "copy_width": 358,
+      "media_box": {
+        "x": 16,
+        "y": 392,
+        "width": 358,
+        "height": 288
+      },
+      "media_loaded": true,
+      "overflow": false,
+      "screenshot": "screenshots/B-about-v340-public-mobile-390x844-viewport.png",
+      "screenshot_dimensions": [
+        390,
+        844
+      ],
+      "collapsed_overlay_screenshot": "screenshots/B-about-v340-public-mobile-390x844-ai-dana-collapsed.png"
+    }
+  },
+  "vision": {
+    "score": 68,
+    "claim": "body text nearly illegible against dark background",
+    "verified": false,
+    "dom_and_pixels": "text #333 on #dff5e2; computed contrast 11.0:1; screenshot remains readable"
+  },
+  "visual_review": "PASS: eyebrow pill and H2 present; balanced 50/50 editorial split; exact authored title; two fact-grounded paragraphs preserved; image loads and is top-center cropped; mobile copy-first stack; no overflow or content clipping. Site chat greeting overlay obscured background only before its standard collapse."
+}

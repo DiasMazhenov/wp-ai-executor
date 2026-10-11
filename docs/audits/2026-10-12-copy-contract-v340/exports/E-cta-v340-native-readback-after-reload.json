@@ -1,0 +1,187 @@
+{
+  "artifact": "wpae-native-readback-projection-v1",
+  "post_id": 5214,
+  "operation_id": "wpae-0992dc2fe57f0482",
+  "operation_identity": "52b8c801-ee92-4afe-8602-4c320bdccb69",
+  "revision": 5,
+  "selection_export": {
+    "format": "wpae-elementor-selection-v1",
+    "captured_at": "2026-10-11T20:00:12.492Z",
+    "selected_root_id": "8963f38",
+    "raw_export_bytes": 569879,
+    "raw_export_saved_as_file": false,
+    "note": "The selected native export was read after reload; this persisted projection records its authored text, links, IDs, and responsive native controls."
+  },
+  "nodes": [
+    {
+      "id": "8963f38",
+      "type": "container",
+      "classes": "wpae-cta-section wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-cta",
+      "background": "#61ce7033",
+      "content_width": "boxed",
+      "flex_direction": {
+        "desktop": "row",
+        "tablet": "column",
+        "mobile": "column"
+      },
+      "padding_rem": {
+        "desktop": [
+          "5",
+          "2",
+          "5",
+          "2"
+        ],
+        "tablet": [
+          "3.5",
+          "2",
+          "3.5",
+          "2"
+        ],
+        "mobile": [
+          "2.5",
+          "1",
+          "2.5",
+          "1"
+        ]
+      },
+      "gap_rem": {
+        "desktop": "2",
+        "tablet": "2",
+        "mobile": "2"
+      }
+    },
+    {
+      "id": "663cef8",
+      "type": "container",
+      "role": "cta_copy",
+      "width_percent": {
+        "desktop": 62,
+        "tablet": 100,
+        "mobile": 100
+      }
+    },
+    {
+      "id": "4acfc19",
+      "type": "container",
+      "role": "intro_measure",
+      "width": {
+        "desktop": "min(100%, 42rem)",
+        "tablet": "min(100%, 42rem)",
+        "mobile": "100%"
+      }
+    },
+    {
+      "id": "2666027",
+      "type": "container",
+      "role": "pill_box",
+      "classes": "wpae-generated-badge",
+      "background": "#000000",
+      "padding_rem": [
+        "0.35",
+        "0.75",
+        "0.35",
+        "0.75"
+      ],
+      "border": {
+        "color": "#000000",
+        "width_px": 1,
+        "radius_px": 999
+      }
+    },
+    {
+      "id": "40f60d8",
+      "type": "widget",
+      "widget": "heading",
+      "role": "pill_label",
+      "text": "СВЯЗЬ",
+      "tag": "h6",
+      "font_size_rem": {
+        "desktop": 0.75,
+        "tablet": 0.75,
+        "mobile": 0.75
+      },
+      "weight": 600,
+      "line_height_em": 1.2
+    },
+    {
+      "id": "946457d",
+      "type": "widget",
+      "widget": "heading",
+      "role": "section_title",
+      "text": "Небольшая архитектурная студия проектирует жилые и общественные пространства",
+      "tag": "h2",
+      "font_size_rem": {
+        "desktop": 2.5,
+        "tablet": 2,
+        "mobile": 1.75
+      },
+      "weight": 700,
+      "line_height_em": 1.15
+    },
+    {
+      "id": "89355e8",
+      "type": "widget",
+      "widget": "text-editor",
+      "role": "section_body",
+      "text": "Первый шаг — обсудить задачу и ограничения",
+      "font_size_rem": {
+        "desktop": 1.0625,
+        "tablet": 1,
+        "mobile": 1
+      },
+      "weight": 400,
+      "line_height_em": 1.65
+    },
+    {
+      "id": "2a3f230",
+      "type": "container",
+      "role": "cta_actions",
+      "width_percent": {
+        "desktop": 32,
+        "tablet": 100,
+        "mobile": 100
+      },
+      "flex_direction": {
+        "desktop": "column",
+        "tablet": "column",
+        "mobile": "column"
+      },
+      "gap_rem": {
+        "desktop": 1,
+        "tablet": 0.75,
+        "mobile": 0.75
+      },
+      "align": "flex-start"
+    },
+    {
+      "id": "2e362b2",
+      "type": "widget",
+      "widget": "button",
+      "text": "Обсудить проект",
+      "href": "#contact",
+      "background": "#000000",
+      "text_color": "#ffffff"
+    },
+    {
+      "id": "2049afb",
+      "type": "widget",
+      "widget": "button",
+      "text": "Посмотреть работы",
+      "href": "#projects",
+      "background": "#ffffff",
+      "border_color": "#000000",
+      "border_width_px": 1
+    }
+  ],
+  "comparison": {
+    "generated_root_id": "8963f38",
+    "saved_native_fingerprint": "6bd0186d31a3b1014aa93dd95c2346437816e0ec45e9740e73ca36cfb7c2c6dc",
+    "saved_document_sha256": "24465df1516ab9a1c505f84201f373361228d2d566f965c217f16567dfa2ba1d",
+    "editor_after_reload_text_matches_generation": true,
+    "public_after_publish_text_and_links_match": true,
+    "request_selection": "automatic",
+    "selected_record": "cta.split_actions",
+    "requested_record": "cta.centered",
+    "selection_mismatch": true
+  }
+}

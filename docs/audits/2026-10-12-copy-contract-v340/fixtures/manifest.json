@@ -1,0 +1,22 @@
+{
+  "A-hero-generated.txt": {
+    "sha256": "387237de2ea9c9e44b7658776a80a576da3d8c378b6e370fd36c77d54ba679df",
+    "bytes": 1030
+  },
+  "B-about-hybrid.txt": {
+    "sha256": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+    "bytes": 1324
+  },
+  "C-benefits-grid-generated.txt": {
+    "sha256": "9b0ba44cf186c15b36593c143dbdce2708b22fbb0b9df15f91b4deb2746c5e72",
+    "bytes": 1501
+  },
+  "D-pricing-two-tiers-generated-intro.txt": {
+    "sha256": "7e2ce704b94dd5b429e635a7626614b3df978a549ee7e113902ca12424a2d4a2",
+    "bytes": 1317
+  },
+  "E-cta-centered-generated-copy.txt": {
+    "sha256": "78ee35d12a4d28235eb15e61d46d7e4b4f93f537ad6ec0249ae9fb6e0759d594",
+    "bytes": 1086
+  }
+}
