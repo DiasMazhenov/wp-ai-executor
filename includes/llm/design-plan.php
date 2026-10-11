@@ -1339,6 +1339,11 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		// identity/copy tracks. Older frozen Plans omit this key and retain their
 		// historical native interpretation.
 		if ( $family === 'team' ) { $entity_tracks['identity_layout_version'] = 2; }
+		// Testimonial identity metadata must consume only the width left beside
+		// its fixed avatar and gap. Elementor's "grow" preset serializes as
+		// flex: 1 0 auto, which can push this track beyond its parent on mobile.
+		// Older frozen Plans without this decision keep their prior controls.
+		if ( $family === 'testimonials' ) { $entity_tracks['identity_metadata_basis'] = 'remaining_after_avatar_gap_v1'; }
 	}
 	$surface_override = strtolower( trim( (string) wpae_design_plan_constraint_value( $brief, 'surface_color', '' ) ) );
 	if ( ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) { $surface_override = ''; }
@@ -2593,6 +2598,8 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			if ( array_key_exists( 'identity_presentation', $entity_tracks ) ) {
 				$expected_identity_presentation = ( $plan['archetype'] ?? '' ) === 'testimonials' ? 'avatar_with_metadata' : 'portrait_then_labels';
 				if ( ( $entity_tracks['identity_presentation'] ?? '' ) !== $expected_identity_presentation ) { $errors[] = 'visual_policy_entity_identity_presentation_invalid'; }
+				$identity_metadata_basis = $entity_tracks['identity_metadata_basis'] ?? null;
+				if ( $identity_metadata_basis !== null && ( ( $plan['archetype'] ?? '' ) !== 'testimonials' || $identity_metadata_basis !== 'remaining_after_avatar_gap_v1' ) ) { $errors[] = 'visual_policy_entity_identity_metadata_basis_invalid'; }
 				$identity_layout_version = $entity_tracks['identity_layout_version'] ?? null;
 				if ( $identity_layout_version !== null && ( $identity_layout_version !== 2 || ( $plan['archetype'] ?? '' ) !== 'team' || $expected_identity_presentation !== 'portrait_then_labels' ) ) { $errors[] = 'visual_policy_entity_identity_layout_version_invalid'; }
 				if ( $expected_identity_presentation === 'avatar_with_metadata' || $identity_layout_version === 2 ) {

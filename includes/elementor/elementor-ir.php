@@ -772,9 +772,21 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 					$direction = 'column';
 					$gap_value = $tracks['identity_metadata_gap'][$device] ?? '0.25rem';
 					$settings['_element_width' . $suffix] = 'initial';
-					$settings['_flex_size' . $suffix] = 'grow';
-					$settings['flex_grow' . $suffix] = $settings['_flex_grow' . $suffix] = 1;
-					$settings['flex_shrink' . $suffix] = $settings['_flex_shrink' . $suffix] = 1;
+					if ( ( $tracks['identity_metadata_basis'] ?? '' ) === 'remaining_after_avatar_gap_v1' && $device === 'mobile' ) {
+						// On mobile, use a zero custom basis plus grow/shrink so Elementor
+						// allocates the remaining native Flex width after avatar and gap.
+						// The "grow" preset forces flex-shrink:0 and caused narrow overflow.
+						$dimension = [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ];
+						$settings['width' . $suffix] = $settings['_element_custom_width' . $suffix] = $dimension;
+						$settings['_flex_size' . $suffix] = 'custom';
+						$settings['flex_grow' . $suffix] = $settings['_flex_grow' . $suffix] = 1;
+						$settings['flex_shrink' . $suffix] = $settings['_flex_shrink' . $suffix] = 1;
+					} else {
+						// Compatibility for earlier frozen Plans without an explicit basis.
+						$settings['_flex_size' . $suffix] = 'grow';
+						$settings['flex_grow' . $suffix] = $settings['_flex_grow' . $suffix] = 1;
+						$settings['flex_shrink' . $suffix] = $settings['_flex_shrink' . $suffix] = 1;
+					}
 					} elseif ( ( $tracks['identity_layout_version'] ?? null ) === 2 && $identity_presentation === 'portrait_then_labels' && $role === 'entity_identity' ) {
 						$direction = 'column';
 						$gap_value = $tracks['identity_gap'][$device] ?? '0.75rem';

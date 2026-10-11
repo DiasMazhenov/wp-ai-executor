@@ -2603,13 +2603,23 @@ foreach ( (array) ( $testimonial_density_collection['elements'] ?? [] ) as $card
 		$testimonial_identity_ok = $testimonial_identity_ok
 			&& ( $identity_gap['unit'] ?? '' ) === 'rem' && (float) ( $identity_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $testimonial_density_tracks['identity_gap'][$device] ?? '' ), 'rem' )
 			&& ( $metadata_gap['unit'] ?? '' ) === 'rem' && (float) ( $metadata_gap['size'] ?? -1 ) === (float) rtrim( (string) ( $testimonial_density_tracks['identity_metadata_gap'][$device] ?? '' ), 'rem' );
+		$metadata_basis = (array) ( $metadata_settings['_element_custom_width' . $suffix] ?? [] );
+		if ( $device === 'mobile' ) {
+			$testimonial_identity_ok = $testimonial_identity_ok
+				&& ( $metadata_settings['_flex_size' . $suffix] ?? '' ) === 'custom'
+				&& ( $metadata_basis['unit'] ?? '' ) === 'px' && (float) ( $metadata_basis['size'] ?? -1 ) === 0.0
+				&& (float) ( $metadata_settings['_flex_grow' . $suffix] ?? -1 ) === 1.0
+				&& (float) ( $metadata_settings['_flex_shrink' . $suffix] ?? -1 ) === 1.0;
+		} else {
+			$testimonial_identity_ok = $testimonial_identity_ok && ( $metadata_settings['_flex_size' . $suffix] ?? '' ) === 'grow';
+		}
 	}
 	foreach ( [ 'quote_ref', 'author_ref', 'meta_ref' ] as $ref_key ) {
 		$exact_text = (string) ( $testimonial_content_by_id[(string) ( $group[$ref_key] ?? '' )]['exact_text'] ?? '' );
 		if ( $exact_text !== '' ) { $testimonial_copy_owned = $testimonial_copy_owned && str_contains( $card_json, $exact_text ); }
 	}
 }
-$check( $testimonial_density_validation['ok'] && ! empty( $testimonial_density_native['ok'] ) && $testimonial_identity_ok && $testimonial_copy_owned, 'Testimonials preserve each quote/author/meta owner and compile a left-aligned avatar/metadata Flex row with responsive Plan-owned gaps' );
+$check( $testimonial_density_validation['ok'] && ! empty( $testimonial_density_native['ok'] ) && $testimonial_identity_ok && $testimonial_copy_owned, 'Testimonials preserve quote/author/meta ownership and freeze a zero-basis shrinkable mobile track while retaining wider viewport controls' );
 $check( ( $testimonial_density_tracks['content_density'] ?? '' ) === 'spacious' && ( $testimonial_density_tracks['identity_presentation'] ?? '' ) === 'avatar_with_metadata' && ( $testimonial_density_tracks['gap'] ?? [] ) !== [], 'Testimonials Plan records content density and the compact identity presentation as accepted layout decisions' );
 $testimonial_density_entities = (array) ( $testimonial_density_plan['composition_decision']['selection_metrics']['entities_by_group'] ?? [] );
 $testimonial_sizes = array_map( static fn( array $metrics ): array => (array) ( $metrics['avatar_size'] ?? [] ), array_values( $testimonial_density_entities ) );
@@ -2618,7 +2628,18 @@ $testimonial_density_v1_plan = $testimonial_density_plan;
 $testimonial_density_v1_plan['composition_decision']['selection_metrics'] = $testimonial_legacy_metrics;
 $testimonial_density_v1_plan['media_references'] = array_map( static fn( array $media ): array => wpae_design_plan_media_render_policy( $media, 'testimonials', [ 'policy' => [ 'entity_layout' => 'editorial_rows' ] ], $testimonial_legacy_metrics ), $testimonial_avatar_assets );
 $testimonial_density_v1_validation = wpae_design_plan_validate( $testimonial_density_v1_plan, $testimonial_density_brief );
+$testimonial_legacy_track_plan = $testimonial_density_plan;
+unset( $testimonial_legacy_track_plan['visual_policy']['entity_layout']['tracks']['identity_metadata_basis'] );
+$testimonial_legacy_track_validation = wpae_design_plan_validate( $testimonial_legacy_track_plan, $testimonial_density_brief );
+$testimonial_legacy_track_native = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $testimonial_legacy_track_plan, $testimonial_density_brief ), $testimonial_density_brief, [], [ 'resolved_visual' => $testimonial_legacy_track_plan['resolved_visual'] ] );
+$testimonial_legacy_track_nodes = $walk_elements( $testimonial_legacy_track_native['elementor_data'] ?? [] );
+$testimonial_legacy_track_collection = array_values( array_filter( $testimonial_legacy_track_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-testimonial_cards' ) )[0] ?? [];
+$testimonial_legacy_metadata_node = (array) ( $testimonial_legacy_track_collection['elements'][0]['elements'][0]['elements'][0]['elements'][1] ?? [] );
+$testimonial_bad_basis_plan = $testimonial_density_plan;
+$testimonial_bad_basis_plan['visual_policy']['entity_layout']['tracks']['identity_metadata_basis'] = 'unbounded_grow';
+$testimonial_bad_basis_validation = wpae_design_plan_validate( $testimonial_bad_basis_plan, $testimonial_density_brief );
 $check( ( $testimonial_density_plan['composition_decision']['selection_metrics']['content_density_schema'] ?? '' ) === 'wpae-content-density-v2' && ( $testimonial_sizes[0]['desktop'] ?? '' ) === '2.5rem' && ( $testimonial_sizes[1]['desktop'] ?? '' ) === '3.5rem' && $testimonial_avatar_density_ok && $testimonial_legacy_metrics['content_density_schema'] === 'wpae-content-density-v1' && ! array_key_exists( 'avatar_size', (array) ( $testimonial_legacy_metrics['entities_by_group']['testimonial_1'] ?? [] ) ) && ! empty( $testimonial_density_v1_validation['ok'] ), 'Testimonials v2 metrics size short/long avatars while the v1 frozen metric shape remains compatible' );
+$check( ( $testimonial_density_tracks['identity_metadata_basis'] ?? '' ) === 'remaining_after_avatar_gap_v1' && ! empty( $testimonial_legacy_track_validation['ok'] ) && ( $testimonial_legacy_metadata_node['settings']['_flex_size_mobile'] ?? '' ) === 'grow' && in_array( 'visual_policy_entity_identity_metadata_basis_invalid', (array) ( $testimonial_bad_basis_validation['errors'] ?? [] ), true ), 'New Testimonials Plans freeze a shrinkable metadata basis, historical frozen Plans retain their grow preset, and unknown bases are rejected' );
 $testimonial_short_identity_tracks = (array) ( $testimonial_density_plan['visual_policy']['entity_layout']['tracks'] ?? [] );
 $testimonial_long_identity_brief = $testimonial_density_brief;
 $testimonial_long_identity_meta_ref = (string) ( $testimonial_long_identity_brief['groups'][0]['meta_ref'] ?? '' );

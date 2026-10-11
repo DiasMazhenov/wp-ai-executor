@@ -229,9 +229,11 @@ function wpae_accepted_contract_prepare( array $brief, array $plan, array $compi
     // Brief and Plan are already server-built typed data, not raw request context.
 	$roundtrip = array_intersect_key( $native_roundtrip, array_flip( [ 'version', 'control_aware', 'repeater_order_and_count', 'repeater_ids', 'allowed_legacy_serialization', 'decisions' ] ) );
 	$generation_evidence = array_intersect_key( $generation, array_flip( [ 'route', 'provider_calls', 'provider_call_count_source' ] ) );
-	$prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition' => $plan['composition_decision'] ?? [], 'profile' => $plan['resolved_visual']['profile'] ?? '', 'resolved_visual' => $plan['resolved_visual'] ?? [], 'composition_evidence' => wpae_accepted_contract_composition_evidence_from_plan( $brief, $plan, $generation_evidence ), 'generation' => array_merge( $generation_evidence, [ 'transaction_write_count' => 0, 'transaction_write_count_source' => 'not_written_at_prepare' ] ), 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
+	// Record selection and resolved visual values live canonically in the frozen Plan.
+	// Do not duplicate those potentially large trees in each sealed operation contract.
+	$prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition_evidence' => wpae_accepted_contract_composition_evidence_from_plan( $brief, $plan, $generation_evidence ), 'generation' => array_merge( $generation_evidence, [ 'transaction_write_count' => 0, 'transaction_write_count_source' => 'not_written_at_prepare' ] ), 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
 	if ( $roundtrip ) { $prepared['native_roundtrip'] = $roundtrip; }
-    if ( strlen( wp_json_encode( $prepared ) ) + strlen( wp_json_encode( $compiled ) ) + 4096 > WPAE_ACCEPTED_CONTRACT_BYTES ) { return [ 'ok' => false, 'reason' => 'contract_too_large' ]; }
+	if ( strlen( wp_json_encode( $prepared ) ) + strlen( wp_json_encode( $compiled ) ) + 4096 > WPAE_ACCEPTED_CONTRACT_BYTES ) { return [ 'ok' => false, 'reason' => 'contract_too_large' ]; }
     return [ 'ok' => true, 'prepared' => $prepared ];
 }
 
