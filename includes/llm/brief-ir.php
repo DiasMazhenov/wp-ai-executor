@@ -225,7 +225,7 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	if ( preg_match( '/(?:над\s+заголовк\w*\s+(?:(?:добавь|добавить|размести|помести)\s+)?(?:pill[\s-]*бейдж|бейдж\w*|badge)|(?:pill[\s-]*бейдж|бейдж\w*|badge)\s+над\s+заголовк\w*)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'eyebrow';
 	}
-	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|раздел(?:ом|а)?|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
+	if ( preg_match( '/(?<![\p{L}\p{N}_])(?:заголов\w*(?:\s+(?:секци\w*|раздел\w*))?|раздел(?:ом|а)?|(?:section|block)\s+(?:heading|title))(?:\s+(?:сохрани|оставь|используй|keep|preserve)\s+(?:точно|без\s+изменений|exactly?|unchanged))?\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
 	}
 	if ( preg_match( '/призыв\w*\s+к\s+действи\w*\s*[:\-]?\s*$/iu', $prefix ) ) {
