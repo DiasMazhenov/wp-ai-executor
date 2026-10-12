@@ -691,3 +691,51 @@ $intake_generated_cta_second_request = (array) ( $intake_generated_cta_retry['ht
 $intake_generated_cta_strings = $intake_collect_strings( [ $intake_generated_cta_retry['written'] ?? [] ] );
 check( array_column( $intake_generated_cta_slots, 'slot_id' ) === [ 'section_title', 'section_intro' ] && ! empty( $intake_generated_cta_slots[1]['distinct_from_generated_title'] ) && ! empty( $intake_generated_cta_retry['response']['ok'] ) && $intake_generated_cta_retry['calls'] === 2 && $intake_generated_cta_retry['writes'] === 1 && ( $intake_generated_cta_trace['retry_reason'] ?? '' ) === 'generated_title_body_overlap' && ( $intake_generated_cta_trace['attempts'][0]['schema_validation_result'] ?? '' ) === 'retryable_copy_quality_failure' && ( $intake_generated_cta_trace['attempts'][1]['schema_validation_result'] ?? '' ) === 'accepted', 'The exact generated CTA fixture creates title/body slots, then accepts one fact-grounded correction after rejecting semantic overlap' );
 check( ( $intake_generated_cta_first_request['messages'][1]['content'] ?? '' ) === ( $intake_generated_cta_second_request['messages'][1]['content'] ?? null ) && ( $intake_generated_cta_first_request['model'] ?? '' ) === ( $intake_generated_cta_second_request['model'] ?? null ) && ( $intake_generated_cta_first_request['response_format'] ?? [] ) === ( $intake_generated_cta_second_request['response_format'] ?? null ) && ! empty( $intake_generated_cta_second_request['response_format']['json_schema']['strict'] ) && ! empty( $intake_generated_cta_second_request['provider']['require_parameters'] ) && in_array( 'Обсудить проект', $intake_generated_cta_strings, true ) && in_array( '#contact', $intake_generated_cta_strings, true ) && in_array( 'Посмотреть работы', $intake_generated_cta_strings, true ) && in_array( '#projects', $intake_generated_cta_strings, true ), 'CTA copy retry preserves the same model/Brief/strict schema and both exact authored actions' );
+
+$control_state_cta_path = __DIR__ . '/../docs/audits/2026-10-12-typed-copy-live-v343/fixtures/E-cta-centered-generated.txt';
+$control_state_cta_prompt = trim( (string) file_get_contents( $control_state_cta_path ) );
+$control_state_cta_brief = wpae_brief_ir_apply_canonical_intake_contract( wpae_brief_ir_parse( $control_state_cta_prompt ), $control_state_cta_prompt );
+$control_state_cta_value = (array) ( $control_state_cta_brief['instruction_values'][0] ?? [] );
+$control_state_cta_facts = (array) ( $control_state_cta_brief['approved_facts'] ?? [] );
+$control_state_cta_slots = wpae_brief_ir_generated_copy_slots( $control_state_cta_brief, $control_state_cta_prompt );
+$control_state_cta_source_exact = (int) ( $control_state_cta_value['source_span'][1] ?? -1 ) > 0
+	&& substr( $control_state_cta_prompt, (int) $control_state_cta_value['source_span'][0], (int) $control_state_cta_value['source_span'][1] - (int) $control_state_cta_value['source_span'][0] ) === 'Автоматически'
+	&& substr( $control_state_cta_prompt, (int) $control_state_cta_value['quote_span'][0], (int) $control_state_cta_value['quote_span'][1] - (int) $control_state_cta_value['quote_span'][0] ) === '«Автоматически»';
+$control_state_cta_fact_id = static function ( string $needle ) use ( $control_state_cta_facts ): string {
+	foreach ( $control_state_cta_facts as $fact ) {
+		if ( is_array( $fact ) && ( $fact['type'] ?? '' ) === 'approved_assertion' && str_contains( (string) ( $fact['exact_text'] ?? '' ), $needle ) ) { return (string) ( $fact['id'] ?? '' ); }
+	}
+	return '';
+};
+$control_state_cta_title_fact = $control_state_cta_fact_id( 'дневной свет и повседневные сценарии' );
+$control_state_cta_intro_fact_1 = $control_state_cta_fact_id( 'пожелания и ограничения пространства' );
+$control_state_cta_intro_fact_2 = $control_state_cta_fact_id( 'перед разработкой чертежей согласуется планировка' );
+$control_state_cta_title_slot = array_values( array_filter( $control_state_cta_slots, static fn( array $slot ): bool => ( $slot['role'] ?? '' ) === 'title' ) )[0] ?? [];
+$control_state_cta_body_slot = array_values( array_filter( $control_state_cta_slots, static fn( array $slot ): bool => ( $slot['role'] ?? '' ) === 'body' ) )[0] ?? [];
+$control_state_cta_tampered = $control_state_cta_brief;
+$control_state_cta_tampered['instruction_values'][0]['source_span'][1]--;
+$control_state_cta_display = array_column( (array) ( $control_state_cta_brief['content'] ?? [] ), 'exact_text' );
+$control_state_cta_fact_text = array_column( $control_state_cta_facts, 'exact_text' );
+check( count( (array) ( $control_state_cta_brief['instruction_values'] ?? [] ) ) === 1 && ( $control_state_cta_value['kind'] ?? '' ) === 'control_state_value' && ( $control_state_cta_value['exact_text'] ?? '' ) === 'Автоматически' && $control_state_cta_source_exact && ! in_array( 'Автоматически', $control_state_cta_display, true ) && ! in_array( 'Автоматически', $control_state_cta_fact_text, true ) && ! in_array( 'unlabeled_quote', array_column( (array) ( $control_state_cta_brief['ambiguities'] ?? [] ), 'kind' ), true ) && array_column( $control_state_cta_slots, 'slot_id' ) === [ 'section_title', 'section_intro' ] && ! empty( wpae_brief_ir_validate( $control_state_cta_brief )['ok'] ), 'A quoted UI selection value remains a typed, source-exact instruction and cannot become authored display copy or an approved fact' );
+check( in_array( 'instruction_value_0_provenance', wpae_brief_ir_validate( $control_state_cta_tampered )['errors'] ?? [], true ), 'Control-state metadata with a stale or forged source span is rejected by Brief validation' );
+$control_state_cta_payload = [ 'family' => 'cta', 'generated' => [
+	[ 'slot_id' => (string) ( $control_state_cta_title_slot['slot_id'] ?? '' ), 'text' => 'Дневной свет и повседневные сценарии', 'fact_refs' => [ $control_state_cta_title_fact ] ],
+	[ 'slot_id' => (string) ( $control_state_cta_body_slot['slot_id'] ?? '' ), 'text' => 'На первой встрече обсуждаются пожелания и ограничения пространства; перед разработкой чертежей согласуется планировка.', 'fact_refs' => [ $control_state_cta_intro_fact_1, $control_state_cta_intro_fact_2 ] ],
+] ];
+$GLOBALS['library'] = [];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+$GLOBALS['page_data'] = $GLOBALS['test_page_baseline'] ?? $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $control_state_cta_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ];
+$control_state_cta_request = new WP_REST_Request();
+$control_state_cta_request->set_param( 'message', $control_state_cta_prompt );
+$control_state_cta_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'intake-control-state-cta-production-route', 'composition_record' => 'cta.centered', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$control_state_cta_response = wpae_llm_chat_request( $control_state_cta_request );
+$control_state_cta_data = $control_state_cta_response instanceof WP_REST_Response ? $control_state_cta_response->get_data() : [];
+$control_state_cta_route = [ 'response' => $control_state_cta_data, 'calls' => count( (array) $GLOBALS['http_calls'] ), 'writes' => count( (array) $GLOBALS['writes'] ), 'written' => (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] ) ];
+$control_state_cta_pipeline = (array) ( $control_state_cta_data['diagnostics']['design_pipeline'] ?? [] );
+$control_state_cta_contract = wpae_accepted_contract_get( (array) ( $control_state_cta_data['diagnostics']['operation_ledger'] ?? [] ) );
+$control_state_cta_contract_brief = (array) ( $control_state_cta_contract['contract']['brief'] ?? [] );
+$control_state_cta_strings = $intake_collect_strings( [ $control_state_cta_route['written'] ?? [] ] );
+check( ! empty( $control_state_cta_route['response']['ok'] ) && $control_state_cta_route['calls'] === 1 && $control_state_cta_route['writes'] === 1 && ( $control_state_cta_pipeline['brief']['hash'] ?? '' ) === ( $control_state_cta_pipeline['plan']['brief_hash'] ?? '' ) && ( $control_state_cta_pipeline['plan']['validation']['errors'] ?? [] ) === [] && ( $control_state_cta_pipeline['plan']['composition_decision']['record_id'] ?? '' ) === 'cta.centered' && ( $control_state_cta_pipeline['plan']['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light' && ! empty( $control_state_cta_contract['ok'] ) && ( $control_state_cta_contract_brief['instruction_values'][0]['exact_text'] ?? '' ) === 'Автоматически' && in_array( 'ПЕРВЫЙ ШАГ', $control_state_cta_strings, true ) && in_array( 'Дневной свет и повседневные сценарии', $control_state_cta_strings, true ) && in_array( 'Обсудить задачу', $control_state_cta_strings, true ) && in_array( '#contact', $control_state_cta_strings, true ) && in_array( 'Посмотреть подход', $control_state_cta_strings, true ) && in_array( '#about', $control_state_cta_strings, true ) && ! in_array( 'Автоматически', $control_state_cta_strings, true ), 'The unchanged CTA fixture reaches the production route, keeps one frozen centered/light Plan and exact actions, and preserves the typed UI value through the accepted contract' );

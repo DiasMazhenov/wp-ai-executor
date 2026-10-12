@@ -25,7 +25,7 @@
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
     "includes/design/token-resolution.php": "4c94ce0153dd4d79193ff20f55da0cbe180c9b55144d06c6fb9ade8d2bd17e6d",
-    "includes/elementor/accepted-contract.php": "d8a9ef5ce0899709e38293c6dd71febbae1f69086f5b89a189fa9aa893efa1a8",
+    "includes/elementor/accepted-contract.php": "32d0998f39bafcf549df642463bb72d0c70bfb4b39b7d110c05384fe73057603",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
     "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
@@ -237,7 +237,7 @@
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/brief-ir-structured.php": "79a5a6ce238827532872e43f277c5a4941ebea7b1b9e8d14d69e61316421e89d",
-    "includes/llm/brief-ir.php": "e7c25bf383f3598210f79ea7ed79f45b6d21f57e327d94cc58b445769f79e6f1",
+    "includes/llm/brief-ir.php": "e81beb96695ae9ac2bb642f45a5661d7963fe4576b15d7374ac9951123a4afc3",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
     "includes/llm/design-plan.php": "16be5802fc3382219f6a46d05972f7607c0892157a6b0caa1386cb47f1939fbb",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "51d0abf95a8558704525f299765beee132bf217795599290e9ae4f87892a8473"
+    "wp-ai-executor.php": "b3fc46f79c822346ea002ae9c18d60712d5c89b281995b5c6c618a653c055eb5"
   }
 }

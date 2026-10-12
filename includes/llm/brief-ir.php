@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v21';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v22';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -274,6 +274,21 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 		return 'cta';
 	}
 	return 'text';
+}
+
+/**
+ * A quoted value following an explicit UI/control-state description is
+ * request metadata, not authored text intended for the generated section.
+ */
+function wpae_brief_ir_is_control_state_value_context( string $prefix ): bool {
+	$prefix = trim( $prefix );
+	if ( $prefix === '' ) {
+		return false;
+	}
+	$control = '(?:ui|интерфейс|селектор|выпадающ\w*\s+спис\w*|спис\w*|выбор\w*|режим\w*|параметр\w*|настройк\w*|пол\w*|композици\w*|composition|selector|dropdown|select|control|setting|option)';
+	$state = '(?:оставлен\w*|оставить|оставьте|выбран\w*|выбрать|установлен\w*|задан\w*|сохранен\w*|сохранён\w*|находится|оставаться|remain\w*|selected|set|left)';
+	$location = '(?:в\s+(?:положени\w*|состояни\w*|режим\w*|значени\w*)|(?:position|state|mode|value)\s*(?:as|at|to)?)';
+	return (bool) preg_match( '/(?<![\p{L}\p{N}_])' . $control . '[^.!?\r\n]{0,100}(?:' . $state . '[^.!?\r\n]{0,35}' . $location . '|' . $location . '[^.!?\r\n]{0,35}' . $state . ')\s*$/iu', $prefix );
 }
 
 function wpae_brief_ir_repeated_slot( string $prefix ): array {
@@ -546,6 +561,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$archetype = $intake_family;
 	}
 	$content = [];
+	$instruction_values = [];
 	$warnings = [];
 	$ambiguities = [];
 	$seen = [];
@@ -805,6 +821,29 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		if ( wpae_brief_ir_label_role( $prefix ) === 'media_alt' || preg_match( '/(?:license|licence|лицензи\w*|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
 		$role = wpae_brief_ir_label_role( $prefix );
+		if ( $role === 'text' && wpae_brief_ir_is_control_state_value_context( $prefix ) ) {
+			$value_start = -1;
+			foreach ( [ 1, 2, 3 ] as $capture_index ) {
+				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
+					$value_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
+					break;
+				}
+			}
+			if ( $value_start >= 0 ) {
+				$instruction_values[] = [
+					'id' => 'control_state_' . ( count( $instruction_values ) + 1 ),
+					'kind' => 'control_state_value',
+					'exact_text' => $inner,
+					'source_span' => [ $value_start, $value_start + strlen( $inner ) ],
+					'quote_span' => [ $start, $start + strlen( $full ) ],
+					'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+				];
+			}
+			$previous_quote_inner = null;
+			$previous_quote_end = $start + strlen( $full );
+			$previous_process_role = '';
+			continue;
+		}
 		$process_role_group = '';
 		$process_id_override = '';
 		$process_gap_from_previous = $previous_quote_end !== null ? substr( $source_text, $previous_quote_end, max( 0, $start - $previous_quote_end ) ) : '';
@@ -1472,6 +1511,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'audience' => sanitize_text_field( (string) ( $context['audience'] ?? '' ) ),
 		],
 		'content' => array_values( $content ),
+		'instruction_values' => array_values( $instruction_values ),
 		'groups' => array_values( $service_groups ),
 		'pricing_items' => array_values( $pricing_items ),
 		'style_references' => array_values( $style_references ),
@@ -1668,6 +1708,47 @@ function wpae_brief_ir_validate( array $brief ): array {
 		}
 		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
 			$errors[] = 'content_' . (int) $index . '_invalid_explicit_url';
+		}
+	}
+	if ( array_key_exists( 'instruction_values', $brief ) ) {
+		if ( ! is_array( $brief['instruction_values'] ) ) {
+			$errors[] = 'instruction_values_shape';
+		} else {
+			$instruction_ids = [];
+			foreach ( $brief['instruction_values'] as $index => $value ) {
+				if ( ! is_array( $value ) ) {
+					$errors[] = 'instruction_value_' . (int) $index . '_shape';
+					continue;
+				}
+				$id = sanitize_key( (string) ( $value['id'] ?? '' ) );
+				$exact_text = (string) ( $value['exact_text'] ?? '' );
+				$span = array_values( (array) ( $value['source_span'] ?? [] ) );
+				$quote_span = array_values( (array) ( $value['quote_span'] ?? [] ) );
+				$valid = $id !== '' && ! isset( $instruction_ids[ $id ] )
+					&& ( $value['kind'] ?? '' ) === 'control_state_value'
+					&& $exact_text !== ''
+					&& count( $span ) === 2 && is_int( $span[0] ) && is_int( $span[1] )
+					&& count( $quote_span ) === 2 && is_int( $quote_span[0] ) && is_int( $quote_span[1] )
+					&& $span[0] >= 0 && $span[1] >= $span[0] && $span[1] <= strlen( (string) ( $brief['source_text'] ?? '' ) )
+					&& $quote_span[0] >= 0 && $quote_span[1] >= $quote_span[0] && $quote_span[1] <= strlen( (string) ( $brief['source_text'] ?? '' ) )
+					&& substr( (string) ( $brief['source_text'] ?? '' ), $span[0], $span[1] - $span[0] ) === $exact_text
+					&& str_contains( substr( (string) ( $brief['source_text'] ?? '' ), $quote_span[0], $quote_span[1] - $quote_span[0] ), $exact_text )
+					&& $span[0] >= $quote_span[0] && $span[1] <= $quote_span[1]
+					&& ( $value['provenance']['source'] ?? '' ) === 'prompt'
+					&& ( $value['provenance']['parser'] ?? '' ) === ( $brief['parser_version'] ?? '' );
+				if ( ! $valid ) {
+					$errors[] = 'instruction_value_' . (int) $index . '_provenance';
+					continue;
+				}
+				$instruction_ids[ $id ] = true;
+				foreach ( (array) ( $brief['content'] ?? [] ) as $content_item ) {
+					$content_span = array_values( (array) ( $content_item['source_span'] ?? [] ) );
+					if ( count( $content_span ) === 2 && (int) $content_span[0] < $span[1] && (int) $content_span[1] > $span[0] ) {
+						$errors[] = 'instruction_value_overlaps_display_content:' . $id;
+						break;
+					}
+				}
+			}
 		}
 	}
 	if ( ! empty( $brief['canonical_create'] ) ) {
