@@ -1,0 +1,149 @@
+{
+  "scenario": "B-about-hybrid",
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "route": "provider_typed_intake_then_local_deterministic",
+  "intake": {
+    "source": "provider_typed_intake",
+    "model": "openrouter/free",
+    "returned_model": "liquid/lfm-2.5-2.6b:free",
+    "provider_name": "Liquid",
+    "provider_calls": 2,
+    "latency_ms": 47775,
+    "retry_count": 1,
+    "retry_reason": "provider_timeout",
+    "finish_reason": "stop",
+    "semantic_validation_result": "accepted",
+    "usage": {
+      "input_tokens": 2226,
+      "output_tokens": 1901,
+      "total_tokens": 4127,
+      "reasoning_tokens": 1765,
+      "known": true
+    },
+    "generated_slot_count": 1,
+    "schema_sha256": "b48cf921e93342ca554ad5a68d308d05a211afeb67937f80a76fed752637108f",
+    "response_format": "json_schema"
+  },
+  "brief": {
+    "hash": "9e3d6c9b63a8b90643eccd0809546b3783d907448d9b728ff220ec31abf42ab9",
+    "archetype": "about",
+    "content_count": 2
+  },
+  "plan": {
+    "hash": "e3b99297889ce88f530fc47c93001fe2559d33955ce48bee0f59227e37afcd86",
+    "selection": "about.split_50_50",
+    "record_id": "about.split_50_50.right",
+    "profile": "editorial_light",
+    "request_mode": "automatic",
+    "policy": {
+      "composition": "split_50_50",
+      "desktop": "split_50_50",
+      "tablet": "split_50_50",
+      "media_side": "right",
+      "mobile": "copy_first_stack"
+    },
+    "metrics": {
+      "item_count": 1,
+      "max_title_chars": 43,
+      "max_body_chars": 228,
+      "max_entity_chars": 43,
+      "min_entity_chars": 43,
+      "entity_length_spread": 0,
+      "cta_count": 0,
+      "max_cta_chars": 0,
+      "faq_pair_count": 0,
+      "content_density_schema": "wpae-content-density-v2",
+      "content_density_source": "canonical_brief_exact_text",
+      "composition_density": "compact",
+      "estimated_max_body_lines": 1,
+      "estimated_body_line_spread": 0,
+      "estimated_max_section_title_lines": 2,
+      "entities_by_group": {
+        "about": {
+          "group_id": "about",
+          "body_chars": 43,
+          "body_words": 0,
+          "estimated_body_lines": 1,
+          "title_chars": 43,
+          "estimated_title_lines": 2,
+          "density": "compact",
+          "media_roles": [
+            "section_image"
+          ]
+        }
+      },
+      "line_estimate": {
+        "basis": "canonical-character-count",
+        "body_chars_per_line": 58,
+        "title_chars_per_line": 28,
+        "render_evidence": false
+      }
+    }
+  },
+  "elementor_ir": {
+    "schema": "wpae-elementor-ir-v2",
+    "compiled": true,
+    "node_count": 9,
+    "widgets": [
+      "container",
+      "heading",
+      "text-editor",
+      "image"
+    ],
+    "contrast": true,
+    "layout": {
+      "schema": "wpae-layout-report-v1",
+      "ok": true,
+      "violations": [],
+      "breakpoints": [
+        {
+          "breakpoint": "desktop",
+          "container_width": 1376,
+          "used_width": 1356,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "laptop",
+          "container_width": 960,
+          "used_width": 944,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "tablet",
+          "container_width": 704,
+          "used_width": 688,
+          "mobile_stack_result": "not_applicable"
+        },
+        {
+          "breakpoint": "mobile",
+          "container_width": 358,
+          "used_width": 358,
+          "mobile_stack_result": "stack"
+        }
+      ]
+    }
+  },
+  "frozen": {
+    "plan_hash": "e3b99297889ce88f530fc47c93001fe2559d33955ce48bee0f59227e37afcd86",
+    "compiled_signature": "e95eeb9549efad8149a1f0258d9274f08729d4b9a895773dba34bf6a8b385123",
+    "readback_signature": "e95eeb9549efad8149a1f0258d9274f08729d4b9a895773dba34bf6a8b385123",
+    "readback_matches": true
+  },
+  "operation": {
+    "operation_id": "wpae-11fe4005ccf31cae",
+    "operation_identity": "9836b883-ae21-47c5-b7c8-3e2c592976cd",
+    "revision": 4,
+    "root_ids": [
+      "d99f28c"
+    ],
+    "post_id": 5214,
+    "target_fingerprint": "750b2f67a4778f839f2ae77087930b2287afcf329322e8fc3670a9f7bc4c5570",
+    "accepted_contract_id": "contract-83bd01429f34c86542545349",
+    "accepted_contract_hash": "83bd01429f34c8654254534981052f21dcf84777848d49baaab1fed4a030b58d",
+    "brief_hash": "9e3d6c9b63a8b90643eccd0809546b3783d907448d9b728ff220ec31abf42ab9",
+    "plan_hash": "e3b99297889ce88f530fc47c93001fe2559d33955ce48bee0f59227e37afcd86",
+    "current_state": "written",
+    "rollback_snapshot_id": "403ffdbae76b376f6f138bdf"
+  }
+}

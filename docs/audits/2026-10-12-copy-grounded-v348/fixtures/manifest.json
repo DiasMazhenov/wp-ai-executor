@@ -1,0 +1,26 @@
+{
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "fixtures": {
+    "A-hero-generated.txt": {
+      "sha256": "387237de2ea9c9e44b7658776a80a576da3d8c378b6e370fd36c77d54ba679df",
+      "source_fixture": "docs/audits/2026-10-12-copy-grounded-v343/fixtures/A-hero-generated.txt"
+    },
+    "B-about-hybrid.txt": {
+      "sha256": "5518b72b6405cc59ae7f97aa6ef7a43bb7d3e10dc303db3153ab14cba91fd06b",
+      "source_fixture": "docs/audits/2026-10-12-copy-grounded-v343/fixtures/B-about-hybrid.txt"
+    },
+    "C-benefits-four-grid.txt": {
+      "sha256": "9b0ba44cf186c15b36593c143dbdce2708b22fbb0b9df15f91b4deb2746c5e72",
+      "source_fixture": "docs/audits/2026-10-12-copy-grounded-v343/fixtures/C-benefits-four-grid.txt"
+    },
+    "D-pricing-two-tiers.txt": {
+      "sha256": "6ad53c3ab461f93cfe95c5e36e814e8350838360ba413fe67019a4936319fe2b",
+      "source_fixture": "docs/audits/2026-10-12-copy-grounded-v343/fixtures/D-pricing-two-tiers.txt"
+    },
+    "E-cta-centered-generated.txt": {
+      "sha256": "79ffb9ee6827dddae431838454e38e62721d6c02dbd00368c54c1210801d515a",
+      "source_fixture": "docs/audits/2026-10-12-copy-grounded-v343/fixtures/E-cta-centered-generated.txt"
+    }
+  }
+}

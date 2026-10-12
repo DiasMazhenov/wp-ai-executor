@@ -1,0 +1,20 @@
+{
+  "scenario": "B-about-hybrid",
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "root_id": "d99f28c",
+  "operation_id": "wpae-11fe4005ccf31cae",
+  "operation_identity": "9836b883-ae21-47c5-b7c8-3e2c592976cd",
+  "server_revision": 5,
+  "accepted_contract_id": "contract-83bd01429f34c86542545349",
+  "saved_document_sha256": "bf3801e4ebd744238a99cd2206f220806c3013983ca7c3e04a9c03251401b73a",
+  "saved_native_fingerprint": "5c8ff593dcba852b3d4f93623d712eecdae86f062c518b292394986f695a8cc5",
+  "editor_roots_after_reload": 5,
+  "editor_publish_disabled": true,
+  "descriptor_status": "available",
+  "descriptor_write_count": 0,
+  "full_document_compare": "PASS",
+  "owned_model_check": "PASS",
+  "raw_native_json_export": "not_obtained",
+  "note": "Read-only lifecycle comparison passed on current editor after reload; no raw native JSON export was exposed by the normal UI."
+}\n

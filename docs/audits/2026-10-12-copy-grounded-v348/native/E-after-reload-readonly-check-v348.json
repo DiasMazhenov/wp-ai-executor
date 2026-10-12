@@ -1,0 +1,39 @@
+{
+  "schema": "wpae-live-readback-evidence-v1",
+  "scenario": "E-cta-centered-generated",
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "source": "existing_elementor_editor_after_reload",
+  "operation_id": "wpae-ac53274ac164d125",
+  "operation_identity": "51e27ed2-0423-4575-8c28-b6d20c535e18",
+  "root_ids": [
+    "2b22d51"
+  ],
+  "revision_before_undo": 5,
+  "accepted_contract_id": "contract-5eb512ed4a6c70047cd7bf79",
+  "accepted_contract_sha256": "5eb512ed4a6c70047cd7bf7997ee57032d966c1e30b1fd8b3a22912a1cc0a293",
+  "brief_sha256": "105b04c4f93c773064cc5e0d8c117dae8a53189b7176f2799b668ff7bd73c3df",
+  "plan_sha256": "1364b5b75c0b132d0ed261664dceddda15833dcd493669934186cd0a629da606",
+  "record_id": "cta.centered",
+  "record_version": 1,
+  "record_source": "explicit_record",
+  "record_sha256": "6fa883376cef247cf2f926821046fb5d83746e43200d974737fae72aa386eb8a",
+  "visual_profile": "editorial_light",
+  "visual_profile_source": "ui_selector",
+  "saved_document_sha256": "8dfa7b95bfd74a9c82dff019b14fdb85c91becb3ca88c58313994741f9c6193f",
+  "saved_native_fingerprint": "a6e2c5bd5790e524a64286a6525c5b6836e2fb694cd54fb458a83dfcb9eab2d7",
+  "owned_model_check": "PASS: Owned модель соответствует принятому контракту",
+  "full_editor_server_comparison": "PASS: Сравнить полный editor/server документ: проверка завершена",
+  "comparison_write_count": 0,
+  "independent_readback": "PASS via the plugin's read-only owned-model and full-document comparison after reload",
+  "raw_post_reload_native_json_export": "NOT SAVED; the saved native tree is the pre-reload generated-design export",
+  "undo": {
+    "status": "already_undone",
+    "revision": 6,
+    "root_set_after_undo": [],
+    "public_dom_elementor_roots": [],
+    "editor_canvas": "empty",
+    "publish_button": "disabled",
+    "write_count_after_undo": 0
+  }
+}

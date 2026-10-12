@@ -1,0 +1,228 @@
+{
+  "actions": [
+    {
+      "href": "https://mazhenov.kz/pricing-contract-live-v123/#contact",
+      "rect": {
+        "bottom": 331.390625,
+        "height": 39,
+        "top": 292.390625,
+        "width": 167.484375,
+        "x": 111.2578125,
+        "y": 292.390625
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgb(0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "fontWeight": "500",
+        "gap": "normal",
+        "height": "39px",
+        "justifyContent": "normal",
+        "lineHeight": "15px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "textAlign": "center"
+      },
+      "text": "Обсудить задачу"
+    },
+    {
+      "href": "https://mazhenov.kz/pricing-contract-live-v123/#about",
+      "rect": {
+        "bottom": 384.390625,
+        "height": 41,
+        "top": 343.390625,
+        "width": 190.3046875,
+        "x": 99.84375,
+        "y": 343.390625
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "color": "rgb(0, 0, 0)",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "fontWeight": "500",
+        "gap": "normal",
+        "height": "41px",
+        "justifyContent": "normal",
+        "lineHeight": "15px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "textAlign": "center"
+      },
+      "text": "Посмотреть подход"
+    }
+  ],
+  "body": [
+    {
+      "href": null,
+      "rect": {
+        "bottom": 292.390625,
+        "height": 64.796875,
+        "top": 227.59375,
+        "width": 358,
+        "x": 16,
+        "y": 227.59375
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "64.7969px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center"
+      },
+      "text": "Согласование планировки перед созданием чертежей"
+    }
+  ],
+  "eyebrow": [
+    {
+      "href": null,
+      "rect": {
+        "bottom": 118.984375,
+        "height": 32.984375,
+        "top": 86,
+        "width": 119.203125,
+        "x": 135.3984375,
+        "y": 86
+      },
+      "style": {
+        "alignItems": "center",
+        "backgroundColor": "rgb(0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "32.9844px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start"
+      },
+      "text": "ПЕРВЫЙ ШАГ"
+    }
+  ],
+  "headings": [
+    {
+      "href": null,
+      "rect": {
+        "bottom": 112.390625,
+        "height": 19.796875,
+        "top": 92.59375,
+        "width": 93.203125,
+        "x": 148.3984375,
+        "y": 92.59375
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "gap": "normal",
+        "height": "19.7969px",
+        "justifyContent": "normal",
+        "lineHeight": "19.8px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center"
+      },
+      "text": "ПЕРВЫЙ ШАГ"
+    },
+    {
+      "href": null,
+      "rect": {
+        "bottom": 227.59375,
+        "height": 96.609375,
+        "top": 130.984375,
+        "width": 358,
+        "x": 16,
+        "y": 130.984375
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "28px",
+        "fontWeight": "700",
+        "gap": "normal",
+        "height": "96.6094px",
+        "justifyContent": "normal",
+        "lineHeight": "32.2px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center"
+      },
+      "text": "Обсуждение пожеланий и ограничений пространства"
+    }
+  ],
+  "noImages": true,
+  "root": {
+    "id": "2b22d51",
+    "rect": {
+      "bottom": 424.390625,
+      "height": 378.390625,
+      "top": 46,
+      "width": 390,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "alignItems": "normal",
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "color": "rgb(51, 51, 51)",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "normal",
+      "height": "378.391px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "textAlign": "start"
+    }
+  },
+  "rootText": "ПЕРВЫЙ ШАГ\nОбсуждение пожеланий и ограничений пространства\nСогласование планировки перед созданием чертежей\nОбсудить задачу\nПосмотреть подход",
+  "viewport": {
+    "clientWidth": 390,
+    "dpr": 1,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scrollWidth": 390
+  }
+}

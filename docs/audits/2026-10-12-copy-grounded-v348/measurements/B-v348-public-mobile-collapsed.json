@@ -1,0 +1,25 @@
+{
+  "avatar": {
+    "h": 60,
+    "w": 60,
+    "x": 306,
+    "y": 760
+  },
+  "clientWidth": 390,
+  "greetingVisible": false,
+  "height": 844,
+  "image": {
+    "h": 288,
+    "w": 358,
+    "x": 16,
+    "y": 471.1796875
+  },
+  "root": {
+    "h": 753.1796875,
+    "w": 390,
+    "x": 0,
+    "y": 46
+  },
+  "scrollWidth": 390,
+  "width": 390
+}\n

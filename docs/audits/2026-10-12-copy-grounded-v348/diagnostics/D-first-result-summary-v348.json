@@ -1,0 +1,112 @@
+{
+  "scenario": "D-pricing-two-tiers",
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "route": "provider_typed_intake_then_local_deterministic",
+  "intake": {
+    "source": "provider_typed_intake",
+    "requested_model": "openrouter/free",
+    "returned_model": "dots-studio/dots-3-note-preview:free",
+    "provider_name": "AtlasCloud",
+    "provider_calls": 1,
+    "latency_ms": 30879,
+    "retry_count": 0,
+    "retry_reason": "",
+    "semantic_validation_result": "accepted",
+    "usage": {
+      "input_tokens": 2678,
+      "output_tokens": 2134,
+      "total_tokens": 4812,
+      "reasoning_tokens": 2413,
+      "known": true
+    },
+    "response_format": "json_schema",
+    "schema_sha256": "f01e023f48eadf926f454bc86a796b7f35347de228e8e1b62a3ea753c036c090",
+    "generated_slot_count": 1
+  },
+  "brief": {
+    "hash": "072d1ee521e000e30e53ddee2449ff019116f3596800a88972eb0b905a03f378",
+    "archetype": "pricing",
+    "content_count": 14
+  },
+  "plan": {
+    "hash": "1d8c6a16aa98258fb36e5409d1781b8bf2c7a12f551e08d74709b55e5361d6ea",
+    "record_id": "pricing.tiers",
+    "identity": "pricing.three_cards",
+    "profile": "",
+    "request_mode": "automatic",
+    "policy": {
+      "composition": "three_cards",
+      "desktop": "three_cards",
+      "tablet": "stack",
+      "mobile": "stack"
+    },
+    "selection_metrics": {
+      "item_count": 2,
+      "max_title_chars": 14,
+      "max_body_chars": 122,
+      "max_entity_chars": 0,
+      "min_entity_chars": 0,
+      "entity_length_spread": 0,
+      "cta_count": 2,
+      "max_cta_chars": 18,
+      "faq_pair_count": 0,
+      "content_density_schema": "wpae-content-density-v2",
+      "content_density_source": "canonical_brief_exact_text",
+      "composition_density": "compact",
+      "estimated_max_body_lines": 1,
+      "estimated_body_line_spread": 0,
+      "estimated_max_section_title_lines": 1,
+      "entities_by_group": {
+        "pricing_1": {
+          "group_id": "pricing_1",
+          "body_chars": 19,
+          "body_words": 0,
+          "estimated_body_lines": 1,
+          "title_chars": 0,
+          "estimated_title_lines": 0,
+          "density": "compact",
+          "media_roles": []
+        },
+        "pricing_2": {
+          "group_id": "pricing_2",
+          "body_chars": 24,
+          "body_words": 0,
+          "estimated_body_lines": 1,
+          "title_chars": 0,
+          "estimated_title_lines": 0,
+          "density": "compact",
+          "media_roles": []
+        }
+      },
+      "line_estimate": {
+        "basis": "canonical-character-count",
+        "body_chars_per_line": 58,
+        "title_chars_per_line": 28,
+        "render_evidence": false
+      }
+    }
+  },
+  "frozen": {
+    "plan_hash": "1d8c6a16aa98258fb36e5409d1781b8bf2c7a12f551e08d74709b55e5361d6ea",
+    "compiled_signature": "44d120bc299a5d997dd307d46ae02b27be792a2a8df28d17250cfab2df1d2c9d",
+    "readback_signature": "44d120bc299a5d997dd307d46ae02b27be792a2a8df28d17250cfab2df1d2c9d",
+    "readback_matches": true
+  },
+  "operation": {
+    "operation_id": "wpae-6e73d2611e5eca2c",
+    "operation_identity": "fac3a08c-0c00-4ca6-9d0a-ed26fb53002b",
+    "revision": 4,
+    "root_ids": [
+      "8748276"
+    ],
+    "post_id": 5214,
+    "target_fingerprint": "a500d750f93bb593654a8fac75ed13c5a2a1f8650cb491d9cab3622226cbdfcb",
+    "accepted_contract_id": "contract-73e0a7f9919657a3ef4243fb",
+    "accepted_contract_hash": "73e0a7f9919657a3ef4243fb655ae71bea3b3dde43c7b3f41e8c6a2e43f5d6ac",
+    "brief_hash": "072d1ee521e000e30e53ddee2449ff019116f3596800a88972eb0b905a03f378",
+    "plan_hash": "1d8c6a16aa98258fb36e5409d1781b8bf2c7a12f551e08d74709b55e5361d6ea",
+    "current_state": "written",
+    "rollback_snapshot_id": "827b6acd9176a7674283e5d6"
+  }
+}

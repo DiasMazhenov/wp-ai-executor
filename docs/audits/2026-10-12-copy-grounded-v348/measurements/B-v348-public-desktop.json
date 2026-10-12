@@ -1,0 +1,176 @@
+{
+  "bodyText": "КОНТЕКСТ\nПроект начинается с внимательного разговора\n\nНа первой встрече команда обсуждает пожелания и ограничения пространства, а затем перед разработкой чертежей согласуется планировка.\n\nВ работе учитываются дневной свет и повседневные сценарии, что определяет дизайнерский подход.",
+  "images": [
+    {
+      "alt": "Современный архитектурный интерьер с панорамным светом.",
+      "complete": true,
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "50% 0%",
+      "rect": {
+        "height": 316.6171875,
+        "width": 560,
+        "x": 650,
+        "y": 112
+      },
+      "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    }
+  ],
+  "links": [],
+  "root": {
+    "background": "rgba(97, 206, 112, 0.2)",
+    "children": [
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "id": "afaa670",
+        "rect": {
+          "height": 316.6171875,
+          "width": 560,
+          "x": 70,
+          "y": 112
+        },
+        "text": "КОНТЕКСТ\nПроект начинается с внимательного разговора\n\nНа первой встрече команда обсуждает пожелания и ограничения пространства, а затем перед разработкой чертежей согласуется планировка.\n\nВ работе учи",
+        "textAlign": "start",
+        "type": "container"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "id": "e91f252",
+        "rect": {
+          "height": 316.6171875,
+          "width": 560,
+          "x": 70,
+          "y": 112
+        },
+        "text": "КОНТЕКСТ\nПроект начинается с внимательного разговора\n\nНа первой встрече команда обсуждает пожелания и ограничения пространства, а затем перед разработкой чертежей согласуется планировка.\n\nВ работе учи",
+        "textAlign": "start",
+        "type": "container"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "id": "db7f4b8",
+        "rect": {
+          "height": 27.5859375,
+          "width": 100.3671875,
+          "x": 70,
+          "y": 112
+        },
+        "text": "КОНТЕКСТ",
+        "textAlign": "start",
+        "type": "container"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "id": "ce9bc79",
+        "rect": {
+          "height": 14.3984375,
+          "width": 74.3671875,
+          "x": 83,
+          "y": 118.59375
+        },
+        "text": "КОНТЕКСТ",
+        "textAlign": "start",
+        "type": "heading.default"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "id": "f03ebb3",
+        "rect": {
+          "height": 104,
+          "width": 560,
+          "x": 70,
+          "y": 139.5859375
+        },
+        "text": "Проект начинается с внимательного разговора",
+        "textAlign": "start",
+        "type": "heading.default"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "fontSize": "17px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "id": "0e4e92b",
+        "rect": {
+          "height": 185.03125,
+          "width": 560,
+          "x": 70,
+          "y": 243.5859375
+        },
+        "text": "На первой встрече команда обсуждает пожелания и ограничения пространства, а затем перед разработкой чертежей согласуется планировка.\n\nВ работе учитываются дневной свет и повседневные сценарии, что опр",
+        "textAlign": "start",
+        "type": "text-editor.default"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "id": "30d6e9d",
+        "rect": {
+          "height": 316.6171875,
+          "width": 560,
+          "x": 650,
+          "y": 112
+        },
+        "text": "",
+        "textAlign": "start",
+        "type": "container"
+      },
+      {
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "id": "7bb5767",
+        "rect": {
+          "height": 316.6171875,
+          "width": 560,
+          "x": 650,
+          "y": 112
+        },
+        "text": "",
+        "textAlign": "center",
+        "type": "image.default"
+      }
+    ],
+    "rect": {
+      "height": 476.6171875,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    }
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientWidth": 1280,
+    "dpr": 1,
+    "height": 900,
+    "scrollWidth": 1280,
+    "width": 1280
+  }
+}\n

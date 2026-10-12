@@ -1,0 +1,30 @@
+{
+  "scenario": "C-benefits-four-grid",
+  "source_version": "v02.11.348",
+  "post_id": 5214,
+  "root_ids": [],
+  "operation_id": null,
+  "identity": null,
+  "write_count": 0,
+  "refusal": "explicitly_prohibited_claim",
+  "failure_class": "semantic_validation_refusal",
+  "validation_refusal": "explicitly_prohibited_claim",
+  "provider": "openrouter",
+  "requested_model": "openrouter/free",
+  "returned_model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "provider_name": "Nvidia",
+  "actual_http_calls": 2,
+  "latency_ms": 49974,
+  "retry_count": 1,
+  "response_format": "json_schema",
+  "strict_requested": true,
+  "require_parameters": true,
+  "semantic_validation_result": "semantic_provenance_failure",
+  "schema_keys": [
+    "schema",
+    "intake",
+    "validation"
+  ],
+  "editor_root_count": 0,
+  "publish_disabled": true
+}\n

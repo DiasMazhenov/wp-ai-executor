@@ -1,0 +1,588 @@
+{
+  "containers": [
+    {
+      "id": "dcc63f4",
+      "rect": {
+        "height": 190.1953125,
+        "width": 343,
+        "x": 16,
+        "y": 78
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "УСЛОВИЯ\nФорматы работы\nНа первой встрече обсуждаются задача, пожелания и ограничения пространства. До разработки чертежей согласуется планировка."
+    },
+    {
+      "id": "2067f84",
+      "rect": {
+        "height": 190.1953125,
+        "width": 343,
+        "x": 16,
+        "y": 78
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "0px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "УСЛОВИЯ\nФорматы работы\nНа первой встрече обсуждаются задача, пожелания и ограничения пространства. До разработки чертежей согласуется планировка."
+    },
+    {
+      "id": "852cce0",
+      "rect": {
+        "height": 27.5859375,
+        "width": 93.3984375,
+        "x": 16,
+        "y": 78
+      },
+      "style": {
+        "alignItems": "center",
+        "background": "rgb(0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "24px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px"
+      },
+      "text": "УСЛОВИЯ"
+    },
+    {
+      "id": "5b7a21a",
+      "rect": {
+        "height": 559.84375,
+        "width": 343,
+        "x": 16,
+        "y": 300.1953125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "16px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Концепция\n180 000 ₸\nразовый проект\nПланировочная схема\nОсновные решения\nОбсудить концепцию\nПолный проект\n420 000 ₸\nразовый проект\nПланы и развертки\nМатериалы и спецификации\nОбсудить проект"
+    },
+    {
+      "id": "c7dfaf4",
+      "rect": {
+        "height": 271.921875,
+        "width": 343,
+        "x": 16,
+        "y": 300.1953125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "20px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px"
+      },
+      "text": "Концепция\n180 000 ₸\nразовый проект\nПланировочная схема\nОсновные решения\nОбсудить концепцию"
+    },
+    {
+      "id": "b2cedc9",
+      "rect": {
+        "height": 178.921875,
+        "width": 309,
+        "x": 33,
+        "y": 317.1953125
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Концепция\n180 000 ₸\nразовый проект\nПланировочная схема\nОсновные решения"
+    },
+    {
+      "id": "5109446",
+      "rect": {
+        "height": 178.921875,
+        "width": 309,
+        "x": 33,
+        "y": 317.1953125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Концепция\n180 000 ₸\nразовый проект\nПланировочная схема\nОсновные решения"
+    },
+    {
+      "id": "a136c0b",
+      "rect": {
+        "height": 30.71875,
+        "width": 309,
+        "x": 33,
+        "y": 352.59375
+      },
+      "style": {
+        "alignItems": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "4px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "180 000 ₸"
+    },
+    {
+      "id": "150a53c",
+      "rect": {
+        "height": 39,
+        "width": 309,
+        "x": 33,
+        "y": 516.1171875
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "20px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Обсудить концепцию"
+    },
+    {
+      "id": "163e425",
+      "rect": {
+        "height": 271.921875,
+        "width": 343,
+        "x": 16,
+        "y": 588.1171875
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "20px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px"
+      },
+      "text": "Полный проект\n420 000 ₸\nразовый проект\nПланы и развертки\nМатериалы и спецификации\nОбсудить проект"
+    },
+    {
+      "id": "8489fb9",
+      "rect": {
+        "height": 178.921875,
+        "width": 309,
+        "x": 33,
+        "y": 605.1171875
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Полный проект\n420 000 ₸\nразовый проект\nПланы и развертки\nМатериалы и спецификации"
+    },
+    {
+      "id": "2635a7b",
+      "rect": {
+        "height": 178.921875,
+        "width": 309,
+        "x": 33,
+        "y": 605.1171875
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Полный проект\n420 000 ₸\nразовый проект\nПланы и развертки\nМатериалы и спецификации"
+    },
+    {
+      "id": "43df99a",
+      "rect": {
+        "height": 30.71875,
+        "width": 309,
+        "x": 33,
+        "y": 640.515625
+      },
+      "style": {
+        "alignItems": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "4px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "420 000 ₸"
+    },
+    {
+      "id": "de2a4e4",
+      "rect": {
+        "height": 39,
+        "width": 309,
+        "x": 33,
+        "y": 804.0390625
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "wrap",
+        "fontSize": "16px",
+        "gap": "20px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "text": "Обсудить проект"
+    }
+  ],
+  "headings": [
+    {
+      "rect": {
+        "height": 14.3984375,
+        "width": 67.3984375,
+        "x": 29,
+        "y": 84.59375
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "12px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "14.4px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H6",
+      "text": "УСЛОВИЯ"
+    },
+    {
+      "rect": {
+        "height": 32.203125,
+        "width": 241.078125,
+        "x": 16,
+        "y": 117.5859375
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "28px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "32.2px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H2",
+      "text": "Форматы работы"
+    },
+    {
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 317.1953125
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "18px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "23.4px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H3",
+      "text": "Концепция"
+    },
+    {
+      "rect": {
+        "height": 30.71875,
+        "width": 113.890625,
+        "x": 33,
+        "y": 352.59375
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "25.6px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "30.72px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H3",
+      "text": "180 000 ₸"
+    },
+    {
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 605.1171875
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "18px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "23.4px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H3",
+      "text": "Полный проект"
+    },
+    {
+      "rect": {
+        "height": 30.71875,
+        "width": 113.890625,
+        "x": 33,
+        "y": 640.515625
+      },
+      "style": {
+        "alignItems": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(51, 51, 51)",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "25.6px",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "30.72px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px"
+      },
+      "tag": "H3",
+      "text": "420 000 ₸"
+    }
+  ],
+  "links": [
+    {
+      "href": "#concept",
+      "rect": {
+        "height": 39,
+        "width": 199.3046875,
+        "x": 33,
+        "y": 516.1171875
+      },
+      "text": "Обсудить концепцию"
+    },
+    {
+      "href": "#full",
+      "rect": {
+        "height": 39,
+        "width": 168.0703125,
+        "x": 33,
+        "y": 804.0390625
+      },
+      "text": "Обсудить проект"
+    }
+  ],
+  "root": {
+    "rect": {
+      "height": 846.0390625,
+      "width": 375,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "color": "rgb(51, 51, 51)",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px"
+    },
+    "text": "УСЛОВИЯ\nФорматы работы\nНа первой встрече обсуждаются задача, пожелания и ограничения пространства. До разработки чертежей согласуется планировка.\nКонцепция\n180 000 ₸\nразовый проект\nПланировочная схема\nОсновные решения\nОбсудить концепцию\nПолный проект\n420 000 ₸\nразовый проект\nПланы и развертки\nМатериалы и спецификации\nОбсудить проект"
+  },
+  "rootFound": true,
+  "siteAvatar": {
+    "height": 60,
+    "width": 60,
+    "x": 291,
+    "y": 760
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientWidth": 375,
+    "dpr": 1,
+    "height": 844,
+    "scrollWidth": 375,
+    "width": 390
+  }
+}\n
