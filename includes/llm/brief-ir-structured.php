@@ -811,7 +811,7 @@ function wpae_brief_ir_generated_content_valid( array $item, array $brief ): boo
 	if ( ! empty( $generation['requires_fact_ref'] ) && empty( $generation['fact_refs'] ) ) { return false; }
 	$authored_copy_anchor = false;
 	foreach ( (array) ( $generation['fact_refs'] ?? [] ) as $fact_ref ) { if ( ( $slot_source_records[ sanitize_key( (string) $fact_ref ) ]['type'] ?? '' ) === 'authored_copy_reference' ) { $authored_copy_anchor = true; break; } }
-	if ( $generation_schema === 'wpae-generated-copy-v2' && ! wpae_brief_ir_generated_claims_grounded( (string) ( $item['exact_text'] ?? '' ), (array) ( $generation['fact_refs'] ?? [] ), $fact_map, $authored_copy_anchor ) ) { return false; }
+	if ( $generation_schema === 'wpae-generated-copy-v2' && wpae_brief_ir_generated_claims_grounding_result( (string) ( $item['exact_text'] ?? '' ), (array) ( $generation['fact_refs'] ?? [] ), $fact_map, $authored_copy_anchor, $slot_id )['status'] !== 'supported' ) { return false; }
 	if ( $generation_schema === 'wpae-generated-copy-v2' && wpae_brief_ir_prohibited_claim_violation( (string) ( $item['exact_text'] ?? '' ), (array) ( $brief['copy_request']['prohibited_claims'] ?? [] ) ) !== null ) { return false; }
 	if ( ! function_exists( 'wp_salt' ) || ! function_exists( 'hash_equals' ) ) { return false; }
 	$secret = (string) wp_salt( 'auth' );
@@ -827,7 +827,7 @@ function wpae_brief_ir_generated_content_valid( array $item, array $brief ): boo
  * This is deliberately a guard against unsupported promises, not a semantic
  * truth classifier for all prose.
  */
-function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs, array $facts_by_id, bool $authored_copy_anchor = false ): bool {
+function wpae_brief_ir_generated_claims_lexical_heuristic_v1( string $text, array $fact_refs, array $facts_by_id, bool $authored_copy_anchor = false ): bool {
 	$unsupported_inference_patterns = [
 		'/\b(?:позволя\p{L}*|обеспечива\p{L}*|привод\p{L}*\s+к|да(?:е|ё)т\p{L}*|helps?\s+to|allows?\s+|enables?\s+|results?\s+in\s+|ensures?\s+)[^.!?;\n]{0,100}/iu',
 		'/\b(?:чтобы|для\s+того\s+чтобы|so\s+that|in\s+order\s+to)\s+(?:созда\p{L}*|обеспеч\p{L}*|улучш\p{L}*|повыс\p{L}*|сниз\p{L}*|сохран\p{L}*|create\p{L}*|improv\p{L}*|increase\p{L}*|reduce\p{L}*|preserv\p{L}*)\b[^.!?;\n]{0,100}/iu',
@@ -852,6 +852,20 @@ function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs
 	};
 	$stems = static function ( string $value ): array {
 		$value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value, 'UTF-8' ) : strtolower( $value );
+		$aliases = [
+			'/(?:дневн\p{L}*\s+свет\p{L}*|естественн\p{L}*\s+освещ\p{L}*|естественн\p{L}*\s+свет\p{L}*|natural\s+(?:day)?light(?:ing)?)/iu' => ' wpaeconceptdaylight ',
+			'/(?:повседневн\p{L}*\s+движ\p{L}*|перемещен\p{L}*\s+люд\p{L}*|маршрут\p{L}*\s+движ\p{L}*|everyday\s+movement|people\s+movement|circulation\s+routes?)/iu' => ' wpaeconceptmovement ',
+			'/(?:организац\p{L}*\s+хран\p{L}*|мест\p{L}*\s+хран\p{L}*|хранен\p{L}*|storage\s+(?:planning|organization)|storage)/iu' => ' wpaeconceptstorage ',
+			'/(?:учитыва\p{L}*|рассматрива\p{L}*|принима\p{L}*\s+во\s+вниман\p{L}*|продумыва\p{L}*|consider\p{L}*)/iu' => ' wpaeconceptconsider ',
+			'/(?:проектир\p{L}*|design\p{L}*)/iu' => ' wpaeconceptdesign ',
+			'/(?:согласу\p{L}*|согласован\p{L}*|agree\p{L}*)/iu' => ' wpaeconceptagree ',
+			'/(?:планиров\p{L}*|planning)/iu' => ' wpaeconceptplanning ',
+			'/(?:чертеж\p{L}*|drawing\p{L}*)/iu' => ' wpaeconceptdrawing ',
+			'/(?:обсуждени\p{L}*|обсужда\p{L}*|discuss\p{L}*)/iu' => ' wpaeconceptdiscussion ',
+			'/(?:пожелани\p{L}*|предпочтен\p{L}*|preference\p{L}*)/iu' => ' wpaeconceptpreference ',
+			'/(?:ограничени\p{L}*|limit\p{L}*|constraint\p{L}*)/iu' => ' wpaeconceptlimit ',
+		];
+		foreach ( $aliases as $pattern => $replacement ) { $value = (string) preg_replace( $pattern, $replacement, $value ); }
 		$tokens = preg_split( '/[^\p{L}\p{N}]+/u', $value, -1, PREG_SPLIT_NO_EMPTY );
 		$stop = array_fill_keys( [ 'а', 'без', 'бы', 'в', 'во', 'вот', 'для', 'до', 'если', 'же', 'за', 'и', 'или', 'из', 'к', 'как', 'ко', 'ли', 'между', 'на', 'над', 'не', 'ни', 'но', 'о', 'об', 'от', 'по', 'под', 'при', 'про', 'с', 'со', 'то', 'у', 'что', 'это', 'эта', 'эти', 'этот', 'так', 'также', 'можно', 'весь', 'все', 'каждый', 'мы', 'наш', 'их', 'который', 'которые', 'которое', 'когда', 'чтобы', 'давайте', 'the', 'a', 'an', 'and', 'or', 'to', 'for', 'of', 'in', 'on', 'with', 'by', 'from', 'that', 'this', 'these', 'those', 'is', 'are', 'be', 'as', 'your', 'our' ], true );
 		$suffixes = [ 'иями', 'ями', 'ами', 'его', 'ого', 'ему', 'ому', 'ыми', 'ими', 'овать', 'евать', 'ировать', 'енный', 'ённый', 'ание', 'ение', 'иям', 'иях', 'ией', 'ией', 'ией', 'ать', 'ять', 'ить', 'еть', 'ует', 'уют', 'ают', 'яют', 'ает', 'яет', 'али', 'яли', 'или', 'ели', 'ают', 'яют', 'ого', 'его', 'ому', 'ему', 'ыми', 'ими', 'ами', 'ями', 'ах', 'ях', 'ам', 'ям', 'ов', 'ев', 'ей', 'ий', 'ый', 'ая', 'яя', 'ое', 'ее', 'ые', 'ие', 'ых', 'их', 'ым', 'им', 'ом', 'ем', 'ую', 'юю', 'ою', 'ею', 'ет', 'ют', 'ит', 'ят', 'ат', 'ть', 'ся', 'сь', 's', 'es', 'ed', 'ing', 'а', 'я', 'ы', 'и', 'у', 'ю', 'е', 'о', 'ь', 'й' ];
@@ -896,7 +910,7 @@ function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs
 			return false;
 		} ) );
 		$minimum_matches = $authored_copy_anchor ? 1 : min( 2, count( $sentence_tokens ) );
-		$minimum_coverage = $authored_copy_anchor ? 0.2 : 0.5;
+		$minimum_coverage = $authored_copy_anchor ? 0.15 : 0.5;
 		if ( count( $matched_tokens ) < $minimum_matches || ( count( $matched_tokens ) / count( $sentence_tokens ) ) < $minimum_coverage ) { return false; }
 	}
 	foreach ( $claims as $claim ) {
@@ -924,6 +938,219 @@ function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs
 		}
 	}
 	return true;
+}
+
+/** Identify the bounded high-risk rule when the lexical guard rejects a claim. */
+function wpae_brief_ir_generated_claims_risk_rule( string $text, array $cited_fact_texts ): ?string {
+	$normalize = static function ( string $value ): string {
+		$value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value, 'UTF-8' ) : strtolower( $value );
+		$value = preg_replace( '/[^\p{L}\p{N}]+/u', ' ', $value );
+		return trim( preg_replace( '/\s+/u', ' ', (string) $value ) );
+	};
+	$directly_supported = static function ( string $claim ) use ( $cited_fact_texts, $normalize ): bool {
+		$needle = $normalize( $claim );
+		if ( $needle === '' ) { return false; }
+		foreach ( $cited_fact_texts as $fact ) { $source = $normalize( (string) $fact ); if ( str_contains( ' ' . $source . ' ', ' ' . $needle . ' ' ) ) { return true; } }
+		return false;
+	};
+	$rules = [
+		'grounding.unsupported_causal_inference' => [ '/\b(?:позволя\p{L}*|обеспечива\p{L}*|привод\p{L}*\s+к|да(?:е|ё)т\p{L}*|helps?\s+to|allows?\s+|enables?\s+|results?\s+in\s+|ensures?\s+)[^.!?;\n]{0,100}/iu', '/\b(?:чтобы|для\s+того\s+чтобы|so\s+that|in\s+order\s+to)\s+(?:созда\p{L}*|обеспеч\p{L}*|улучш\p{L}*|повыс\p{L}*|сниз\p{L}*|сохран\p{L}*|create\p{L}*|improv\p{L}*|increase\p{L}*|reduce\p{L}*|preserv\p{L}*)\b[^.!?;\n]{0,100}/iu' ],
+		'grounding.unsupported_scope_claim' => [ '/\b(?:люб(?:ой|ого|ая|ые|ых)\s+(?:масштаб\w*|проект\w*|задач\w*|случа\w*)|без\s+ограничен\w*)\b/iu' ],
+		'grounding.unsupported_time_claim' => [ '/\b(?:уже\s+сегодн\w*|сегодн\w*|прямо\s+сейчас|немедлен\w*|мгновен\w*)\b/iu' ],
+		'grounding.unsupported_commercial_claim' => [ '/\b(?:гибк\w*\s+(?:услов\w*|цен\w*|тариф\w*)|бесплат\w*|выгодн\w*|эконом\w*)\b/iu' ],
+		'grounding.unsupported_promise' => [ '/\b(?:гарантир\w*|лучший\s+(?:в\s+мире|на\s+рынк\w*)|лидер\w*\s+рынк\w*|номер\s+один|сам\w*\s+популярн\w*)\b/iu' ],
+	];
+	foreach ( $rules as $rule => $patterns ) {
+		foreach ( $patterns as $pattern ) {
+			if ( preg_match_all( $pattern, $text, $matches ) ) {
+				foreach ( $matches[0] as $claim ) { if ( ! $directly_supported( (string) $claim ) ) { return $rule; } }
+			}
+		}
+	}
+	return null;
+}
+
+/** Explainable, bounded and fail-closed result for the existing generated-claim check. */
+function wpae_brief_ir_generated_claims_grounding_result( string $text, array $fact_refs, array $facts_by_id, bool $authored_copy_anchor = false, string $slot_id = '' ): array {
+	$policy = 'wpae-generated-claim-grounding-v1';
+	$refs = array_values( array_unique( array_map( 'sanitize_key', $fact_refs ) ) );
+	$finish = static function ( string $status, string $rule, string $reason, array $claims = [], array $metrics = [] ) use ( $policy, $refs, $slot_id ): array {
+		return [ 'status' => $status, 'policy_version' => $policy, 'rule_id' => $rule, 'slot_id' => sanitize_key( $slot_id ), 'fact_refs' => $refs, 'reason' => $reason, 'claims' => $claims, 'lexical_metrics' => $metrics ];
+	};
+	if ( $facts_by_id && ! $refs ) { return $finish( 'unsupported', 'grounding.missing_fact_ref', 'A cited approved fact is required.' ); }
+	$cited = [];
+	foreach ( $refs as $ref ) {
+		if ( $ref === '' || ! array_key_exists( $ref, $facts_by_id ) ) { return $finish( 'unsupported', 'grounding.unknown_fact_ref', 'A referenced fact is unavailable in this scope.' ); }
+		$cited[$ref] = (string) $facts_by_id[$ref];
+	}
+	if ( ! $cited ) {
+		$unreferenced_risk = wpae_brief_ir_generated_claims_risk_rule( $text, [] );
+		if ( $unreferenced_risk !== null || ! wpae_brief_ir_generated_claims_lexical_heuristic_v1( $text, $refs, $facts_by_id, $authored_copy_anchor ) ) { return $finish( 'unsupported', $unreferenced_risk ?? 'grounding.unsourced_high_risk_claim', 'A high-risk factual claim has no directly cited support.', [], [ 'claim_tokens' => 0, 'matched_tokens' => 0, 'coverage' => 0.0, 'concept_matches' => [] ] ); }
+		return $finish( 'supported', 'grounding.no_fact_claim', 'No approved facts were cited and no high-risk claim was detected.', [], [ 'claim_tokens' => 0, 'matched_tokens' => 0, 'coverage' => 1.0, 'concept_matches' => [] ] );
+	}
+	$signal_patterns = [
+		'negation' => '/(?<!\p{L})(?:не|ни|нет|никогда|никто|ничто|без|not|no|never|without|absent|missing)(?!\p{L})/iu',
+		'number' => '/(?<![\p{L}\d])(?:\d+(?:[,.]\d+)?|ноль|один|одна|одно|два|две|три|четыре|пять|six|seven|eight|nine|ten|one|two|three|four|five)(?![\p{L}\d])/iu',
+		'time' => '/(?<!\p{L})(?:сегодня|сейчас|завтра|вчера|срочно|немедленно|всегда|никогда|в\s+течение|через\s+\d+|до\s+\d{4}|today|now|tomorrow|yesterday|within|in\s+\d+|by\s+\d{4}|always|never)(?!\p{L})/iu',
+		'modality' => '/(?<!\p{L})(?:гарантир\p{L}*|обеща\p{L}*|обязан\p{L}*|долж\p{L}*|обязательн\p{L}*|будет|будут|обеспечим|guarantee\p{L}*|promise\p{L}*|must|shall|will|always)(?!\p{L})/iu',
+	];
+	$signals = static function ( string $value ) use ( $signal_patterns ): array {
+		$value = preg_replace( '/(?<!\p{L})не\s+только(?!\p{L})/iu', 'только', $value );
+		$out = [];
+		foreach ( $signal_patterns as $key => $pattern ) {
+			if ( preg_match_all( $pattern, $value, $matches ) ) {
+				$out[$key] = array_values( array_unique( array_map( static fn( string $item ): string => function_exists( 'mb_strtolower' ) ? mb_strtolower( $item, 'UTF-8' ) : strtolower( $item ), $matches[0] ) ) );
+			}
+		}
+		return $out;
+	};
+	$actor_patterns = [ 'client' => '/(?<!\p{L})(?:клиент\p{L}*|заказчик\p{L}*|customer\p{L}*|client\p{L}*)(?!\p{L})/iu', 'studio' => '/(?<!\p{L})(?:студи\p{L}*|компани\p{L}*|бюро\p{L}*|company|studio|firm)(?!\p{L})/iu', 'team' => '/(?<!\p{L})(?:команд\p{L}*|специалист\p{L}*|архитектор\p{L}*|team|architect\p{L}*|specialist\p{L}*)(?!\p{L})/iu' ];
+	$actors = static function ( string $value ) use ( $actor_patterns ): array { $found = []; foreach ( $actor_patterns as $key => $pattern ) { if ( preg_match( $pattern, $value ) ) { $found[] = $key; } } return $found; };
+	$tokens = static function ( string $value ): array {
+		$value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value, 'UTF-8' ) : strtolower( $value );
+		$aliases = [
+			'/(?:дневн\p{L}*\s+свет\p{L}*|естественн\p{L}*\s+освещ\p{L}*|естественн\p{L}*\s+свет\p{L}*|natural\s+(?:day)?light(?:ing)?)/iu' => ' wpaeconceptdaylight ',
+			'/(?:повседневн\p{L}*\s+движ\p{L}*|перемещен\p{L}*\s+люд\p{L}*|маршрут\p{L}*\s+движ\p{L}*|everyday\s+movement|people\s+movement|circulation\s+routes?)/iu' => ' wpaeconceptmovement ',
+			'/(?:организац\p{L}*\s+хран\p{L}*|мест\p{L}*\s+хран\p{L}*|хранен\p{L}*|storage\s+(?:planning|organization)|storage)/iu' => ' wpaeconceptstorage ',
+			'/(?:учитыва\p{L}*|рассматрива\p{L}*|принима\p{L}*\s+во\s+вниман\p{L}*|продумыва\p{L}*|consider\p{L}*)/iu' => ' wpaeconceptconsider ',
+			'/(?:проектир\p{L}*|design\p{L}*)/iu' => ' wpaeconceptdesign ',
+			'/(?:согласу\p{L}*|согласован\p{L}*|agree\p{L}*)/iu' => ' wpaeconceptagree ',
+			'/(?:планиров\p{L}*|planning)/iu' => ' wpaeconceptplanning ',
+			'/(?:чертеж\p{L}*|drawing\p{L}*)/iu' => ' wpaeconceptdrawing ',
+			'/(?:обсуждени\p{L}*|обсужда\p{L}*|discuss\p{L}*)/iu' => ' wpaeconceptdiscussion ',
+			'/(?:пожелани\p{L}*|предпочтен\p{L}*|preference\p{L}*)/iu' => ' wpaeconceptpreference ',
+			'/(?:ограничени\p{L}*|limit\p{L}*|constraint\p{L}*)/iu' => ' wpaeconceptlimit ',
+		];
+		foreach ( $aliases as $pattern => $replacement ) { $value = (string) preg_replace( $pattern, $replacement, $value ); }
+		$tokens = preg_split( '/[^\p{L}\p{N}]+/u', $value, -1, PREG_SPLIT_NO_EMPTY );
+		$stop = array_fill_keys( [ 'а', 'бы', 'в', 'во', 'вот', 'вместе', 'для', 'до', 'если', 'же', 'за', 'и', 'или', 'из', 'к', 'как', 'ко', 'ли', 'между', 'на', 'над', 'не', 'ни', 'но', 'о', 'об', 'от', 'по', 'под', 'при', 'про', 'с', 'со', 'то', 'у', 'что', 'это', 'эта', 'эти', 'этот', 'так', 'также', 'можно', 'весь', 'все', 'каждый', 'мы', 'наш', 'их', 'который', 'которые', 'которое', 'когда', 'чтобы', 'давайте', 'the', 'a', 'an', 'and', 'or', 'to', 'for', 'of', 'in', 'on', 'with', 'by', 'from', 'that', 'this', 'these', 'those', 'is', 'are', 'be', 'as', 'your', 'our' ], true );
+		$out = [];
+		foreach ( (array) $tokens as $token ) {
+			if ( isset( $stop[$token] ) || strlen( $token ) < 2 ) { continue; }
+			$stem = $token;
+			$suffixes = [ 'иями', 'иями', 'ями', 'ами', 'ение', 'ения', 'аний', 'ение', 'овать', 'ировать', 'енный', 'ённый', 'ого', 'его', 'ому', 'ему', 'ыми', 'ими', 'ых', 'их', 'ым', 'им', 'ом', 'ем', 'ые', 'ие', 'ая', 'яя', 'ое', 'ее', 'ую', 'юю', 'ия', 'ий', 'ый', 'ой', 'ей', 'ий', 'ами', 'ями', 'ах', 'ях', 'ам', 'ям', 'ов', 'ев', 'ать', 'ять', 'ить', 'еть', 'ет', 'ют', 'ит', 'ят', 'ся', 'сь', 'а', 'я', 'ы', 'и', 'у', 'ю', 'е', 'о', 'ь', 'й' ];
+			usort( $suffixes, static fn( string $left, string $right ): int => strlen( $right ) <=> strlen( $left ) );
+			for ( $round = 0; $round < 2; $round++ ) {
+				foreach ( $suffixes as $suffix ) {
+					if ( strlen( $stem ) > strlen( $suffix ) + 3 && str_ends_with( $stem, $suffix ) ) { $stem = substr( $stem, 0, -strlen( $suffix ) ); break; }
+				}
+			}
+			if ( strlen( $stem ) >= 3 ) { $out[] = $stem; }
+		}
+		return array_values( array_unique( $out ) );
+	};
+	$source_signals = $signals( implode( "\n", array_values( $cited ) ) );
+	$source_actors = $actors( implode( "\n", array_values( $cited ) ) );
+	$parts = preg_split( '/(?<=[.!?;])\s+|\n+|,\s*(?:а\s+также|а|но|однако|при\s+этом|while|but|however)\s+/iu', trim( $text ), -1, PREG_SPLIT_OFFSET_CAPTURE | PREG_SPLIT_NO_EMPTY );
+	$claims = []; $metrics = [ 'claim_tokens' => 0, 'matched_tokens' => 0, 'coverage' => 0.0, 'concept_matches' => [] ];
+	$base = strlen( $text ) - strlen( ltrim( $text ) );
+	foreach ( (array) $parts as $part ) {
+		$raw_sentence = (string) $part[0];
+		$left_trim_bytes = strlen( $raw_sentence ) - strlen( ltrim( $raw_sentence ) );
+		$sentence = trim( $raw_sentence ); if ( $sentence === '' ) { continue; }
+		$claim_tokens = $tokens( $sentence ); $claim_signals = $signals( $sentence ); $best = 0.0; $best_refs = []; $best_matches = [];
+		foreach ( $cited as $fact_id => $fact_text ) {
+			$fact_tokens = $tokens( $fact_text ); $matches = array_values( array_intersect( $claim_tokens, $fact_tokens ) ); $score = count( $claim_tokens ) ? count( $matches ) / count( $claim_tokens ) : 0.0;
+			if ( $score > $best + 0.0001 ) { $best = $score; $best_refs = [ $fact_id ]; $best_matches = $matches; }
+			elseif ( $score > 0 && abs( $score - $best ) <= 0.0001 ) { $best_refs[] = $fact_id; $best_matches = array_values( array_unique( array_merge( $best_matches, $matches ) ) ); }
+		}
+		$start = $base + (int) $part[1] + $left_trim_bytes;
+		$claim = [ 'start_byte' => $start, 'end_byte' => $start + strlen( $sentence ), 'text' => $sentence, 'status' => 'supported', 'rule_id' => 'grounding.lexical_support', 'reason' => 'Claim has sufficient bounded evidence in a cited fact.', 'lexical' => [ 'claim_tokens' => count( $claim_tokens ), 'matched_tokens' => count( $best_matches ), 'coverage' => count( $claim_tokens ) ? round( $best, 4 ) : 0.0, 'matched_concepts' => array_values( array_filter( $best_matches, static fn( string $token ): bool => str_starts_with( $token, 'wpaeconcept' ) ) ) ] ];
+		$metrics['claim_tokens'] += count( $claim_tokens ); $metrics['matched_tokens'] += count( $best_matches ); $metrics['concept_matches'] = array_values( array_unique( array_merge( $metrics['concept_matches'], $claim['lexical']['matched_concepts'] ) ) );
+		$metrics['coverage'] = $metrics['claim_tokens'] ? round( $metrics['matched_tokens'] / $metrics['claim_tokens'], 4 ) : 0.0;
+		$checks = [ 'number' => [ 'grounding.quantity_changed', 'Generated copy introduced a quantity not present in cited facts.' ], 'time' => [ 'grounding.time_changed', 'Generated copy introduced a time claim not present in cited facts.' ], 'modality' => [ 'grounding.modality_changed', 'Generated copy strengthened obligation, certainty, or promise beyond cited facts.' ] ];
+		foreach ( $checks as $key => $failure ) { if ( $claim['status'] === 'supported' && ( $claim_signals[$key] ?? [] ) && array_diff( $claim_signals[$key], $source_signals[$key] ?? [] ) ) { $claim['status'] = 'unsupported'; $claim['rule_id'] = $failure[0]; $claim['reason'] = $failure[1]; } }
+		$extra_actors = array_diff( $actors( $sentence ), $source_actors );
+		if ( $claim['status'] === 'supported' && $extra_actors ) { $claim['status'] = 'unsupported'; $claim['rule_id'] = 'grounding.subject_changed'; $claim['reason'] = 'Generated copy introduced a business actor not present in cited facts.'; }
+		if ( $claim['status'] === 'supported' && $best_refs ) {
+			$polarities = []; foreach ( $best_refs as $fact_id ) { $polarities[] = ! empty( $signals( $cited[$fact_id] )['negation'] ); }
+			if ( count( array_unique( $polarities ) ) > 1 ) { $claim['status'] = 'uncertain'; $claim['rule_id'] = 'grounding.ambiguous_fact_polarity'; $claim['reason'] = 'Equally relevant cited facts have different negation polarity.'; }
+			elseif ( $polarities && ( ! empty( $claim_signals['negation'] ) !== $polarities[0] ) ) { $claim['status'] = 'unsupported'; $claim['rule_id'] = 'grounding.negation_mismatch'; $claim['reason'] = 'Generated copy changed the positive or negative polarity of its cited fact.'; }
+		}
+		if ( $claim['status'] === 'supported' && ( count( $best_matches ) < ( $authored_copy_anchor ? 1 : min( 2, count( $claim_tokens ) ) ) || $best < ( $authored_copy_anchor ? 0.15 : 0.5 ) ) ) { $claim['status'] = 'uncertain'; $claim['rule_id'] = 'grounding.insufficient_lexical_evidence'; $claim['reason'] = 'Evidence is insufficient for the bounded lexical policy.'; }
+		$claims[] = $claim;
+	}
+	if ( ! $claims ) { return $finish( 'uncertain', 'grounding.empty_claim', 'No sentence could be evaluated.', [], $metrics ); }
+	if ( ! wpae_brief_ir_generated_claims_lexical_heuristic_v1( $text, $refs, $cited, $authored_copy_anchor ) ) {
+		foreach ( $claims as $claim ) { if ( in_array( $claim['rule_id'], [ 'grounding.negation_mismatch', 'grounding.quantity_changed', 'grounding.time_changed', 'grounding.modality_changed', 'grounding.subject_changed' ], true ) ) { return $finish( 'unsupported', $claim['rule_id'], $claim['reason'], $claims, $metrics ); } }
+		$risk_rule = wpae_brief_ir_generated_claims_risk_rule( $text, array_values( $cited ) );
+		if ( $risk_rule !== null ) { return $finish( 'unsupported', $risk_rule, 'A high-risk scope, commercial, promise, or causal statement is not directly grounded in the cited fact.', $claims, $metrics ); }
+		return $finish( 'uncertain', 'grounding.unsupported_or_unmatched_claim', 'The legacy semantic claim guard or lexical threshold rejected this copy; inspect the per-sentence evidence.', $claims, $metrics );
+	}
+	foreach ( $claims as $claim ) { if ( $claim['status'] === 'unsupported' ) { return $finish( 'unsupported', $claim['rule_id'], $claim['reason'], $claims, $metrics ); } }
+	foreach ( $claims as $claim ) { if ( $claim['status'] === 'uncertain' ) { return $finish( 'uncertain', $claim['rule_id'], $claim['reason'], $claims, $metrics ); } }
+	$metrics['coverage'] = $metrics['claim_tokens'] ? round( $metrics['matched_tokens'] / $metrics['claim_tokens'], 4 ) : 0.0;
+	return $finish( 'supported', 'grounding.lexical_or_alias_support', 'Every sentence passes bounded lexical, polarity, and claim-risk checks.', $claims, $metrics );
+}
+
+/** Compatibility wrapper: uncertain and unsupported results both fail closed. */
+function wpae_brief_ir_generated_claims_grounded( string $text, array $fact_refs, array $facts_by_id, bool $authored_copy_anchor = false ): bool {
+	return wpae_brief_ir_generated_claims_grounding_result( $text, $fact_refs, $facts_by_id, $authored_copy_anchor )['status'] === 'supported';
+}
+
+/** Map bounded validator rules to fixed, safe explanations for production telemetry. */
+function wpae_brief_ir_generated_claims_safe_reason( string $rule_id ): string {
+	$reasons = [
+		'grounding.missing_fact_ref' => 'No approved fact reference was supplied for generated copy.',
+		'grounding.unknown_fact_ref' => 'A referenced fact is unavailable in this slot scope.',
+		'grounding.unsupported_causal_inference' => 'The copy adds a cause or outcome that the cited fact does not state.',
+		'grounding.unsupported_scope_claim' => 'The copy broadens the scope beyond the cited fact.',
+		'grounding.unsupported_time_claim' => 'The copy adds a time or availability claim absent from the cited fact.',
+		'grounding.unsupported_commercial_claim' => 'The copy adds a commercial claim absent from the cited fact.',
+		'grounding.unsupported_promise' => 'The copy adds a guarantee or comparative promise absent from the cited fact.',
+		'grounding.unsourced_high_risk_claim' => 'A high-risk claim has no cited approved fact.',
+		'grounding.no_fact_claim' => 'No approved facts were cited and no configured high-risk phrase was detected.',
+		'grounding.quantity_changed' => 'The copy changes a quantity from the cited fact.',
+		'grounding.time_changed' => 'The copy changes or adds a time claim.',
+		'grounding.modality_changed' => 'The copy strengthens obligation, certainty, or promise beyond the cited fact.',
+		'grounding.subject_changed' => 'The copy introduces a business actor not present in the cited fact.',
+		'grounding.ambiguous_fact_polarity' => 'Equally relevant cited facts have conflicting polarity.',
+		'grounding.negation_mismatch' => 'The copy reverses or changes the positive or negative meaning of the cited fact.',
+		'grounding.insufficient_lexical_evidence' => 'The bounded check found insufficient evidence to verify this claim.',
+		'grounding.empty_claim' => 'The bounded check could not identify a claim to evaluate.',
+		'grounding.unsupported_or_unmatched_claim' => 'The bounded check could not verify the claim against its cited facts.',
+		'grounding.lexical_or_alias_support' => 'Every checked sentence passed the bounded evidence and risk rules.',
+		'grounding.lexical_support' => 'The claim has bounded lexical evidence in a cited fact.',
+	];
+	$reason = $reasons[$rule_id] ?? 'The current bounded policy could not verify this claim.';
+	return substr( $reason, 0, 180 );
+}
+
+/** Bounded production-safe summary; sentence text is omitted from telemetry. */
+function wpae_brief_ir_generated_claims_safe_diagnostic( array $result ): array {
+	$metrics = (array) ( $result['lexical_metrics'] ?? [] ); $rule = (string) ( $result['rule_id'] ?? '' );
+	$rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', $rule ) );
+	if ( ! preg_match( '/^[a-z0-9_.-]{1,80}$/', $rule ) ) { $rule = 'grounding.unknown'; }
+	$claim_spans = [];
+	foreach ( array_slice( (array) ( $result['claims'] ?? [] ), 0, 12 ) as $index => $claim ) {
+		if ( ! is_array( $claim ) ) { continue; }
+		$claim_rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', (string) ( $claim['rule_id'] ?? '' ) ) );
+		$claim_rule = preg_match( '/^[a-z0-9_.-]{1,80}$/', $claim_rule ) ? $claim_rule : 'grounding.unknown';
+		$claim_metrics = (array) ( $claim['lexical'] ?? [] );
+		$claim_spans[] = [
+			'index' => (int) $index,
+			'start_byte' => max( 0, min( 100000, (int) ( $claim['start_byte'] ?? 0 ) ) ),
+			'end_byte' => max( 0, min( 100000, (int) ( $claim['end_byte'] ?? 0 ) ) ),
+			'status' => in_array( $claim['status'] ?? '', [ 'supported', 'unsupported', 'uncertain' ], true ) ? (string) $claim['status'] : 'uncertain',
+			'rule_id' => $claim_rule,
+			'claim_tokens' => max( 0, min( 1000, (int) ( $claim_metrics['claim_tokens'] ?? 0 ) ) ),
+			'matched_tokens' => max( 0, min( 1000, (int) ( $claim_metrics['matched_tokens'] ?? 0 ) ) ),
+			'coverage_basis_points' => (int) round( max( 0, min( 1, (float) ( $claim_metrics['coverage'] ?? 0 ) ) ) * 10000 ),
+		];
+	}
+	return [
+		'policy_version' => substr( sanitize_key( (string) ( $result['policy_version'] ?? '' ) ), 0, 64 ),
+		'status' => in_array( $result['status'] ?? '', [ 'supported', 'unsupported', 'uncertain' ], true ) ? (string) $result['status'] : 'uncertain',
+		'rule_id' => $rule,
+		'reason' => wpae_brief_ir_generated_claims_safe_reason( $rule ),
+		'slot_id' => substr( sanitize_key( (string) ( $result['slot_id'] ?? '' ) ), 0, 80 ),
+		'fact_refs' => array_slice( array_values( array_filter( array_map( 'sanitize_key', (array) ( $result['fact_refs'] ?? [] ) ) ) ), 0, 12 ),
+		'claim_tokens' => max( 0, min( 1000, (int) ( $metrics['claim_tokens'] ?? 0 ) ) ),
+		'matched_tokens' => max( 0, min( 1000, (int) ( $metrics['matched_tokens'] ?? 0 ) ) ),
+		'coverage_basis_points' => (int) round( max( 0, min( 1, (float) ( $metrics['coverage'] ?? 0 ) ) ) * 10000 ),
+		'matched_concepts' => array_slice( array_values( array_unique( array_map( 'sanitize_key', (array) ( $metrics['concept_matches'] ?? [] ) ) ) ), 0, 12 ),
+		'claim_spans' => $claim_spans,
+	];
 }
 
 /** Reject a substantial sentence copied between generated items in distinct groups. */
@@ -1161,6 +1388,32 @@ function wpae_brief_ir_intake_safe_validation_diagnostics( array $result ): arra
 		$value = sanitize_key( (string) ( $telemetry[ $source_key ] ?? '' ) );
 		if ( $value !== '' ) { $diagnostics[ $diagnostic_key ] = substr( $value, 0, 80 ); }
 	}
+	if ( is_array( $telemetry['claim_validation'] ?? null ) ) {
+		$claim = (array) $telemetry['claim_validation'];
+		$claim_rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', (string) ( $claim['rule_id'] ?? '' ) ) );
+		$claim_status = in_array( $claim['status'] ?? '', [ 'supported', 'unsupported', 'uncertain' ], true ) ? (string) $claim['status'] : 'uncertain';
+		$claim_refs = array_slice( array_values( array_filter( array_map( 'sanitize_key', (array) ( $claim['fact_refs'] ?? [] ) ) ) ), 0, 12 );
+		$claim_concepts = array_slice( array_values( array_unique( array_map( 'sanitize_key', (array) ( $claim['matched_concepts'] ?? [] ) ) ) ), 0, 12 );
+		$claim_spans = [];
+		foreach ( array_slice( (array) ( $claim['claim_spans'] ?? [] ), 0, 12 ) as $index => $span ) {
+			if ( ! is_array( $span ) ) { continue; }
+			$span_rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', (string) ( $span['rule_id'] ?? '' ) ) );
+			$claim_spans[] = [ 'index' => $index, 'start_byte' => max( 0, min( 100000, (int) ( $span['start_byte'] ?? 0 ) ) ), 'end_byte' => max( 0, min( 100000, (int) ( $span['end_byte'] ?? 0 ) ) ), 'status' => in_array( $span['status'] ?? '', [ 'supported', 'unsupported', 'uncertain' ], true ) ? (string) $span['status'] : 'uncertain', 'rule_id' => preg_match( '/^[a-z0-9_.-]{1,80}$/', $span_rule ) ? $span_rule : 'grounding.unknown', 'claim_tokens' => max( 0, min( 1000, (int) ( $span['claim_tokens'] ?? 0 ) ) ), 'matched_tokens' => max( 0, min( 1000, (int) ( $span['matched_tokens'] ?? 0 ) ) ), 'coverage_basis_points' => max( 0, min( 10000, (int) ( $span['coverage_basis_points'] ?? 0 ) ) ) ];
+		}
+		$diagnostics['validation_claim_grounding'] = [
+			'policy_version' => ( $claim['policy_version'] ?? '' ) === 'wpae-generated-claim-grounding-v1' ? $claim['policy_version'] : 'unknown',
+			'status' => $claim_status,
+			'rule_id' => preg_match( '/^[a-z0-9_.-]{1,80}$/', $claim_rule ) ? $claim_rule : 'grounding.unknown',
+			'reason' => wpae_brief_ir_generated_claims_safe_reason( preg_match( '/^[a-z0-9_.-]{1,80}$/', $claim_rule ) ? $claim_rule : 'grounding.unknown' ),
+			'slot_id' => substr( sanitize_key( (string) ( $claim['slot_id'] ?? '' ) ), 0, 80 ),
+			'fact_refs' => $claim_refs,
+			'claim_tokens' => max( 0, min( 1000, (int) ( $claim['claim_tokens'] ?? 0 ) ) ),
+			'matched_tokens' => max( 0, min( 1000, (int) ( $claim['matched_tokens'] ?? 0 ) ) ),
+			'coverage_basis_points' => max( 0, min( 10000, (int) ( $claim['coverage_basis_points'] ?? 0 ) ) ),
+			'matched_concepts' => $claim_concepts,
+			'claim_spans' => $claim_spans,
+		];
+	}
 	if ( is_numeric( $telemetry['expected_paragraph_count'] ?? null ) ) {
 		$diagnostics['validation_expected_paragraph_count'] = max( 0, min( 20, (int) $telemetry['expected_paragraph_count'] ) );
 	}
@@ -1228,7 +1481,10 @@ function wpae_brief_ir_intake_extract( string $source_text, array $base_brief, a
 		$first['telemetry'] = $first_telemetry;
 		return $first;
 	}
-	$context['_wpae_intake_retry'] = [ 'reason' => $retry_reason ];
+	$first_result_telemetry = (array) ( $first['telemetry'] ?? [] );
+	$first_claim_validation = (array) ( $first_result_telemetry['claim_validation'] ?? [] );
+	$retry_claim_rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', (string) ( $first_claim_validation['rule_id'] ?? '' ) ) );
+	$context['_wpae_intake_retry'] = [ 'reason' => $retry_reason, 'claim_rule_id' => preg_match( '/^[a-z0-9_.-]{1,80}$/', $retry_claim_rule ) ? $retry_claim_rule : '' ];
 	$second = wpae_brief_ir_intake_extract_attempt( $source_text, $base_brief, $runtime, $context );
 	$second_telemetry = (array) ( $second['telemetry'] ?? [] );
 	if ( empty( $second['ok'] ) ) { $second_telemetry['failure_class'] = (string) ( $second_telemetry['failure_class'] ?? wpae_brief_ir_intake_failure_class( $second ) ); }
@@ -1338,7 +1594,12 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 		} elseif ( $retry_reason === 'explicitly_prohibited_claim' ) {
 			$system .= ' Your previous typed response violated a specific explicit negative copy instruction from the same Brief. Remove the prohibited claim entirely. Keep the exact same family, locked copy, approved facts, authorized slots, paragraph counts, and meanings. Do not reinterpret or weaken any prohibition; preserve json_schema and every required slot.';
 		} elseif ( $retry_reason === 'unsupported_generated_claim' ) {
-			$system .= ' Your previous typed response was rejected because at least one generated factual clause was not directly supported by its cited approved fact. Rewrite the generated copy more conservatively: every factual clause must be a close, meaning-preserving paraphrase of the exact text of a cited approved fact; do not infer benefits, outcomes, quality, scope, causation, or promises. Keep the exact same family, locked copy, approved facts, authorized slots, paragraph counts, and meanings. Preserve json_schema and every required slot. If a claim cannot be grounded, omit that claim rather than inventing evidence.';
+			$claim_rule = strtolower( preg_replace( '/[^a-z0-9_.-]/', '', (string) ( $retry['claim_rule_id'] ?? '' ) ) );
+			if ( $claim_rule === 'grounding.negation_mismatch' ) {
+				$system .= ' The validator identified a polarity mismatch: your previous generated text changed a cited fact from positive to negative or from negative to positive. Preserve the source fact polarity exactly; do not add, remove, or reverse a negation. If no concise wording preserves the same polarity, omit that unsupported clause. Keep the same family, slots, facts and refs, and preserve strict json_schema and routing parameters.';
+			} else {
+				$system .= ' Your previous typed response was rejected because at least one generated factual clause was not directly supported by its cited approved fact. Rewrite the generated copy more conservatively: every factual clause must be a close, meaning-preserving paraphrase of the exact text of a cited approved fact; do not infer benefits, outcomes, quality, scope, causation, or promises. Keep the exact same family, locked copy, approved facts, authorized slots, paragraph counts, and meanings. Preserve json_schema and every required slot. If a claim cannot be grounded, omit that claim rather than inventing evidence.';
+			}
 		} elseif ( $retry_reason === 'finish_reason_length' ) {
 			$system .= ' Your previous response was cut off at the completion limit. Return the shortest complete JSON that fills every same authorized slot. Use one concise, fact-grounded sentence per generated description; preserve the exact requested paragraph count and all required copy. Do not add transitions, rationale, outcomes, or repeated context. Keep the same family, locked copy, approved facts, slots, references, and schema; do not reduce or omit required content.';
 		} else {
@@ -1512,7 +1773,11 @@ function wpae_brief_ir_intake_extract_attempt( string $source_text, array $base_
 		if ( ! empty( $slot['requires_fact_ref'] ) && empty( $fact_refs ) ) { return [ 'ok' => false, 'error' => 'intake_fact_reference_required', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'required_fact_ref_missing' ] ]; }
 		$prohibited_category = wpae_brief_ir_prohibited_claim_violation( $text, (array) ( $brief['copy_request']['prohibited_claims'] ?? [] ) );
 		if ( $prohibited_category !== null ) { return [ 'ok' => false, 'error' => 'intake_generated_copy_rejected', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'explicitly_prohibited_claim', 'prohibited_claim_category' => $prohibited_category, 'slot_id' => $slot_id ] ]; }
-		if ( ! wpae_brief_ir_generated_claims_grounded( $text, $fact_refs, $cited_fact_text_map, $authored_copy_anchor ) ) { return [ 'ok' => false, 'error' => 'intake_generated_copy_rejected', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'unsupported_generated_claim', 'slot_id' => $slot_id ] ]; }
+		$claim_validation = wpae_brief_ir_generated_claims_grounding_result( $text, $fact_refs, $cited_fact_text_map, $authored_copy_anchor, $slot_id );
+		if ( $claim_validation['status'] !== 'supported' ) {
+			$safe_claim_validation = wpae_brief_ir_generated_claims_safe_diagnostic( $claim_validation );
+			return [ 'ok' => false, 'error' => 'intake_generated_copy_rejected', 'telemetry' => $telemetry + [ 'http_status' => $status, 'refusal' => 'unsupported_generated_claim', 'slot_id' => $slot_id, 'claim_validation' => $safe_claim_validation ] ];
+		}
 		$seen[ $slot_id ] = true;
 		$item = [ 'id' => 'generated_' . $slot_id, 'role' => (string) $slot['role'], 'exact_text' => $text, 'copy_status' => 'generated', 'normalized_text' => wpae_brief_ir_normalize_text( $text ), 'url' => null, 'url_requested' => false, 'source_span' => null, 'confidence' => 0.85, 'required' => true, 'group_id' => $slot['group_id'], 'provenance' => [ 'source' => 'provider_generated', 'generation' => [ 'schema' => 'wpae-generated-copy-v2', 'slot_id' => $slot_id, 'provider' => $provider, 'model' => $model, 'request_hash' => $request_hash, 'instruction_hash' => $instruction_hash, 'context_hash' => $context_hash, 'fact_refs' => $fact_refs, 'requires_fact_ref' => ! empty( $slot['requires_fact_ref'] ), 'paragraph_count' => $paragraph_count, 'validated' => true ] ] ];
 		$item['provenance']['generation']['signature'] = hash_hmac( 'sha256', wpae_brief_ir_generated_copy_signature_payload( $item, array_merge( $brief, [ 'intent' => array_merge( (array) ( $brief['intent'] ?? [] ), [ 'archetype' => $family ] ) ] ) ), $secret );
