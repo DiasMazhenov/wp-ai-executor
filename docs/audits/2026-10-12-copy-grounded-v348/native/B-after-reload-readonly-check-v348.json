@@ -17,4 +17,4 @@
   "owned_model_check": "PASS",
   "raw_native_json_export": "not_obtained",
   "note": "Read-only lifecycle comparison passed on current editor after reload; no raw native JSON export was exposed by the normal UI."
-}\n
+}
