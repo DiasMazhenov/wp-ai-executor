@@ -101,6 +101,24 @@ check( ( $intake_wire_schema['properties']['generated']['items']['anyOf'][0]['pr
 $intake_no_facts_schema = wpae_brief_ir_intake_response_schema( [ 'hero' ], [ [ 'slot_id' => 'section_title', 'role' => 'title' ] ], [] );
 $intake_facts_schema = wpae_brief_ir_intake_response_schema( [ 'benefits' ], [ [ 'slot_id' => 'benefits_1_description', 'role' => 'feature_body', 'requires_fact_ref' => true ] ], [ 'fact_1', 'fact_2' ] );
 check( ( $intake_facts_schema['properties']['generated']['items']['properties']['fact_refs']['items']['enum'] ?? [] ) === [ 'fact_1', 'fact_2' ] && ( $intake_facts_schema['properties']['generated']['items']['properties']['fact_refs']['maxItems'] ?? 0 ) === 2 && ( $intake_no_facts_schema['properties']['generated']['items']['properties']['fact_refs']['maxItems'] ?? -1 ) === 0, 'Each strict schema limits fact references to approved IDs and disallows them when the authorized fact set is empty' );
+$intake_scope_schema_facts = [
+	[ 'id' => 'fact_section', 'approved' => true, 'type' => 'approved_assertion', 'scope' => [ 'kind' => 'section' ] ],
+	[ 'id' => 'fact_group', 'approved' => true, 'type' => 'approved_assertion', 'scope' => [ 'kind' => 'group', 'group_id' => 'benefit_1' ] ],
+	[ 'id' => 'fact_eyebrow', 'approved' => true, 'type' => 'authored_copy_reference', 'scope' => [ 'kind' => 'content_item' ] ],
+];
+$intake_scope_schema_slots = [
+	[ 'slot_id' => 'section_title', 'role' => 'title', 'requires_fact_ref' => true ],
+	[ 'slot_id' => 'benefit_1_description', 'role' => 'feature_body', 'group_id' => 'benefit_1', 'requires_fact_ref' => true ],
+];
+$intake_scope_schema = wpae_brief_ir_intake_response_schema( [ 'benefits' ], $intake_scope_schema_slots, $intake_scope_schema_facts );
+$intake_scope_schema_variants = (array) ( $intake_scope_schema['properties']['generated']['items']['anyOf'] ?? [] );
+$intake_scope_schema_enum_for = static function ( string $slot_id ) use ( $intake_scope_schema_variants ): array {
+	foreach ( $intake_scope_schema_variants as $variant ) {
+		if ( ( ( $variant['properties']['slot_id']['enum'][0] ?? '' ) ) === $slot_id ) { return (array) ( $variant['properties']['fact_refs']['items']['enum'] ?? [] ); }
+	}
+	return [];
+};
+check( $intake_scope_schema_enum_for( 'section_title' ) === [ 'fact_section' ] && $intake_scope_schema_enum_for( 'benefit_1_description' ) === [ 'fact_section', 'fact_group' ] && ( $intake_scope_schema_variants[0]['properties']['fact_refs']['minItems'] ?? 0 ) === 1 && ! in_array( 'fact_eyebrow', array_merge( $intake_scope_schema_enum_for( 'section_title' ), $intake_scope_schema_enum_for( 'benefit_1_description' ) ), true ), 'Strict fact-reference enums are scoped per generated slot and exclude unrelated authored eyebrow copy' );
 $schema_contains_unique_items = static function ( array $schema ) use ( &$schema_contains_unique_items ): bool {
 	foreach ( $schema as $key => $value ) {
 		if ( $key === 'uniqueItems' ) { return true; }
@@ -691,6 +709,46 @@ $intake_generated_cta_second_request = (array) ( $intake_generated_cta_retry['ht
 $intake_generated_cta_strings = $intake_collect_strings( [ $intake_generated_cta_retry['written'] ?? [] ] );
 check( array_column( $intake_generated_cta_slots, 'slot_id' ) === [ 'section_title', 'section_intro' ] && ! empty( $intake_generated_cta_slots[1]['distinct_from_generated_title'] ) && ! empty( $intake_generated_cta_retry['response']['ok'] ) && $intake_generated_cta_retry['calls'] === 2 && $intake_generated_cta_retry['writes'] === 1 && ( $intake_generated_cta_trace['retry_reason'] ?? '' ) === 'generated_title_body_overlap' && ( $intake_generated_cta_trace['attempts'][0]['schema_validation_result'] ?? '' ) === 'retryable_copy_quality_failure' && ( $intake_generated_cta_trace['attempts'][1]['schema_validation_result'] ?? '' ) === 'accepted', 'The exact generated CTA fixture creates title/body slots, then accepts one fact-grounded correction after rejecting semantic overlap' );
 check( ( $intake_generated_cta_first_request['messages'][1]['content'] ?? '' ) === ( $intake_generated_cta_second_request['messages'][1]['content'] ?? null ) && ( $intake_generated_cta_first_request['model'] ?? '' ) === ( $intake_generated_cta_second_request['model'] ?? null ) && ( $intake_generated_cta_first_request['response_format'] ?? [] ) === ( $intake_generated_cta_second_request['response_format'] ?? null ) && ! empty( $intake_generated_cta_second_request['response_format']['json_schema']['strict'] ) && ! empty( $intake_generated_cta_second_request['provider']['require_parameters'] ) && in_array( 'Обсудить проект', $intake_generated_cta_strings, true ) && in_array( '#contact', $intake_generated_cta_strings, true ) && in_array( 'Посмотреть работы', $intake_generated_cta_strings, true ) && in_array( '#projects', $intake_generated_cta_strings, true ), 'CTA copy retry preserves the same model/Brief/strict schema and both exact authored actions' );
+
+$scope_aware_cta_prompt = trim( (string) file_get_contents( __DIR__ . '/../docs/audits/2026-10-12-copy-grounded-v347/fixtures/E-cta-centered-generated.txt' ) );
+$scope_aware_cta_brief = wpae_brief_ir_apply_canonical_intake_contract( wpae_brief_ir_parse( $scope_aware_cta_prompt ), $scope_aware_cta_prompt );
+$scope_aware_cta_facts = (array) ( $scope_aware_cta_brief['approved_facts'] ?? [] );
+$scope_aware_cta_slots = wpae_brief_ir_generated_copy_slots( $scope_aware_cta_brief, $scope_aware_cta_prompt );
+$scope_aware_cta_fact_id_for = static function ( string $needle, string $type = 'approved_assertion' ) use ( $scope_aware_cta_facts ): string {
+	foreach ( $scope_aware_cta_facts as $fact ) {
+		if ( ! is_array( $fact ) || empty( $fact['approved'] ) || ( $fact['type'] ?? '' ) !== $type || ( $fact['scope']['kind'] ?? '' ) !== 'section' ) { continue; }
+		if ( stripos( (string) ( $fact['exact_text'] ?? '' ), $needle ) !== false ) { return (string) ( $fact['id'] ?? '' ); }
+	}
+	return '';
+};
+$scope_aware_cta_first_meeting_fact = $scope_aware_cta_fact_id_for( 'первой встрече' );
+$scope_aware_cta_plan_fact = $scope_aware_cta_fact_id_for( 'разработкой чертежей' );
+$scope_aware_cta_daylight_fact = $scope_aware_cta_fact_id_for( 'дневной свет' );
+$scope_aware_cta_eyebrow_fact = '';
+foreach ( $scope_aware_cta_facts as $scope_aware_fact ) {
+	if ( is_array( $scope_aware_fact ) && ( $scope_aware_fact['type'] ?? '' ) === 'authored_copy_reference' && ( $scope_aware_fact['scope']['kind'] ?? '' ) === 'content_item' && ( $scope_aware_fact['exact_text'] ?? '' ) === 'ПЕРВЫЙ ШАГ' ) { $scope_aware_cta_eyebrow_fact = (string) ( $scope_aware_fact['id'] ?? '' ); break; }
+}
+$scope_aware_cta_title_slot = array_values( array_filter( $scope_aware_cta_slots, static fn( array $slot ): bool => ( $slot['role'] ?? '' ) === 'title' ) )[0] ?? [];
+$scope_aware_cta_body_slot = array_values( array_filter( $scope_aware_cta_slots, static fn( array $slot ): bool => ( $slot['role'] ?? '' ) === 'body' ) )[0] ?? [];
+$scope_aware_cta_payload = [ 'family' => 'cta', 'generated' => [
+	[ 'slot_id' => (string) ( $scope_aware_cta_title_slot['slot_id'] ?? '' ), 'text' => 'Пожелания и ограничения пространства', 'fact_refs' => [ $scope_aware_cta_first_meeting_fact ] ],
+	[ 'slot_id' => (string) ( $scope_aware_cta_body_slot['slot_id'] ?? '' ), 'text' => 'Перед разработкой чертежей согласуется планировка, а при проектировании учитываются дневной свет и повседневные сценарии.', 'fact_refs' => [ $scope_aware_cta_plan_fact, $scope_aware_cta_daylight_fact ] ],
+] ];
+$scope_aware_cta_route = $run_services_route( $scope_aware_cta_prompt, [ provider_reply( wp_json_encode( $scope_aware_cta_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-scope-aware-cta-v347-regression', false, 'active', 'active', [ 'composition_record' => 'cta.centered', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$scope_aware_cta_request = (array) ( $scope_aware_cta_route['http_calls'][0]['body'] ?? [] );
+$scope_aware_cta_provider_input = json_decode( (string) ( $scope_aware_cta_request['messages'][1]['content'] ?? '' ), true );
+$scope_aware_cta_allowed_slots = (array) ( $scope_aware_cta_provider_input['allowed_generated_slots'] ?? [] );
+$scope_aware_cta_title_input = array_values( array_filter( $scope_aware_cta_allowed_slots, static fn( array $slot ): bool => ( $slot['slot_id'] ?? '' ) === 'section_title' ) )[0] ?? [];
+$scope_aware_cta_body_input = array_values( array_filter( $scope_aware_cta_allowed_slots, static fn( array $slot ): bool => ( $slot['slot_id'] ?? '' ) === 'section_intro' ) )[0] ?? [];
+$scope_aware_cta_wire_variants = (array) ( $scope_aware_cta_request['response_format']['json_schema']['schema']['properties']['generated']['items']['anyOf'] ?? [] );
+$scope_aware_cta_wire_enum_for = static function ( string $slot_id ) use ( $scope_aware_cta_wire_variants ): array {
+	foreach ( $scope_aware_cta_wire_variants as $variant ) {
+		if ( ( $variant['properties']['slot_id']['enum'][0] ?? '' ) === $slot_id ) { return (array) ( $variant['properties']['fact_refs']['items']['enum'] ?? [] ); }
+	}
+	return [];
+};
+$scope_aware_cta_strings = $intake_collect_strings( [ $scope_aware_cta_route['written'] ?? [] ] );
+check( ! empty( $scope_aware_cta_route['response']['ok'] ) && $scope_aware_cta_route['calls'] === 1 && $scope_aware_cta_route['writes'] === 1 && $scope_aware_cta_eyebrow_fact !== '' && ! in_array( $scope_aware_cta_eyebrow_fact, (array) ( $scope_aware_cta_title_input['allowed_fact_ids'] ?? [] ), true ) && ! in_array( $scope_aware_cta_eyebrow_fact, (array) ( $scope_aware_cta_body_input['allowed_fact_ids'] ?? [] ), true ) && $scope_aware_cta_wire_enum_for( 'section_title' ) === (array) ( $scope_aware_cta_title_input['allowed_fact_ids'] ?? [] ) && $scope_aware_cta_wire_enum_for( 'section_intro' ) === (array) ( $scope_aware_cta_body_input['allowed_fact_ids'] ?? [] ) && in_array( 'Обсудить задачу', $scope_aware_cta_strings, true ) && in_array( '#contact', $scope_aware_cta_strings, true ) && in_array( 'Посмотреть подход', $scope_aware_cta_strings, true ) && in_array( '#about', $scope_aware_cta_strings, true ), 'The original v347 CTA fixture succeeds through plugin chat with per-slot fact refs, excluding its exact eyebrow from generated title/body citations' );
 
 $control_state_cta_path = __DIR__ . '/../docs/audits/2026-10-12-typed-copy-live-v343/fixtures/E-cta-centered-generated.txt';
 $control_state_cta_prompt = trim( (string) file_get_contents( $control_state_cta_path ) );
