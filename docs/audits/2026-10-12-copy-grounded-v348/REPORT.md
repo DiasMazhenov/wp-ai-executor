@@ -93,3 +93,7 @@ The generated-design tree `native/E-first-result-generated-design-v348.json` is 
 Each written operation B/D/E was undone through the operation-scoped guard. For E the post-Undo descriptor returned `already_undone`, revision 6; the editor reloaded to an empty canvas with Publish disabled, and public `post=5214` readback contained no Elementor roots. Current editor/public baseline is `[]`. The post-Undo public DOM and inspected PNG are preserved in `native/E-undo-public-baseline-v348.json` and the screenshot manifest.
 
 The exact A–E gate remains open at 3/5. No additional family was used to replace A or C. F Team and G Testimonials remain unstarted because the ordered A–E gate is incomplete. Services and Process remain excluded. There were five primary fixture submissions, three successful transaction writes, two pre-write refusals, no source-fix retry and no repair write. The task is not complete.
+
+## Evidence integrity follow-up
+
+After publishing this report, a JSON parse audit found six evidence files with a literal `\n` suffix after the closing object. The suffixes were removed without changing evidence fields; every JSON file in this audit directory now parses successfully. The correction is recorded in commit `2cddc0156cfb29420e6ec6528d773a867e47fcb4`.
