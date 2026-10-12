@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v20';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v21';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -30,6 +30,18 @@ function wpae_brief_ir_utf8_slice( string $text, int $offset, int $length ): str
 		$end--;
 	}
 	return substr( $text, $offset, $end - $offset );
+}
+
+/** Return the current numbered entity context before an explicit media URL. */
+function wpae_brief_ir_media_owner_context( string $source_text, int $url_offset ): string {
+	$url_offset = max( 0, min( strlen( $source_text ), $url_offset ) );
+	$before_url = substr( $source_text, 0, $url_offset );
+	$owner_pattern = '/(?:участник\w*|сотрудник\w*|team\s+member|услуг\w*|service|отзыв\w*|testimonial|review|проект\w*|работ\w*|кейс\w*|project|case)\s*#?\s*\d+/iu';
+	if ( preg_match_all( $owner_pattern, $before_url, $owners, PREG_OFFSET_CAPTURE ) ) {
+		$last_owner = end( $owners[0] );
+		return substr( $before_url, (int) $last_owner[1] );
+	}
+	return wpae_brief_ir_utf8_slice( $before_url, max( 0, strlen( $before_url ) - 180 ), 180 );
 }
 
 function wpae_brief_ir_normalize_text( string $text ): string {
@@ -865,9 +877,13 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$group_id = $benefit_title_groups[ $start ];
 		}
 
-		if ( $archetype === 'testimonials' && $role === 'text' && $previous_testimonial_group !== '' && preg_match( '/(?:автор|author)\s*[:\-]?\s*$/iu', $prefix ) ) {
-			$role = 'testimonial_author';
-			$group_id = $previous_testimonial_group;
+		if ( $archetype === 'testimonials' && $role === 'text' && $previous_testimonial_group !== '' ) {
+			if ( preg_match( '/(?:автор|author)\s*[:\-]?\s*$/iu', $prefix ) ) {
+				$role = 'testimonial_author';
+			} elseif ( preg_match( '/(?:должност\w*|компан\w*|position|company)\s*[:\-]?\s*$/iu', $prefix ) ) {
+				$role = 'testimonial_meta';
+			}
+			if ( $role !== 'text' ) { $group_id = $previous_testimonial_group; }
 		}
 		$id_override = $process_id_override !== '' ? $process_id_override : ( $explicit_benefit_title ? $group_id . '_title' : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial|portfolio)_/', '', $role ) : '' ) );
 		$url = null;
@@ -1299,18 +1315,19 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$url = trim( (string) $url_match[0], " \t\n\r.,;" );
 			if ( preg_match( '/\.(?:jpe?g|png|webp|gif|svg)(?:\?.*)?$/i', $url ) || preg_match( '#^https?://images\.unsplash\.com/photo-#i', $url ) ) {
 				$prefix = wpae_brief_ir_utf8_slice( $source_text, max( 0, (int) $url_match[1] - 180 ), 180 );
+				$owner_context = wpae_brief_ir_media_owner_context( $source_text, (int) $url_match[1] );
 				$group_id = '';
 				$role = in_array( $archetype, [ 'hero', 'about' ], true ) ? $archetype : 'decorative';
-				if ( preg_match( '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)[^\n]*?(?:фото|image|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
+				if ( preg_match( '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)[\s\S]*?(?:фото|image|photo)[\s\S]*$/iu', $owner_context, $group_match ) ) {
 					$role = 'portrait';
 					$group_id = 'team_' . (int) $group_match[1];
-				} elseif ( preg_match( '/(?:услуг\w*|service)\s*\#?(\d+)[^\n]*?(?:иконк\w*|изображен\w*|фото|image|icon|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
+				} elseif ( preg_match( '/(?:услуг\w*|service)\s*\#?(\d+)[\s\S]*?(?:иконк\w*|изображен\w*|фото|image|icon|photo)[\s\S]*$/iu', $owner_context, $group_match ) ) {
 					$role = 'card_image';
 					$group_id = 'service_' . (int) $group_match[1];
-				} elseif ( preg_match( '/(?:отзыв\w*|testimonial|review)\s*\#?(\d+)[^\n]*?(?:фото|image|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
-					$role = preg_match( '/аватар|avatar/iu', $prefix ) ? 'avatar' : 'portrait';
+				} elseif ( preg_match( '/(?:отзыв\w*|testimonial|review)\s*\#?(\d+)[\s\S]*?(?:фото|image|photo)[\s\S]*$/iu', $owner_context, $group_match ) ) {
+					$role = preg_match( '/аватар|avatar/iu', $owner_context ) ? 'avatar' : 'portrait';
 					$group_id = 'testimonial_' . (int) $group_match[1];
-				} elseif ( preg_match( '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)[^\n]*?(?:изображен\w*|фото|image|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
+				} elseif ( preg_match( '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)[\s\S]*?(?:изображен\w*|фото|image|photo)[\s\S]*$/iu', $owner_context, $group_match ) ) {
 					$role = 'project_image';
 					$group_id = 'portfolio_' . (int) $group_match[1];
 				} elseif ( preg_match( '/(?:hero|хиро|обложк\w*|главн\w*\s+экран)[^\n]*$/iu', $prefix ) ) {

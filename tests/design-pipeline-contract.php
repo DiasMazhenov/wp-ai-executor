@@ -635,7 +635,7 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v20', 'BriefIR provenance version tracks the current prompt parser contract' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v21', 'BriefIR provenance version tracks the current prompt parser contract' );
 $focus_test_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
 $focus_test_prompt = "Hero\nЗаголовок: «Изображение с явной точкой фокуса»\nКонтекст: «" . str_repeat( 'Ж', 120 ) . "»\nИзображение: {$focus_test_url}\nФокус кадра: центр слева\nAlt: «Архитектурное пространство для теста кадрирования»\nLicense: «Unsplash License»";
 $focus_test_brief = wpae_brief_ir_parse( $focus_test_prompt );
@@ -650,6 +650,27 @@ $focus_group_refs = (array) ( $focus_group_brief['media_references'] ?? [] );
 $focus_group_first_expected = [ strpos( $focus_group_prompt, 'нижний центр' ), strpos( $focus_group_prompt, 'нижний центр' ) + strlen( 'нижний центр' ) ];
 $focus_group_second_expected = [ strpos( $focus_group_prompt, 'верхний правый' ), strpos( $focus_group_prompt, 'верхний правый' ) + strlen( 'верхний правый' ) ];
 $check( count( $focus_group_refs ) === 2 && ( $focus_group_refs[0]['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.9 ] && ( $focus_group_refs[0]['focal_point_provenance']['source_span'] ?? [] ) === $focus_group_first_expected && ( $focus_group_refs[1]['focal_point'] ?? [] ) === [ 'x' => 0.9, 'y' => 0.1 ] && ( $focus_group_refs[1]['focal_point_provenance']['source_span'] ?? [] ) === $focus_group_second_expected && ( $focus_group_refs[0]['group_id'] ?? '' ) === 'testimonial_1' && ( $focus_group_refs[1]['group_id'] ?? '' ) === 'testimonial_2', 'Focal declarations before and after grouped image URLs stay bound to the correct entity and exact source spans' );
+$long_media_assets = [
+	1 => [ 'https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg', 'Иллюстративный портрет первого автора.' ],
+	2 => [ 'https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg', 'Иллюстративный портрет второго автора.' ],
+	3 => [ 'https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp', 'Иллюстративный портрет третьего автора.' ],
+];
+$long_media_owner_prompt = "Блок отзывов — синтетические примеры\n";
+foreach ( $long_media_assets as $owner_index => [ $owner_url, $owner_alt ] ) {
+	$owner_quote = $owner_index === 1 ? 'Всё понятно.' : str_repeat( 'Длинная синтетическая цитата помогает проверить владельца изображения. ', 5 );
+	$long_media_owner_prompt .= "Отзыв {$owner_index} — цитата: «{$owner_quote}» Автор: «Тестовый автор {$owner_index}». Должность: «Вымышленный участник проверки». Фото-аватар: {$owner_url}\nAlt: «{$owner_alt}»\n";
+}
+$long_media_owner_brief = wpae_brief_ir_parse( $long_media_owner_prompt );
+$long_media_owner_refs = (array) ( $long_media_owner_brief['media_references'] ?? [] );
+$long_media_owner_ids = array_column( $long_media_owner_refs, 'group_id' );
+$long_media_owner_roles = array_column( $long_media_owner_refs, 'role' );
+$long_media_owner_sources = array_column( array_column( $long_media_owner_refs, 'provenance' ), 'source_span' );
+$long_media_owner_expected_sources = [];
+foreach ( $long_media_assets as [ $owner_url ] ) {
+	$owner_url_offset = strpos( $long_media_owner_prompt, $owner_url );
+	$long_media_owner_expected_sources[] = [ $owner_url_offset, $owner_url_offset + strlen( $owner_url ) ];
+}
+$check( $long_media_owner_ids === [ 'testimonial_1', 'testimonial_2', 'testimonial_3' ] && $long_media_owner_roles === [ 'avatar', 'avatar', 'avatar' ] && $long_media_owner_sources === $long_media_owner_expected_sources && array_column( $long_media_owner_refs, 'alt' ) === array_column( $long_media_assets, 1 ), 'Long synthetic testimonial copy keeps each explicitly labeled avatar attached to its own group, role, alt and exact URL source span' );
 $focus_unknown_brief = wpae_brief_ir_parse( "Hero\nИзображение: {$focus_test_url}\nФокус кадра: чуть левее, примерно у лица\nAlt: «Изображение без нормализуемого направления»" );
 $focus_english_brief = wpae_brief_ir_parse( "Hero\nImage: {$focus_test_url}\nFocal point: bottom right\nAlt: «Synthetic test image»\nLicense: «Unsplash License»" );
 $check( ( $focus_unknown_brief['media_references'][0]['focal_point'] ?? null ) === null && empty( $focus_unknown_brief['media_references'][0]['focal_point_provenance'] ) && ( $focus_english_brief['media_references'][0]['focal_point'] ?? [] ) === [ 'x' => 0.9, 'y' => 0.9 ] && substr( $focus_english_brief['source_text'], (int) ( $focus_english_brief['media_references'][0]['focal_point_provenance']['source_span'][0] ?? 0 ), strlen( 'bottom right' ) ) === 'bottom right', 'Unsupported focal prose stays unresolved while an explicit English native direction maps to the supported grid' );
