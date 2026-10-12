@@ -2394,11 +2394,77 @@
                             var normalized = String(value == null ? '' : value).toLowerCase();
                             return /^[a-z0-9_-]{1,80}$/.test(normalized) ? normalized : null;
                         };
+                        var safeGroundingDiagnostic = function (value) {
+                            if (!value || typeof value !== 'object') return null;
+                            var safeRule = function (candidate) {
+                                var normalized = String(candidate == null ? '' : candidate).toLowerCase();
+                                return /^[a-z0-9_.-]{1,80}$/.test(normalized) ? normalized : 'grounding.unknown';
+                            };
+                            var rule = safeRule(value.rule_id);
+                            var safeReasons = {
+                                'grounding.missing_fact_ref': 'No approved fact reference was supplied for generated copy.',
+                                'grounding.unknown_fact_ref': 'A referenced fact is unavailable in this slot scope.',
+                                'grounding.unsupported_causal_inference': 'The copy adds a cause or outcome that the cited fact does not state.',
+                                'grounding.unsupported_scope_claim': 'The copy broadens the scope beyond the cited fact.',
+                                'grounding.unsupported_time_claim': 'The copy adds a time or availability claim absent from the cited fact.',
+                                'grounding.unsupported_commercial_claim': 'The copy adds a commercial claim absent from the cited fact.',
+                                'grounding.unsupported_promise': 'The copy adds a guarantee or comparative promise absent from the cited fact.',
+                                'grounding.unsourced_high_risk_claim': 'A high-risk claim has no cited approved fact.',
+                                'grounding.no_fact_claim': 'No approved facts were cited and no configured high-risk phrase was detected.',
+                                'grounding.quantity_changed': 'The copy changes a quantity from the cited fact.',
+                                'grounding.time_changed': 'The copy changes or adds a time claim.',
+                                'grounding.modality_changed': 'The copy strengthens obligation, certainty, or promise beyond the cited fact.',
+                                'grounding.subject_changed': 'The copy introduces a business actor not present in the cited fact.',
+                                'grounding.ambiguous_fact_polarity': 'Equally relevant cited facts have conflicting polarity.',
+                                'grounding.negation_mismatch': 'The copy reverses or changes the positive or negative meaning of the cited fact.',
+                                'grounding.insufficient_lexical_evidence': 'The bounded check found insufficient evidence to verify this claim.',
+                                'grounding.empty_claim': 'The bounded check could not identify a claim to evaluate.',
+                                'grounding.unsupported_or_unmatched_claim': 'The bounded check could not verify the claim against its cited facts.',
+                                'grounding.lexical_or_alias_support': 'Every checked sentence passed the bounded evidence and risk rules.',
+                                'grounding.lexical_support': 'The claim has bounded lexical evidence in a cited fact.'
+                            };
+                            var boundedInteger = function (candidate, max) {
+                                return typeof candidate === 'number' && Number.isFinite(candidate) ? Math.max(0, Math.min(max, Math.floor(candidate))) : 0;
+                            };
+                            var spans = Array.isArray(value.claim_spans) ? value.claim_spans.slice(0, 12).map(function (span, index) {
+                                span = span && typeof span === 'object' ? span : {};
+                                var status = ['supported', 'unsupported', 'uncertain'].indexOf(span.status) >= 0 ? span.status : 'uncertain';
+                                return {
+                                    index: boundedInteger(typeof span.index === 'number' ? span.index : index, 11),
+                                    start_byte: boundedInteger(span.start_byte, 100000),
+                                    end_byte: boundedInteger(span.end_byte, 100000),
+                                    status: status,
+                                    rule_id: safeRule(span.rule_id),
+                                    claim_tokens: boundedInteger(span.claim_tokens, 1000),
+                                    matched_tokens: boundedInteger(span.matched_tokens, 1000),
+                                    coverage_basis_points: boundedInteger(span.coverage_basis_points, 10000)
+                                };
+                            }) : [];
+                            var status = ['supported', 'unsupported', 'uncertain'].indexOf(value.status) >= 0 ? value.status : 'uncertain';
+                            var factRefs = Array.isArray(value.fact_refs) ? value.fact_refs.slice(0, 12).map(safeDiagnosticId).filter(Boolean) : [];
+                            var matchedConcepts = Array.isArray(value.matched_concepts) ? value.matched_concepts.slice(0, 12).map(safeDiagnosticId).filter(Boolean) : [];
+                            return {
+                                policy_version: value.policy_version === 'wpae-generated-claim-grounding-v1' ? value.policy_version : 'unknown',
+                                status: status,
+                                rule_id: rule,
+                                reason: safeReasons[rule] || 'The current bounded policy could not verify this claim.',
+                                slot_id: safeDiagnosticId(value.slot_id),
+                                fact_refs: factRefs,
+                                claim_tokens: boundedInteger(value.claim_tokens, 1000),
+                                matched_tokens: boundedInteger(value.matched_tokens, 1000),
+                                coverage_basis_points: boundedInteger(value.coverage_basis_points, 10000),
+                                matched_concepts: matchedConcepts,
+                                claim_spans: spans
+                            };
+                        };
                         ['validation_refusal', 'validation_slot_id', 'validation_prohibited_claim_category', 'validation_missing_slot'].forEach(function (key) {
                             if (Object.prototype.hasOwnProperty.call(intakeTelemetry, key)) safeIntakeTelemetry[key] = safeDiagnosticId(intakeTelemetry[key]);
                         });
                         if (Array.isArray(intakeTelemetry.validation_missing_fact_ids)) {
                             safeIntakeTelemetry.validation_missing_fact_ids = intakeTelemetry.validation_missing_fact_ids.slice(0, 20).map(safeDiagnosticId).filter(Boolean);
+                        }
+                        if (intakeTelemetry.validation_claim_grounding && typeof intakeTelemetry.validation_claim_grounding === 'object') {
+                            safeIntakeTelemetry.validation_claim_grounding = safeGroundingDiagnostic(intakeTelemetry.validation_claim_grounding);
                         }
                         var safeUsage = function (usage) {
                             usage = usage && typeof usage === 'object' ? usage : {};
@@ -2442,6 +2508,9 @@
                                 });
                                 if (Array.isArray(attempt && attempt.validation_missing_fact_ids)) {
                                     safeAttempt.validation_missing_fact_ids = attempt.validation_missing_fact_ids.slice(0, 20).map(safeDiagnosticId).filter(Boolean);
+                                }
+                                if (attempt && attempt.validation_claim_grounding && typeof attempt.validation_claim_grounding === 'object') {
+                                    safeAttempt.validation_claim_grounding = safeGroundingDiagnostic(attempt.validation_claim_grounding);
                                 }
                                 safeAttempt.usage = safeUsage(attempt && attempt.usage);
                                 return safeAttempt;
